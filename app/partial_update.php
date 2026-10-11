@@ -10,7 +10,12 @@ declare(strict_types=1);
 /** endpoint → [table, the form's id field, read view, the view's id column]. Each slice adds its save endpoints here (the manifest's
  * `any field of`). Empty until Phase 2: the first entries are slice 1's, e.g. '/ingredients/save.php' => ['ingredients', 'ingredient',
  * 'mcp_ingredients', 'ingredient_id']. */
-const PARTIAL_UPDATE_TARGETS = [];
+const PARTIAL_UPDATE_TARGETS = [
+    '/ingredients/save.php' => ['ingredients', 'ingredient', 'mcp_ingredients', 'ingredient_id'],
+    '/suppliers/save.php' => ['suppliers', 'supplier', 'mcp_suppliers', 'supplier_id'],
+    '/suppliers/items/save.php' => ['supplier_items', 'supplier_item', 'mcp_supplier_items', 'supplier_item_id'],
+    '/areas/save.php' => ['storage_areas', 'area', 'mcp_storage_areas', 'storage_area_id'],
+];
 /** The targets: the constant above plus each slice's app/partial_targets/<slice>.php (endpoint => [table, id field, view, view id]). */
 function partial_update_targets(): array
 {

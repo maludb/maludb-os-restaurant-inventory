@@ -316,3 +316,44 @@ Chef at both).
 
 ## Open questions
 (none)
+
+## Built and proven (2026-10-11)
+
+Built by the planning model's fork in one pass: the 19 screens and 28 actions of this spec — `html/ingredients/*` (the cards, the form, the page with
+eleven tabs, the own-units page, the sites page with the par and the cost override, the unit-options fragment, the yield test form with its live
+preview, save / archive / delete), `html/suppliers/*` (the cards with the next cut-off, the form, the page, schedules, items, the order guide
+editor), `html/areas/*`, `html/units/*`, `html/categories/*`, `html/notes/*`, `html/attachments/*`; `app/features/units/queries.php` (the ONE
+place a quantity renders — `format_qty()`, `display_qty()`, `ri_qty_sentence()`, `ri_cost_sentence()`, `fmt_num()`, `fmt_input()`),
+`app/features/catalog/{queries,write,present,handler}.php`, the views under `app/views/catalog/`, the chart `app/views/shared/series-chart.php`
++ `html/assets/js/series-chart.js` (Inventory's, verbatim), the five picker sources in `app/pickers.php` (ingredient, supplier, supplier_item
+with `supplier` / `ingredient`, category, area), the partial-update targets for the four `*_update` tools.
+
+**Proof:** `tests/phase3/slice1/run.sh` on `ri_dev3a` — `catalog.php` 197 checks + `browser.mjs` 37 + the registry, approvals and specs
+checks = **237 under php -S and 237 under the user-level Apache** (`RI_APP=apache`), the world of this spec made through the handlers
+(Dana's six ingredients with their own units, Marco's Sysco and Produce Co with schedules and items, the owner's four areas, Bea's note and
+photo, the expert and the Purchasing agent under run tokens). `tests/phase2/run.sh` 347 (the placeholder count now read from the registry's
+stub flags; the `/ingredients` vhost rules and the command bar's navigate follow the built list), `tests/phase0/run.sh` 124,
+`tests/phase1/check_specs.sh` 52, `php bin/build_action_registry.php --check` clean (40 screens and 50 actions built with slice 2's).
+
+**Decisions taken while building:**
+- A typed `code` on `/units/save.php` makes a unit (a taken code is refused "exists already"); `unit` names an existing row for an inline edit.
+- A supplier's `account_number` is withheld from everyone without `suppliers.write` — on the page and in the JSON presenter.
+- The `cheapest` mark on an ingredient's Suppliers tab is drawn only for one who sees cost (the prices it ranks are walled).
+- A par at a site the person does not hold answers 404 "That site is not one you hold" (the spec said 403 for Dana at Airport; the handler
+  cannot tell a site she lacks from one that does not exist without leaking the list, so both are 404 — Priya, who holds Airport as
+  Kitchen, is 403 as written).
+- `supplier_item.update` logs `pack`, `description`, `lead_time_days` and `contract_until` beside the fields the spec named.
+- The order guide renumbers its `seq` inputs on submit as well as on drag end, so a save always reads the list as it stands.
+- `fmt_input()`: a number in the `value` of an `<input type="number">` carries no thousands separator — the browser drops "3,000" (found by
+  the JavaScript-off par check; the pars, reorder minimums, own-unit factors, MOQs and category percentages were rendered with `fmt_num()`).
+
+**Found, for the parent session:**
+- Slice 2's `app/features/recipes/queries.php` defined `find_record_activity()` and `recipes_using()` beside the shell's and this slice's;
+  the sibling renamed the first, and this slice's `recipes_using()` is guarded by `function_exists()` (same signature).
+- `tests/phase2/servers.sh stop` kills any `php -S` on 9301–9303 and the proofs bind fixed ports: two slice proofs on one tree cannot run
+  at once (the sibling moved to 9304–9306 by hand). A `RI_PORT_BASE` in `servers.sh` and `lib.php` is owed.
+- `bin/build_action_registry.php` did not resolve `/ingredients/{ingredient}/yield-tests/new` to `yield-tests/form.php` (the `{id}` segment
+  before `new`); fixed in the `new` branch.
+- The ingredient-units page is a write screen (`ingredients.write`, as the manifest has it); a Viewer reads an ingredient's units on the
+  ingredient page and its JSON, not at `/ingredients/{id}/units`.
+- No schema defect: db/007–019 carried every rule the handlers needed; no `db/020` from this slice.

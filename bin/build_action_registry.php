@@ -243,6 +243,10 @@ function screen_controller(string $url): ?string
     $last = array_pop($parts);
     $dir = '/' . implode('/', $parts);
     if ($last === 'new') {
+        if (is_file(WEB_ROOT . $dir . '/form.php')) {
+            return WEB_ROOT . $dir . '/form.php';
+        }
+        $dir = '/' . implode('/', array_filter($parts, static fn (string $p): bool => $p !== '1'));   // /ingredients/{ingredient}/yield-tests/new → /ingredients/yield-tests/form.php
         return is_file(WEB_ROOT . $dir . '/form.php') ? WEB_ROOT . $dir . '/form.php' : null;
     }
     if ($last === 'edit') {
