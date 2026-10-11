@@ -468,16 +468,24 @@ Actions (base `/admin/`, reports under /reports/):
 
 ## The supplier's door (no session; not actions)
 
+Screens:
+
 | Screen id | URL | When the supplier wants… |
 | --- | --- | --- |
 | `supplier-door` | `/s/{token}` | their purchase order: the lines in their units, the delivery address and date, our notes; **Acknowledge** (with their reference and the delivery date), **Decline a line** (with a reason), **Set the delivery date** — three POSTs to `/s/{token}` handled by `html/s.php` (`source = door`, `member_id NULL`), each writing a `purchase_order_events` row through `ri_po_supplier_event()` and notifying the PO's creator; the token is the authority (`ri_supplier_link_resolve()`), 60 days after minting it dies; no cost target of ours, no other supplier's name |
 
 ## Size
 
-Screens: 7 (home, me, the shell) + 19 (slice 1) + 13 (slice 2) + 19 (slice 3) + 10 (slice 4) + 13 (slice 5) + 7 (slice 6) + 6 (slice 7) + 10 (slice 8) + 12 (slice 9) + 1 (the door) = **117 screens**.
-Actions: 5 + 28 + 17 + 23 + 21 + 11 + 12 + 5 + 13 + 10 = **145 actions**, 25 of them with an agent-approval category (= `maludb-os.json` `approvals[]`),
-9 people-only — no: 3 (`preferences_save`, `token_mint`, `token_revoke`); the door's three POSTs are not actions. Events this manifest adds beyond
-design §6's list follow the same `entity.verb` rule: the line-level edits of a document (`*.line_set`, `*.line_remove`, `*.line_add`), a draft's header
-(`*.update`), `member.site_switch`, `member.preferences_save`, `member.notification_read`, `token.*`, `unit.save`, `category.save`, `menu_category.save`,
+Screens: 7 (home, me, the shell) + 19 (slice 1) + 14 (slice 2) + 19 (slice 3) + 10 (slice 4) + 13 (slice 5) + 8 (slice 6) + 6 (slice 7) + 10 (slice 8) + 12 (slice 9) + 1 (the door) = **119 screens**.
+Actions: 5 + 28 + 17 + 24 + 21 + 11 + 12 + 5 + 13 + 10 = **146 actions**, 25 of them with an agent-approval category (= `maludb-os.json` `approvals[]`),
+3 people-only (`preferences_save`, `token_mint`, `token_revoke`); the door's three POSTs are not actions. Events this manifest adds beyond design §6's
+list follow the same `entity.verb` rule: the line-level edits of a document (`*.line_set`, `*.line_remove`, `*.line_add`), a draft's header (`*.update`),
+`member.site_switch`, `member.preferences_save`, `member.notification_read`, `token.*`, `unit.save`, `category.save`, `menu_category.save`,
 `order_guide.set`, `area.*`, `note.*`, `attachment.*`, `mapping.save`, `count_sheet.*`, `container.save`, `period.ensure`, `calendar.*`,
 `forecast.override_propose|override_decide|override_remove|covers_sync`, `buyer.decide`, `settings.*`, `agent.settings_save`, `price_alert.*`.
+
+Reconciled 2026-10-11 against the ten slice specs: `menu-category-list` (slice 2), `count-history` (slice 6) and `stock_reverse` (slice 3) were in the
+rows and not in the counts; the door's table now carries its `Screens:` marker so `supplier-door` is in the registry (purchasing.md claims it);
+`recipe_create` makes the recipe and its first draft version in one POST; `menu_item_map`'s `no_depletion`, `preferences_save`'s `units` and
+`default_area`, `agent_settings_save`'s `duty_hour`/`sites`/`enabled` and `settings_save`'s `forecast_method` are carried by db/018;
+`token_revoke_any` logs `token.revoke` with `after.by_admin = true`; `site_switch` logs `member.site_switch` (the kit's `site.switch` renamed in Phase 2).

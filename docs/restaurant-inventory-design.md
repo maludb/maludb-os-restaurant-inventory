@@ -660,5 +660,23 @@ Manager named at install through `RI_MANAGER_EMAIL`, the first super-admin until
   posting function held across several lines (it restores the previous value now); a sent PO's lines must still take the
   supplier's and the receipt's updates; a count taken at the end of the day must be as of the sales cut, or the day's
   depletion (dated at the cut) is outside its book figure — the proof does so and the count screen should default to it.
-  NEXT: Phase 1 — the tool surface, the action manifest and registry, the three build specs and the eleven slice specs,
-  for the owner's approval before any PHP.
+- 2026-10-11 — **PHASE 1 WRITTEN, for the owner's approval.** `docs/restaurant-inventory-action-manifest.md` (119 screens, 146
+  actions in ten sections, 25 agent-approval categories = `maludb-os.json` `approvals[]`, synced; the registry built clean),
+  `docs/restaurant-inventory-mcp-tool-surface.md` (about 115 records tools — the expert's 83 by name, `app_roles`, the six
+  shares under the kernel's token, the resolvers —, 4 activity tools; cost as the fn/view/none wall per site; no bridge to PHP),
+  three build specs (`units-and-costing`, `pos-and-depletion`, `projection-and-ordering`) and ten slice specs (`sso-shell` and
+  slices 1–9: `catalog`, `recipes`, `ledger`, `purchasing`, `pos`, `counts`, `periods`, `projection`, `reports-admin`) — every
+  manifest row claimed by exactly one spec (`tests/phase1/check_specs.sh`, 52 checks green). **db/018** carries what the documents
+  found the schema owed, in one additive migration: the read functions SECURITY DEFINER with `ri_require_reader(scope)` so Phase 4's
+  records role can call them (the first finding — db/017 had granted it the views only); the missing reads (`ri_recipe_what_if`,
+  `ri_recipes_using`, `ri_sales_by_item`, `ri_variance_top`, `ri_invoice_mismatches`, `ri_watch_events` + `watch_events`,
+  `ri_morning_note` as one gatherer, `ri_share_ingredients_index`, `ri_count_line_add`, `ri_find` with kinds); `menu_items.no_depletion`
+  (the queue and the run skip it); the preferences' display units and default area; `agent_site_settings` and
+  `ri_settings.forecast_method`; the four vendor mapping templates (columns to confirm against real exports in Phase 5);
+  `ri_po_supplier_event(…, p_source, p_member_id)`. The schema proof is 179 checks, the kit's 124; the installer's plan clean
+  (49 steps). **Decisions the specs took, for the owner with Phase 1:** POS connectors live in PHP under `app/pos/`; the forecaster
+  is `bin/forecast.py` (pure Python) shelled from the worker's pass; a no-depletion PLU is a flag, never a lineless recipe;
+  `recipe_create` makes the recipe and its first draft in one POST; the morning note to `#kitchen` in Spaces stays Extended
+  (the text goes in the notification); a count after the day's count is as of a moment after the sales cut (its corrections
+  are dated at the cut — the proof's second lesson on counts); `watch.fire` is logged by the worker's pass. NEXT: the owner's
+  approval of Phase 1 → Phase 2 the shell.

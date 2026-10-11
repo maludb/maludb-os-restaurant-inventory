@@ -1,6 +1,6 @@
 {
     "generated_from": "docs/restaurant-inventory-action-manifest.md",
-    "generated_at": "2026-10-11T13:35:00+00:00",
+    "generated_at": "2026-10-11T13:47:48+00:00",
     "screens": {
         "home": {
             "screen": "home",
@@ -1264,6 +1264,15 @@
                 "from",
                 "to"
             ],
+            "built": false,
+            "stub": false
+        },
+        "supplier-door": {
+            "screen": "supplier-door",
+            "url": "/s/{token}",
+            "section": "The supplier's door (no session; not actions)",
+            "when": "their purchase order: the lines in their units, the delivery address and date, our notes; **Acknowledge** (with their reference and the delivery date), **Decline a line** (with a reason), **Set the delivery date** — three POSTs to `/s/{token}` handled by `html/s.php` (`source = door`, `member_id NULL`), each writing a `purchase_order_events` row through `ri_po_supplier_event()` and notifying the PO's creator; the token is the authority (`ri_supplier_link_resolve()`), 60 days after minting it dies; no cost target of ours, no other supplier's name",
+            "params": [],
             "built": false,
             "stub": false
         }

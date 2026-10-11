@@ -29,7 +29,7 @@ is due when sales arrived after the last run; the handlers call the verb inside 
 checks `[{external_id, business_date, closed_at, covers, subtotal, tax, total, lines: [{external_line_id, plu, name, qty, unit_price, line_total, voided,
 comp, modifiers: [{code, name, qty}]}]}]`, and `read_file(source, path)` for the file connector. The importer (`app/features/pos/import.php`,
 `pos_import(pdo, source, pull, checks)`) upserts `pos_sales` + `pos_sale_lines` (ON CONFLICT on `(source_id, external_id)` → skipped; counted `sales_seen`
-vs `sales_new`), records `dates_seen`, and queues the days through `ri_depletion_due()`. The mapping templates seeded in `db/019_pos_mappings.sql`
+vs `sales_new`), records `dates_seen`, and queues the days through `ri_depletion_due()`. The mapping templates seeded in `db/018_phase1_fixes.sql`
 (additive — the worker of this slice writes it from `pos-and-depletion.md` §3): `generic`, `square_items_csv`, `toast_item_selection`, `clover_orders`,
 `lightspeed_sales`, each `{delimiter, encoding, date_format, columns: {external_id, business_date, closed_at, plu, item_name, qty, unit_price, line_total,
 voided, comp, modifiers, covers}, void_values, comp_values, modifier_split}`; the fixtures `tests/fixtures/pos/<key>.csv` (synthetic, two days, a void,
@@ -116,7 +116,7 @@ a comp, a modifier, an unknown PLU) are what the proof and `tests/phase0`-style 
 - `html/sales/mappings/index.php`, `edit.php`, `save.php`, `preview.php`
 - `html/sales/index.php`, `upload.php` (GET the screen, POST import or preview), `day.php`, `runs/index.php`, `runs/view.php`, `runs/run.php`, `runs/void.php`
 - `html/assets/js/pos-forms.js` — the connector sub-form switch; the upload's preview without a page reload (the form works without it)
-- `db/019_pos_mappings.sql` — the four vendor mapping rows (additive)
+- `db/018_phase1_fixes.sql` — the four vendor mapping rows (additive)
 - `tests/fixtures/pos/{generic,square_items_csv,toast_item_selection,clover_orders,lightspeed_sales}.csv`, `tests/fixtures/pos/square/orders-page1.json`,
   `tests/fixtures/pos/router.php` (the fixture server: Square's `/v2/orders/search` by location, an SFTP stand-in over HTTP for the proof's `sftp` connector
   seam — DECISION: the SFTP connector talks `ssh2`/`phpseclib`-free through `sftp://` via `curl` when the host has it, and the proof exercises the file path

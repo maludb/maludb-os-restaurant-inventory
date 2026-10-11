@@ -34,7 +34,7 @@ carry cost unnulled and are reached only behind `exports.all`; a token is resolv
    `usage()` rows as CSV / JSON (one reader, two doors — DECISION 2). Likewise `menu_engineering` is slice 2's screen; `report_run` answers its rows.
 3. `agent_settings_save` writes `site_settings.manager_member_id`? — **no**: it writes the agent's `duty_hour` and `sites[]` into
    `ri_settings.agents` (a jsonb column the kit's settings carry? — **no such column**): DECISION 3 — `agent_settings_save` writes
-   `app_settings`-style rows into **`site_settings`** per site (`duty_hour time`, appended by this slice's migration `db/018_agent_settings.sql`:
+   `app_settings`-style rows into **`site_settings`** per site (`duty_hour time`, appended by this slice's migration `db/018_phase1_fixes.sql`:
    `ALTER TABLE site_settings ADD COLUMN duty_hour time NOT NULL DEFAULT '06:00', ADD COLUMN purchasing_agent_enabled boolean NOT NULL DEFAULT
    true`; additive; the schema proof unchanged) and `enabled` per site; the kernel keeps the agent's hiring, grants and the cron — this page
    changes when the morning note is sent and whether the passes draft for a site.
@@ -118,7 +118,7 @@ never holds them). `activity_record_link(array $r): ?array` maps `entity_type` t
 - `html/admin/settings/index.php` (`admin-settings`) · `settings/save.php` (`settings_save`) · `sites/view.php` (`admin-site-settings`) · `sites/save.php` (`site_settings_save`) · `sites/day-part.php` (`day_part_save`) · `sequences/index.php` · `sequences/save.php` · `tax-rates/index.php` · `tax-rates/save.php` · `reasons/index.php` · `reasons/save.php` · `agents/index.php` (`admin-agents`) · `agents/save.php` (`agent_settings_save`) · `agents/retry.php` (`dispatch_retry`, people-only) · `tokens/index.php` (`admin-tokens`) · `tokens/revoke.php` (`token_revoke_any`) · `trail/index.php` (`admin-trail`)
 - `app/features/admin/{queries,present,write,handler}.php` (`handler.php`: `require_right('settings.manage')` / `sequences.manage` / `agents.settings` gates, the settings' field readers with the CHECK bounds mirrored) · `app/features/agents/{queries,dispatch}.php` (`agents_here()`, `dispatches()`, `dispatches_pass()`, `dispatch_utterance()`, `poll_running_dispatches()`; slice 8's `note.php` untouched) · `app/features/activity/{queries,present}.php` (`activity_sentence()`, `activity_record_link()`, `find_record_activity()`, `find_site_activity()`) · `app/features/notify/{queue,send}.php` (`outbox_send_batch()`, `send_email()`, `send_text()`)
 - `app/views/admin/{settings,site,sequences,tax-rates,reasons,agents,tokens,trail,partials/settings-group,partials/day-part-row,partials/sequence-row,partials/tax-rate-row,partials/reason-row,partials/agent-card,partials/dispatch-row,partials/token-row,partials/trail-row}.php`
-- `db/018_agent_settings.sql` (DECISION 3: `site_settings.duty_hour`, `site_settings.purchasing_agent_enabled` — additive) · `db/proof/phase0_proof.sql` gains two checks for the columns' defaults
+- `db/018_phase1_fixes.sql` (DECISION 3: `site_settings.duty_hour`, `site_settings.purchasing_agent_enabled` — additive) · `db/proof/phase0_proof.sql` gains two checks for the columns' defaults
 - `bin/worker.php`: `worker_pass_notify_outbox()`, `worker_pass_dispatches()`, `worker_pass_morning_note_inputs()` made real
 - `app/features/shell/nav.php`: `back_link()` learns `/reports/{report}` "the reports", `/admin/sites/{id}` "the site's settings"; the admin menu group's items made real (placeholders removed)
 - `deploy/apache-restaurant_inventory.conf` and `tests/dev_router.php`: `/reports/{report}` → `report.php?report=`, `/reports/exports` and `/reports/sites` before it, `/admin/sites/{id}` → `sites/view.php?id=` (four lines)
@@ -164,7 +164,7 @@ Agent approvals: `settings_save`, `sequence_set` (`other`).
 
 Every row of the manifest's reports-and-admin section is claimed; the home, me and search screens are sso-shell's (their partials replaced
 here — DECISION 1). The manifest row `admin-settings` names "the forecast method" — a setting `forecast_method` the kit's `ri_settings` does
-not carry: **`db/018_agent_settings.sql` adds `ri_settings.forecast_method text NOT NULL DEFAULT 'baseline' CHECK (IN ('baseline',
+not carry: **`db/018_phase1_fixes.sql` adds `ri_settings.forecast_method text NOT NULL DEFAULT 'baseline' CHECK (IN ('baseline',
 'holt_winters'))` too** (DECISION 7; slice 8's `forecast_pass` reads it).
 
 ## Activity log events (every row: `scope_id` where the record has one)
@@ -250,7 +250,7 @@ engineering screens (slices 7 and 2 — the hub links them); hiring, granting an
 **Decisions taken in this spec (not questions):**
 1. The home's partials and query functions are this slice's; the `home` screen stays claimed by sso-shell; `html/index.php` is Phase 2's.
 2. `report_run` with `report = usage` / `menu_engineering` answers slices 7's and 2's query functions as CSV / JSON; their screens stay theirs.
-3. `db/018_agent_settings.sql` adds `site_settings.duty_hour`, `site_settings.purchasing_agent_enabled` and `ri_settings.forecast_method`
+3. `db/018_phase1_fixes.sql` adds `site_settings.duty_hour`, `site_settings.purchasing_agent_enabled` and `ri_settings.forecast_method`
    (additive); the kernel keeps hiring, grants and the cron.
 4. There is no site list screen of its own: a site's settings page opens from the site switcher's gear (the admin) — the manifest's
    `admin-site-settings` is the one screen.

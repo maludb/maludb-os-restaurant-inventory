@@ -7,18 +7,22 @@ actual usage, COGS by period).
 
 ## Status
 
-**Phase 0 complete (2026-10-11).** The design was approved by the owner the same day it was written, every recommendation
+**Phase 1 written (2026-10-11), for the owner's approval.** The action manifest (119 screens, 146 actions), the MCP tool surface,
+three build specs and ten slice specs, every manifest row claimed once (`tests/phase1/check_specs.sh`); db/018 carries the schema
+items the documents found. **Phase 0 complete the same day.** The design was approved by the owner the same day it was written, every recommendation
 (D1–D16, §15). The kernel's catalog row (K47) is applied. The kit is proven without a kernel (123 checks), the schema by
 164 checks on a scratch database (`tests/phase0/schema.sh`), the manifest, the two agents, twelve skills and `deploy/` are
 written, and the installer's `plan` reads the repository clean. No screens yet.
 
-Next: Phase 1 — the tool surface, the action manifest and registry, the build specs and the slice specs, for the owner's
-approval before any PHP.
+Next: the owner's approval of Phase 1 → Phase 2, the shell.
 
 ## Documents
 
 - [docs/restaurant-inventory-design.md](docs/restaurant-inventory-design.md) — the Phase 0 design: what it is and is not, who sees what, the agents, the memory model against the estate, the questions, the screens, the build order, what is owed, the decisions D1–D16.
 
+- [docs/restaurant-inventory-action-manifest.md](docs/restaurant-inventory-action-manifest.md) — every screen and action, the registry's source.
+- [docs/restaurant-inventory-mcp-tool-surface.md](docs/restaurant-inventory-mcp-tool-surface.md) — every question a records tool; the shares; the walls.
+- `docs/build-specs/` — `units-and-costing`, `pos-and-depletion`, `projection-and-ordering` (the build specs), `sso-shell` and the nine slice specs.
 - [docs/research/00-summary.md](docs/research/00-summary.md) — the synthesis: the eight findings that shape the plan, the
   required features grouped, what the estate settles, and the twelve questions the plan must decide.
 - [docs/research/01-field-survey.md](docs/research/01-field-survey.md) — twenty products and the distributor portals

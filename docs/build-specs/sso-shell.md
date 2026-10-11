@@ -44,7 +44,7 @@ here), `html/sso.php`, `html/sso/logout.php`, `html/logout.php`, `html/switch-si
 one a stub), `mcp/activity_ingest.py`, `mcp/db.py`, `mcp/server_common.py`, `tests/dev_router.php`, `tests/setup_dev.sh`,
 `tests/fake_kernel.php` (+ `scopes.php` + a K7 read), `tests/fake_maludb.php`, `tests/fake_malumail.php`, `deploy/*`.
 **Phase 2 makes real (exactly these):**
-- `db/018_member_prefs.sql` — ADDITIVE: `notification_prefs` **appends** `display_units text NOT NULL DEFAULT 'metric' CHECK (display_units IN
+- `db/018_phase1_fixes.sql` — ADDITIVE: `notification_prefs` **appends** `display_units text NOT NULL DEFAULT 'metric' CHECK (display_units IN
   ('metric', 'imperial'))` and `default_area_id bigint REFERENCES storage_areas(id) ON DELETE SET NULL` (the manifest's `preferences_save` names
   `units` and `default_area`; db/015 has no column for them — DECISION: the preferences row keeps them, no new table); `mcp_notification_prefs`
   (own row) is created here too. Every later slice reads `display_units` through `my_prefs()` to show a quantity in the person's units.

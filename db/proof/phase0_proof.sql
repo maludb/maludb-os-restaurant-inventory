@@ -454,6 +454,34 @@ SELECT pg_temp.check((SELECT count(*) FROM mcp_activity_log) = 0, 'the activity 
 SELECT pg_temp.refused($$SELECT count(*) FROM mcp_ingredient_site_costs$$, 'permission denied', 'the activity role does not read stock');
 RESET ROLE;
 
+-- ================================================================ db/018: the Phase 1 fixes
+SET ROLE restaurant_inventory_rw;
+SELECT pg_temp.as_member(30);
+SELECT pg_temp.check((SELECT base_portion_cost < portion_cost FROM ri_recipe_what_if(pg_temp.i('v_sand1'), 101, jsonb_build_array(jsonb_build_object('ingredient', pg_temp.i('chicken'), 'cost', 5.00, 'unit', 'lb')))), 'what-if: chicken at $5 a pound raises the plate cost');
+SELECT pg_temp.check(pg_temp.near((SELECT portion_cost FROM ri_recipe_cost(pg_temp.i('v_sand1'), 101)), (SELECT base_portion_cost FROM ri_recipe_what_if(pg_temp.i('v_sand1'), 101, '[]'::jsonb)), 0.0001), 'and the override leaves the session (the real cost is unchanged after)');
+SELECT pg_temp.check((SELECT count(*) FROM ri_recipes_using(pg_temp.i('chicken'))) = 3 AND (SELECT direct FROM ri_recipes_using(pg_temp.i('chicken')) WHERE recipe_id = pg_temp.i('r_sand')), 'recipes using chicken: the stock, the sandwich (directly) and the modifier');
+UPDATE menu_items SET no_depletion = true WHERE plu = '2002';
+SELECT pg_temp.check((SELECT count(*) FROM ri_unmapped_plus(101)) = 0, 'a no-depletion PLU leaves the unmapped queue');
+SELECT ri_depletion_run(101, current_date, 1);
+SELECT pg_temp.check((SELECT status = 'done' AND lines_unmapped = 0 FROM depletion_runs WHERE scope_id = 101 AND business_date = current_date AND status <> 'void'), 'and the day''s run is complete, not partial');
+SELECT pg_temp.check((SELECT count(*) FROM ri_sales_by_item(101, current_date - 7, current_date)) >= 1 AND (SELECT count(*) FROM ri_variance_top(101, current_date - 7, current_date, 3)) = 3 AND (SELECT count(*) FROM ri_invoice_mismatches(101)) = 0, 'sales by item, the top variances, no open mismatch');
+SELECT pg_temp.check((SELECT count(*) FROM ri_watch_events(101)) = 1, 'the watch''s firing is an event row');
+SELECT pg_temp.check((SELECT n ->> 'site' = 'SMOKE Downtown' AND jsonb_typeof(n -> 'suggested_orders') = 'array' AND jsonb_typeof(n -> 'stockouts') = 'array' AND (n -> 'last_count' ->> 'number') IS NOT NULL FROM ri_morning_note(101) n), 'the morning note as one gatherer: the seven headings');
+SELECT pg_temp.check((SELECT count(*) FROM ri_share_ingredients_index(101)) >= 7 AND (SELECT count(*) FROM ri_find('chick', ARRAY['recipe'])) = 3 AND (SELECT count(*) FROM ri_find('chick', ARRAY['menu_item'])) = 1, 'the ingredients index share and find narrowed to recipes (three) and menu items (one)');
+SELECT ri_po_send(pg_temp.i('po_sugg'), 27, 'email');
+SELECT ri_po_supplier_event(pg_temp.i('po_sugg'), 'acknowledge', NULL, current_date + 3, NULL, 'SY-901', 'phone', 27);
+SELECT pg_temp.check((SELECT source = 'phone' AND member_id = 27 AND kind = 'acknowledge' FROM purchase_order_events WHERE purchase_order_id = pg_temp.i('po_sugg') ORDER BY id DESC LIMIT 1), 'a person''s phone acknowledgment of a PO shares the door''s writer');
+SELECT pg_temp.check((SELECT count(*) FROM sales_file_mappings WHERE key LIKE '%_items') = 4, 'the four vendor mapping templates are seeded');
+INSERT INTO inventory_counts (scope_id, kind, as_of, started_by) VALUES (101, 'spot', ri_site_moment(101, current_date, true) + interval '1 second', 28);   -- after the day's count (its corrections are dated at the cut)
+SELECT pg_temp.check((SELECT system_qty_base FROM ri_count_line_add((SELECT max(id) FROM inventory_counts), pg_temp.i('walkin'), pg_temp.i('egg'), 28)) = ri_on_hand(pg_temp.i('egg'), 101, pg_temp.i('walkin')), 'a line added to a count on the shelf carries the book figure as of the count');
+RESET ROLE;
+SET ROLE restaurant_inventory_records_ro;
+SELECT pg_temp.as_member(30);
+SELECT pg_temp.check((SELECT count(*) FROM ri_usage(101, current_date - 7, current_date)) >= 5 AND (SELECT portion_cost FROM ri_recipe_cost(pg_temp.i('v_sand1'), 101)) > 0, 'the records role calls the read functions (SECURITY DEFINER)');
+SELECT pg_temp.refused($$SELECT ri_require_reader(102)$$, 'not a site you hold', 'the reader gate refuses a site not held');
+SELECT pg_temp.check((SELECT count(*) FROM ri_share_cogs_summary(101, pg_temp.i('p_now'))) >= 1 AND (SELECT count(*) FROM mcp_access_tokens_mine) = 0 AND (SELECT display_units FROM mcp_notification_prefs) IS NULL, 'the shares answer the read role; the new views answer');
+RESET ROLE;
+
 -- ================================================================ the count
 \o
 SELECT CASE WHEN ok THEN 'ok   ' ELSE 'FAIL ' END || label FROM proof ORDER BY n;

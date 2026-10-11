@@ -83,7 +83,7 @@ reads, so the screen shows the purchase unit first); unit_cost ≥ 0 per purchas
   `source = manual` (the handler passes the source — `ri_po_supplier_event()` writes `door`; this handler inserts the event itself with `manual` and
   then applies the same status change through the function — DECISION: the function gains no parameter; the handler writes `purchase_order_events`
   directly for `manual` then calls `ri_po_supplier_event()` for the state; to keep one writer, the worker model ADDS `p_source text DEFAULT 'door'` to
-  `ri_po_supplier_event()` in `db/018_po_event_source.sql` (additive, CREATE OR REPLACE) and the door passes `door`).
+  `ri_po_supplier_event()` in `db/018_phase1_fixes.sql` (additive, CREATE OR REPLACE) and the door passes `door`).
 - `purchase_order_line_decline` → `ri_po_supplier_event(po, 'decline', line, NULL, reason, NULL, 'manual')`.
 - Receiving: slice 3's `receipt_post` → `ri_receipt_posted_hook()` advances `qty_received_base`, the lines' status (partial / received), the PO's
   (partial / received), writes a `received` event. Nothing here.
@@ -123,7 +123,7 @@ cancelled PO's door is read-only with a sentence. At 375 px: one column, the lin
   `line-decline.php`, `close.php`, `cancel.php`, `link.php`, `message.php`, `due.php`, `alerts.php`, `alerts/seen.php`, `alerts/threshold.php`
 - `html/invoices/index.php`, `form.php`, `view.php`, `edit.php`, `save.php`, `line.php`, `line-remove.php`, `match.php`, `settle.php`, `void.php`
 - `html/s.php`
-- `db/018_po_event_source.sql` — `ri_po_supplier_event(..., p_source text DEFAULT 'door')` (additive; the proof re-applies every migration)
+- `db/018_phase1_fixes.sql` — `ri_po_supplier_event(..., p_source text DEFAULT 'door')` (additive; the proof re-applies every migration)
 - `tests/phase3/slice4/run.sh`, `lib.php` (`purchasing_world()`), `browser.mjs`
 
 ## Query functions (signatures fixed; the tools of Phase 4 call these — `find_purchase_orders`, `get_purchase_order`, `purchase_order_events`, `purchase_orders_open`, `deliveries_due`, `find_invoices`, `get_invoice`, `invoice_mismatches`, `price_exceptions`)
@@ -145,7 +145,7 @@ cancelled PO's door is read-only with a sentence. At 375 px: one column, the lin
   `invoice_match_settle` (`other` for an agent) → `ri_invoice_settle()`; `invoice_void` on a settled one → 422 "Settled — enter a credit"
 
 ## Manifest rows claimed
-Screens (10): `purchase-order-list`, `purchase-order-add`, `purchase-order-view`, `purchase-order-edit`, `deliveries-due`, `invoice-list`, `invoice-add`, `invoice-view`, `invoice-edit`, `price-alert-list`
+Screens (11): `purchase-order-list`, `purchase-order-add`, `purchase-order-view`, `purchase-order-edit`, `deliveries-due`, `invoice-list`, `invoice-add`, `invoice-view`, `invoice-edit`, `price-alert-list`, `supplier-door`
 
 The door `supplier-door` (the manifest's last section) is this slice's too — it is not in the registry today because that section's table has no `Screens:` marker before it; once the manifest gains one, add `supplier-door` to the Screens line above (11).
 Actions (21): `purchase_order_draft`, `purchase_order_update`, `purchase_order_line_set`, `purchase_order_line_remove`, `purchase_order_send`, `purchase_order_place`, `purchase_order_acknowledge`, `purchase_order_line_decline`, `purchase_order_close`, `purchase_order_cancel`, `supplier_link_rotate`, `supplier_message`, `invoice_create`, `invoice_update`, `invoice_line_set`, `invoice_line_remove`, `invoice_match`, `invoice_match_settle`, `invoice_void`, `price_alert_seen`, `price_alert_threshold_set`
