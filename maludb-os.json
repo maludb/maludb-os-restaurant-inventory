@@ -1,0 +1,507 @@
+{
+    "schema": "maludb-os.application/1",
+    "catalog_key": "restaurant_inventory",
+    "name": "Restaurant Inventory",
+    "description": "The kitchen's and the bar's stock desk: what the restaurant buys, in the units it buys, counts and cooks it in; recipes with sub-recipes and yields so every plate has a cost as of any date; purchase orders and receiving at a known cost; the POS's sales depleting stock through the recipes; waste, transfers, prep batches and physical counts by storage area; usage periods showing actual against theoretical with every bucket; and the projection — expected sales exploded through recipes into expected usage, projected stock per ingredient per day, and one suggested order per supplier for its next delivery with the arithmetic on every line. Every restaurant is a site. Two shipped agents, the Kitchen Inventory Expert and the Purchasing agent, answer and draft; sending a purchase order pauses for a person.",
+    "business_area": "Operations",
+    "category": "inventory",
+    "icon": "feather-coffee",
+    "version": "0.1.0",
+    "criticality": "medium",
+    "vhost": {
+        "label": "kitchen",
+        "document_root": "html",
+        "internal_port_env": "APP_INTERNAL_PORT"
+    },
+    "database": {
+        "suffix": "restaurant_inventory",
+        "migrations": "db",
+        "roles": {
+            "rw": "restaurant_inventory_rw",
+            "records_ro": "restaurant_inventory_records_ro",
+            "activity_ro": "restaurant_inventory_activity_ro"
+        }
+    },
+    "env": {
+        "required": [
+            "APP_NAME",
+            "APP_URL",
+            "DB_HOST",
+            "DB_PORT",
+            "DB_NAME",
+            "DB_USER",
+            "DB_PASSWORD",
+            "MCP_RECORDS_DB_USER",
+            "MCP_RECORDS_DB_PASSWORD",
+            "MCP_ACTIVITY_DB_USER",
+            "MCP_ACTIVITY_DB_PASSWORD",
+            "APP_INTERNAL_PORT",
+            "MCP_RECORDS_PORT",
+            "MCP_ACTIVITY_PORT",
+            "ACTION_TOKEN_KEY",
+            "ACTIONS_RELAY_KEY",
+            "OS_APPLICATION_TOKEN",
+            "OS_INTERNAL_URL",
+            "OS_LAUNCHER_URL",
+            "APP_KEY",
+            "MALUDB_API_URL",
+            "MALUDB_API_TOKEN",
+            "RI_SECRETS_KEY"
+        ],
+        "optional": [
+            "MALUMAIL_API_KEY",
+            "MALUMAIL_API_URL",
+            "MAIL_FROM",
+            "MAIL_FROM_NAME",
+            "RI_INTAKE_MAILBOX",
+            "ATTACHMENT_MAX_BYTES",
+            "RI_PUBLIC_BASE_URL",
+            "RI_MANAGER_EMAIL",
+            "API_CORS_ORIGINS"
+        ]
+    },
+    "services": [
+        "deploy/restaurant-inventory-records-mcp.service",
+        "deploy/restaurant-inventory-activity-mcp.service",
+        "deploy/restaurant-inventory-activity-ingest.service",
+        "deploy/restaurant-inventory-activity-ingest.timer",
+        "deploy/restaurant-inventory-directory-sync.service",
+        "deploy/restaurant-inventory-directory-sync.timer",
+        "deploy/restaurant-inventory-worker.service",
+        "deploy/restaurant-inventory-worker.timer"
+    ],
+    "endpoints": [
+        {
+            "name": "Web UI",
+            "kind": "ui",
+            "path": "/",
+            "auth_kind": "none",
+            "agent_reachable": false
+        },
+        {
+            "name": "Health",
+            "kind": "http_api",
+            "path": "/api/v1/health",
+            "auth_kind": "none",
+            "agent_reachable": false
+        },
+        {
+            "name": "Supplier order page",
+            "kind": "ui",
+            "path": "/s/",
+            "auth_kind": "none",
+            "agent_reachable": false
+        },
+        {
+            "name": "Records MCP",
+            "kind": "mcp",
+            "path": "/mcp/records",
+            "port_env": "MCP_RECORDS_PORT",
+            "auth_kind": "bearer",
+            "agent_reachable": true,
+            "mcp_surface_version": "1.0"
+        },
+        {
+            "name": "Activity MCP",
+            "kind": "mcp",
+            "path": "/mcp/activity",
+            "port_env": "MCP_ACTIVITY_PORT",
+            "auth_kind": "bearer",
+            "agent_reachable": true,
+            "mcp_surface_version": "1.0"
+        }
+    ],
+    "actions": {
+        "manifest": "docs/restaurant-inventory-action-manifest.md",
+        "registry": "mcp/action_registry.json",
+        "base_url_env": "APP_INTERNAL_PORT"
+    },
+    "skills": [
+        "skills/kitchen-inventory-basics",
+        "skills/units-and-yields",
+        "skills/costing-a-recipe",
+        "skills/reading-variance",
+        "skills/ordering",
+        "skills/counting",
+        "skills/morning-note",
+        "skills/suggested-order-run",
+        "skills/post-count-review",
+        "skills/price-check",
+        "skills/plu-queue",
+        "skills/recipe-from-dictation"
+    ],
+    "sso": {
+        "path": "/sso",
+        "logout_path": "/sso/logout"
+    },
+    "directory": {
+        "reads": true,
+        "writes": false
+    },
+    "assistant": {
+        "command_bar": true,
+        "agent": "expert"
+    },
+    "scopes": {
+        "kind": "location"
+    },
+    "grant_standing_departments": false,
+    "shares": [
+        {
+            "tool": "purchases_received",
+            "description": "Goods receipts in a period at cost by supplier, for the General Ledger's bills with the site set (os.restaurant-inventory-purchases/1)",
+            "scoped": true,
+            "timeout_seconds": 20
+        },
+        {
+            "tool": "stock_valuation",
+            "description": "Stock at cost as of a date by storage area and category at one site, for the ledger's inventory asset at close (os.restaurant-inventory-valuation/1)",
+            "scoped": true,
+            "timeout_seconds": 20
+        },
+        {
+            "tool": "cogs_summary",
+            "description": "A closed period's actual and theoretical usage at cost by category at one site, waste separated, for the ledger's cost of goods (os.restaurant-inventory-cogs/1)",
+            "scoped": true,
+            "timeout_seconds": 20
+        },
+        {
+            "tool": "waste_summary",
+            "description": "Waste in a period by stage and reason at cost at one site (os.restaurant-inventory-waste/1)",
+            "scoped": true,
+            "timeout_seconds": 20
+        },
+        {
+            "tool": "sales_by_day",
+            "description": "Net sales and covers per day and day part at one site from the imported POS checks, for the ledger's daily sales journal and txtSchedules' actual covers (os.restaurant-inventory-sales/1)",
+            "scoped": true,
+            "timeout_seconds": 20
+        },
+        {
+            "tool": "ingredients_index",
+            "description": "The ingredients a site stocks — names, codes, units, categories — without quantities or cost, for Spaces and Help Desk to link (os.restaurant-inventory-ingredients/1)",
+            "scoped": true,
+            "timeout_seconds": 20
+        }
+    ],
+    "reads": [
+        {
+            "app": "reservations",
+            "tool": "covers_by_service",
+            "why": "Booked covers per service for the usage projection (design §6.8, D8); degraded to none on no_connection"
+        }
+    ],
+    "agents": [
+        {
+            "key": "expert",
+            "name": "Kitchen Inventory Expert",
+            "job_description": "os/expert.md",
+            "access_capability": "write",
+            "hired_on_install": true,
+            "roles": [
+                "chef"
+            ],
+            "tool_grants": {
+                "Records MCP": [
+                    "find",
+                    "find_ingredients",
+                    "get_ingredient",
+                    "ingredient_units",
+                    "ingredient_cost",
+                    "cost_history",
+                    "cheapest_supplier",
+                    "stock_on_hand",
+                    "stock_by_area",
+                    "stock_movements",
+                    "stock_value",
+                    "days_on_hand",
+                    "price_movers",
+                    "price_exceptions",
+                    "find_recipes",
+                    "get_recipe",
+                    "recipe_tree",
+                    "recipe_cost",
+                    "recipe_what_if",
+                    "recipes_using",
+                    "recipe_version_at",
+                    "recipe_allergens",
+                    "menu_engineering",
+                    "find_menu_items",
+                    "get_menu_item",
+                    "unmapped_plus",
+                    "find_modifiers",
+                    "sales_by_day",
+                    "sales_by_item",
+                    "depletion_runs",
+                    "get_depletion_run",
+                    "pos_health",
+                    "find_sources",
+                    "get_source",
+                    "source_pulls",
+                    "usage_report",
+                    "usage_by_category",
+                    "variance_top",
+                    "food_cost_pct",
+                    "periods",
+                    "get_period",
+                    "counts",
+                    "get_count",
+                    "count_lines",
+                    "count_variance",
+                    "areas_skipped",
+                    "count_sheets",
+                    "waste_logs",
+                    "waste_summary",
+                    "production_batches",
+                    "transfers_open",
+                    "receipts_open",
+                    "find_suppliers",
+                    "get_supplier",
+                    "supplier_items",
+                    "supplier_schedules",
+                    "order_guides",
+                    "suggested_orders",
+                    "get_suggested_order",
+                    "find_purchase_orders",
+                    "purchase_orders_open",
+                    "get_purchase_order",
+                    "purchase_order_events",
+                    "deliveries_due",
+                    "find_invoices",
+                    "get_invoice",
+                    "invoice_mismatches",
+                    "item_forecast",
+                    "ingredient_demand",
+                    "projected_stock",
+                    "forecast_accuracy",
+                    "can_run_special",
+                    "calendar_days",
+                    "find_storage_areas",
+                    "find_members",
+                    "find_departments",
+                    "my_watches",
+                    "watch_events",
+                    "buyer_proposals",
+                    "morning_note",
+                    "agents_here",
+                    "agent_dispatches",
+                    "records_search"
+                ],
+                "Activity MCP": [
+                    "record_history",
+                    "actor_timeline"
+                ],
+                "Actions MCP": [
+                    "ingredient_create",
+                    "ingredient_update",
+                    "unit_set",
+                    "supplier_item_create",
+                    "supplier_item_update",
+                    "recipe_create",
+                    "recipe_update",
+                    "recipe_line_set",
+                    "menu_item_map",
+                    "modifier_map",
+                    "purchase_order_draft",
+                    "order_guide_set",
+                    "suggested_order_run",
+                    "receipt_draft",
+                    "waste_log",
+                    "transfer_draft",
+                    "production_post",
+                    "count_start",
+                    "count_line_set",
+                    "forecast_run",
+                    "forecast_override_propose",
+                    "report_run",
+                    "export_download",
+                    "note_add",
+                    "watch_set",
+                    "purchase_order_send",
+                    "count_approve"
+                ]
+            },
+            "skills": [
+                "skills/kitchen-inventory-basics",
+                "skills/units-and-yields",
+                "skills/costing-a-recipe",
+                "skills/reading-variance",
+                "skills/ordering",
+                "skills/counting",
+                "skills/recipe-from-dictation",
+                "skills/price-check",
+                "skills/plu-queue"
+            ]
+        },
+        {
+            "key": "buyer",
+            "name": "Purchasing agent",
+            "job_description": "os/buyer.md",
+            "access_capability": "write",
+            "hired_on_install": true,
+            "roles": [
+                "chef"
+            ],
+            "duty": {
+                "name": "The morning note",
+                "schedule_cron": "0 6 * * *",
+                "runbook": "skills/morning-note"
+            },
+            "tool_grants": {
+                "Records MCP": [
+                    "suggested_orders",
+                    "get_suggested_order",
+                    "projected_stock",
+                    "ingredient_demand",
+                    "price_exceptions",
+                    "price_movers",
+                    "pos_health",
+                    "unmapped_plus",
+                    "count_variance",
+                    "areas_skipped",
+                    "forecast_accuracy",
+                    "purchase_orders_open",
+                    "deliveries_due",
+                    "invoice_mismatches",
+                    "calendar_days",
+                    "get_ingredient",
+                    "get_supplier",
+                    "supplier_schedules",
+                    "get_purchase_order",
+                    "get_count",
+                    "get_recipe",
+                    "get_menu_item",
+                    "get_source",
+                    "get_period",
+                    "find",
+                    "buyer_proposals",
+                    "records_search"
+                ],
+                "Activity MCP": [
+                    "record_history"
+                ],
+                "Actions MCP": [
+                    "purchase_order_draft",
+                    "forecast_override_propose",
+                    "watch_set",
+                    "note_add",
+                    "buyer_propose",
+                    "morning_note_send"
+                ]
+            },
+            "skills": [
+                "skills/kitchen-inventory-basics",
+                "skills/units-and-yields",
+                "skills/ordering",
+                "skills/reading-variance",
+                "skills/morning-note",
+                "skills/suggested-order-run",
+                "skills/post-count-review",
+                "skills/price-check",
+                "skills/plu-queue"
+            ]
+        }
+    ],
+    "approvals": [
+        {
+            "action": "calendar_set",
+            "category": "other"
+        },
+        {
+            "action": "cost_override_set",
+            "category": "other"
+        },
+        {
+            "action": "count_approve",
+            "category": "other"
+        },
+        {
+            "action": "count_discard",
+            "category": "deletion"
+        },
+        {
+            "action": "depletion_run_void",
+            "category": "deletion"
+        },
+        {
+            "action": "ingredient_delete",
+            "category": "deletion"
+        },
+        {
+            "action": "invoice_match_settle",
+            "category": "other"
+        },
+        {
+            "action": "par_set",
+            "category": "other"
+        },
+        {
+            "action": "period_close",
+            "category": "other"
+        },
+        {
+            "action": "period_reopen",
+            "category": "other"
+        },
+        {
+            "action": "price_alert_threshold_set",
+            "category": "other"
+        },
+        {
+            "action": "purchase_order_cancel",
+            "category": "deletion"
+        },
+        {
+            "action": "purchase_order_place",
+            "category": "money_out"
+        },
+        {
+            "action": "purchase_order_send",
+            "category": "money_out"
+        },
+        {
+            "action": "recipe_delete",
+            "category": "deletion"
+        },
+        {
+            "action": "recipe_version_activate",
+            "category": "other"
+        },
+        {
+            "action": "sequence_set",
+            "category": "other"
+        },
+        {
+            "action": "settings_save",
+            "category": "other"
+        },
+        {
+            "action": "source_create",
+            "category": "other"
+        },
+        {
+            "action": "source_credential_set",
+            "category": "other"
+        },
+        {
+            "action": "source_delete",
+            "category": "deletion"
+        },
+        {
+            "action": "source_schedule_set",
+            "category": "other"
+        },
+        {
+            "action": "stock_adjust",
+            "category": "deletion"
+        },
+        {
+            "action": "supplier_delete",
+            "category": "deletion"
+        },
+        {
+            "action": "supplier_message",
+            "category": "external_send"
+        }
+    ]
+}

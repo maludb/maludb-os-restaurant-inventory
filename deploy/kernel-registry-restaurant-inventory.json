@@ -1,0 +1,23 @@
+{
+  "schema": "maludb-os.registry/1",
+  "app_key": "restaurant_inventory",
+  "name": "Restaurant Inventory",
+  "note": "PLACEHOLDER written in Phase 0; Phase 4 fills it against the built records server. The installer (bin/app_install.php, step 'registry') writes mcp/registries/restaurant_inventory.json in the kernel from this file's `resolve` block plus mcp/action_registry.json. Each resolve tool, called with `q` alone (digits = an id, else exact on a code / PLU / SKU / number, else ILIKE or trigram, at most 6 candidates), answers its normal envelope {\"ok\": true, \"count\", \"rows\": [...]} and the kernel reads `rows`; every row carries id_field and label_field. Every record is bigint-keyed; a site is the kernel's scope id. A repeated param (lines, entries, quantities) is a list of ids or objects, never resolved by name; lines, entries, units, attachments, notes, proposals, pulls, watches, dispatches, notifications and tokens are ids or keys only. The actions server splits a repeated parameter on commas (Boards' finding, 2026-10-11): a recipe's method text is one parameter, never repeated.",
+  "resolve": {
+    "ingredient":      {"tool": "find_ingredients",     "query_param": "q", "id_field": "ingredient_id",      "label_field": "label",        "params": ["ingredient", "output_ingredient"]},
+    "recipe":          {"tool": "find_recipes",         "query_param": "q", "id_field": "recipe_id",          "label_field": "label",        "params": ["recipe", "sub_recipe"]},
+    "menu_item":       {"tool": "find_menu_items",      "query_param": "q", "id_field": "menu_item_id",       "label_field": "label",        "params": ["menu_item", "plu"]},
+    "modifier":        {"tool": "find_modifiers",       "query_param": "q", "id_field": "modifier_id",        "label_field": "label",        "params": ["modifier"]},
+    "supplier":        {"tool": "find_suppliers",       "query_param": "q", "id_field": "supplier_id",        "label_field": "name",         "params": ["supplier"]},
+    "supplier_item":   {"tool": "supplier_items",       "query_param": "q", "id_field": "supplier_item_id",   "label_field": "label",        "params": ["supplier_item"]},
+    "storage_area":    {"tool": "find_storage_areas",   "query_param": "q", "id_field": "storage_area_id",    "label_field": "name",         "params": ["storage_area", "from_area", "to_area", "area"]},
+    "site":            {"tool": "find_sites",           "query_param": "q", "id_field": "scope_id",           "label_field": "name",         "params": ["site", "from_site", "to_site"]},
+    "source":          {"tool": "find_sources",         "query_param": "q", "id_field": "source_id",          "label_field": "name",         "params": ["source"]},
+    "purchase_order":  {"tool": "find_purchase_orders", "query_param": "q", "id_field": "purchase_order_id",  "label_field": "label",        "params": ["purchase_order", "po"]},
+    "invoice":         {"tool": "find_invoices",        "query_param": "q", "id_field": "invoice_id",         "label_field": "label",        "params": ["invoice"]},
+    "count":           {"tool": "counts",               "query_param": "q", "id_field": "count_id",           "label_field": "label",        "params": ["count"]},
+    "period":          {"tool": "periods",              "query_param": "q", "id_field": "period_id",          "label_field": "label",        "params": ["period"]},
+    "member":          {"tool": "find_members",         "query_param": "q", "id_field": "member_id",          "label_field": "display_name", "params": ["member", "agent", "owner", "manager", "chef"]},
+    "department":      {"tool": "find_departments",     "query_param": "q", "id_field": "department_id",      "label_field": "name",         "params": ["department"]}
+  }
+}
