@@ -21,7 +21,7 @@ function ask_assistant(PDO $pdo, int $memberId, string $utterance, array $contex
     $conversation = (string) ($context['conversation_id'] ?? '');
     $answer = kernel_call('POST', '/api/v1/agents/chat.php?agent=' . rawurlencode($agent), [
         'utterance' => $utterance, 'screen' => (string) ($context['screen'] ?? ''),
-        'context' => ['entity' => (string) ($context['entity'] ?? ''), 'record_id' => $context['record_id'] ?? null, 'application' => app_key()],
+        'context' => ['entity' => (string) ($context['entity'] ?? ''), 'record_id' => $context['record_id'] ?? null, 'scope_id' => $context['scope_id'] ?? null, 'application' => app_key()],
         'conversation_id' => $conversation, 'wait' => 60,
     ], ['X-Acting-Member: ' . $memberId], 75);                     // the kernel holds the request up to `wait`
     $fallback = [
@@ -65,15 +65,20 @@ function ask_assistant(PDO $pdo, int $memberId, string $utterance, array $contex
 /** A tool `{entity}_{verb}` that succeeded refreshes the screens listening for `{entity}Changed` (chat-actions, Pattern D). */
 function assistant_refresh_events(array $actions): array
 {
-    $families = ['message' => 'mail', 'thread' => 'mail', 'draft' => 'mail', 'folder' => 'mail', 'label' => 'mail', 'trash' => 'mail',
-        'review' => 'review', 'unscreened' => 'review', 'sender' => 'review', 'agent' => 'agent', 'mailbox' => 'mailbox', 'alias' => 'mailbox',
-        'domains' => 'mailbox', 'settings' => 'settings', 'notice' => 'settings', 'key' => 'token', 'token' => 'token',
-        'notification' => 'notification', 'dispatch' => 'agent'];
+    // The longest entity that prefixes the tool's name wins (purchase_order_line_update → purchase_orderChanged, not purchaseChanged).
+    static $entities = ['purchase_order', 'suggested_order', 'supplier_item', 'supplier', 'ingredient', 'recipe', 'menu_item', 'menu_category', 'modifier', 'category', 'unit', 'area',
+        'receipt', 'transfer', 'adjustment', 'production', 'waste', 'count_sheet', 'container', 'count', 'invoice', 'sales', 'source', 'mapping', 'depletion',
+        'period', 'calendar', 'forecast', 'watch', 'par', 'order_guide', 'yield_test', 'price_alert', 'cost_override', 'report', 'export',
+        'settings', 'sequence', 'tax_rate', 'reason', 'agent', 'token', 'notification', 'preferences', 'note', 'attachment', 'site'];
     $events = [];
     foreach ($actions as $a) {
-        if (($a['status'] ?? '') === 'ok' && preg_match('/^([a-z]+)(?:_[a-z_]+)?$/', (string) ($a['tool'] ?? ''), $m) && isset($families[$m[1]])) {
-            $events[] = $families[$m[1]] . 'Changed';
+        if (($a['status'] ?? '') !== 'ok') { continue; }
+        $tool = (string) ($a['tool'] ?? '');
+        $hit = null;
+        foreach ($entities as $e) {
+            if (($tool === $e || str_starts_with($tool, $e . '_')) && ($hit === null || strlen($e) > strlen($hit))) { $hit = $e; }
         }
+        if ($hit !== null) { $events[] = $hit . 'Changed'; }
     }
     return array_values(array_unique($events));
 }

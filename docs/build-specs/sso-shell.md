@@ -391,3 +391,49 @@ agent, Chef at both), 41 Watcher (an agent not admitted), 42 the Purchasing agen
 
 ## Open questions
 (none)
+
+## Built and proven (2026-10-11)
+
+Built as specified, by the planning model, and proven twice: `tests/phase2/run.sh` **348 checks under php -S** (sso 60, gates 87, sites 30,
+sync 29, ingest 12, kernel_compat 16, vhost 29, browser 83 in headless Chromium at 375 × 740 and 1280 × 800 and with JavaScript off, the
+registry and approvals checks) and **352 under a user-level Apache 2.4.58 rendering `deploy/apache-restaurant_inventory.conf`**
+(`RI_APP=apache`: the vhost's four extra checks — the MCP proxies answering 502 until Phase 4, the internal vhost on 9307, the Header guard).
+`tests/phase0/run.sh` 124 green (its home checks now read the shell: the header's site name and badge, `data-sees-cost`, the user menu),
+`tests/phase1/check_specs.sh` 52 green, `bin/build_action_registry.php` reads 7 screens and 5 actions built, `bin/sync_approvals.php --check`
+25, `bin/app_install.php plan … --domain subello.com` clean (49 steps, 7 notes, the two agents proposed).
+
+**What was built:** `app/features/shell/nav.php` (the ONE menu table, `nav_tabs()` with the role-following third and fourth tab, the badge,
+`record_url()`, `render_nav_stub()`), `app/features/shell/queries.php`, the home (`app/features/home/queries.php`, `app/views/home/dashboard.php`,
+`html/index.php`), the me screens (`app/features/me/{queries,present}.php`, `app/views/me/*.php`, `html/me/settings|notifications|tokens|trail`),
+`/search` (`ri_find()` grouped by kind), `/switch-site` (page and action), the record picker (`app/picker.php` + `form_picker()`,
+`app/pickers.php`, `html/pick/`, `record-picker.js`), the attachment contract (`app/attachments.php`, `html/files.php`), the layout and its
+partials (the sidebar with the mobile site row, the header with the site name, the switcher, the role badge, the bell, the application
+switcher, the user menu; the tab bar; the command bar through the kernel's chat endpoint), 52 placeholders naming their slice, `tests/phase2/*`
+(the two fakes shared with Phase 0, `servers.sh` for php -S and the rendered vhost, `lib.php`, seven PHP proofs and `browser.mjs`),
+`db/019` (below). Every shell action logs the manifest's event (`member.site_switch`, `member.site_switch.refused`, `member.preferences_save`,
+`member.notification_read`, `token.mint`, `token.revoke`, `member.site_moved`, `assistant.ask`).
+
+**Decisions taken while building (the spec was silent or wrong):**
+- **db/019 — a holding survives a closed site.** The kit's `ri_site_materialise()` (db/005) deleted every `member_site_roles` row at a scope the
+  kernel closed; reach was already withheld by `ri_held_scope_ids()`, and when the kernel reopened the scope its people were gone until the feed
+  happened to resend their access rows (the sites proof caught Marco losing Airport across a close and a reopen). The holdings stay; the closure
+  alone decides who reaches the site. The mirror's holding upsert follows (a holding may be recorded at a closed site; it is inert).
+- **The site of an action-token request** (the spec said "per request" and no more): `X-Site` or `?site=` when held, else the first held site
+  by name. A PERSON with no site is refused under a run token as the hand-off refuses them (`member.refused` reason `no_site`); an agent the
+  kernel vouches for may hold no site yet — it reaches what needs none (the trail, the search as JSON) and is told 404 by what does.
+- The chat endpoint's `HX-Trigger` events are the longest entity prefix of the tool that succeeded (`purchase_order_line_update` →
+  `purchase_orderChanged`), over this application's entity list — the copied helper carried MaluMail's families.
+- `ri_find()` has two overloads (db/018 added `kinds`); the search casts its arguments so PostgreSQL can choose.
+- The spec's placeholder paths `html/purchasing/suggested/index.php` and `html/purchasing/alerts/index.php` are files `suggested.php` and
+  `alerts.php` — the URLs carry no trailing slash and the vhost resolves `/x/y` to `x/y.php` first. The same for `/reports/exports` and
+  `/reports/sites`: the vhost's `/reports/{report}` rule now yields to a file of that name (`RewriteCond … !-f`), else both answered report.php's 404.
+- The home's JSON carries `roles` and `badge` beside `site_id`, `regions`, `unread` and `sees_cost` (the Phase 0 proof reads the roles there).
+- The dev router gained `/files/{id}`, `/s/{token}(/{do})`, `/reports/{report}` (own file first) and `/api/v1/health.php`, mirroring the vhost.
+- The owner (admin at both sites) lands at **SMOKE Airport**: the first site held is by NAME, and Airport sorts before Downtown. The proofs follow.
+
+**Found in the kit and fixed here:** `ask_assistant()` passed no `scope_id` to the kernel (`app/api/kernel.php`); the bootstrap now moves a
+session whose site was lost to the first site still held and logs `member.site_moved`; `app/bootstrap.php` requires the shell's helpers, the
+picker and the attachment contract for every endpoint.
+
+**Owed to later slices:** every placeholder (52) — a slice removes `render_nav_stub()` from its controllers; `html/reports/report.php`,
+`html/s.php` and `html/files.php`'s rows (slices 9, 4 and 1); the picker sources (`app/pickers.php` returns none until slice 1).

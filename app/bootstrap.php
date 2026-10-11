@@ -87,6 +87,11 @@ require_once __DIR__ . '/switcher.php';          // the application switcher (K3
 require_once __DIR__ . '/directory.php';
 require_once __DIR__ . '/mail.php';
 require_once __DIR__ . '/api/kernel.php';
+require_once __DIR__ . '/features/shell/nav.php';        // the ONE menu table, the badge, the placeholders (Phase 2)
+require_once __DIR__ . '/features/shell/queries.php';    // the bell, the business name, my roles
+require_once __DIR__ . '/picker.php';                    // the record picker (plugin 0.8.0)
+require_once __DIR__ . '/pickers.php';                   // the picker sources (slices add theirs)
+require_once __DIR__ . '/attachments.php';               // the attachment contract
 // The shell's navigation and the record picker are Phase 2's (docs/build-specs/sso-shell.md); the kit stands without them.
 
 // A JSON caller (the kernel's actions server, an approval replay) never receives PHP's own
@@ -163,8 +168,28 @@ if (PHP_SAPI !== 'cli') {
                         }
                     });
                     db_apply_context(db());
-                    require_once __DIR__ . '/partial_update.php';
-                    partial_update_prefill(db());
+                    // The site of this one request (scoped-applications.md §4): X-Site or ?site= when held, else the first held by
+                    // name. A PERSON with no site holds nothing here — refused, as the hand-off refuses them (no_site). An agent
+                    // the kernel vouches for may hold no site yet: it reaches what needs none and is told 404 by what does.
+                    $heldIds = array_column(held_sites(), 'scope_id');
+                    $wanted = (int) ($_SERVER['HTTP_X_SITE'] ?? $_REQUEST['site'] ?? 0);
+                    if ($wanted > 0 && in_array($wanted, $heldIds, true)) {
+                        $_SESSION['scope_id'] = $wanted;
+                    } elseif ($heldIds !== []) {
+                        $_SESSION['scope_id'] = $heldIds[0];
+                    } elseif ($m['member_kind'] !== 'agent') {
+                        log_activity(db(), 'member.refused', 'member', $mid,
+                            ['actor_member_id' => null, 'source' => 'agent', 'after' => ['reason' => 'no_site']]);
+                        unset($_SESSION['member_id']);
+                        $GLOBALS['__action_authed'] = false;
+                        $GLOBALS['__agent_run_id'] = null;
+                        $GLOBALS['__action_token'] = null;
+                        db_apply_context(db());
+                    }
+                    if (!empty($GLOBALS['__action_authed'])) {
+                        require_once __DIR__ . '/partial_update.php';
+                        partial_update_prefill(db());
+                    }
                 } else {
                     log_activity(db(), 'member.refused', 'member', $mid,
                         ['actor_member_id' => null, 'source' => 'agent', 'after' => ['reason' => 'unknown or inactive member']]);
@@ -186,9 +211,12 @@ if (PHP_SAPI !== 'cli') {
                 if ($held === []) {
                     $alive = false;
                 } else {
+                    $lost = (int) ($_SESSION['scope_id'] ?? 0);
                     $_SESSION['scope_id'] = (int) $held[0]['scope_id'];
                     db()->prepare('UPDATE member_sessions SET scope_id = :s WHERE session_hash = :h')
                         ->execute(['s' => $_SESSION['scope_id'], 'h' => session_hash(session_id())]);
+                    db_apply_context(db());
+                    log_activity(db(), 'member.site_moved', 'site', $_SESSION['scope_id'], ['scope_id' => $_SESSION['scope_id'], 'before' => ['scope_id' => $lost], 'after' => ['scope_id' => $_SESSION['scope_id']]]);
                 }
             }
         }

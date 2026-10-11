@@ -150,7 +150,7 @@ function mirror_apply_holding(PDO $pdo, int $memberId, array $scopes, bool $crea
         $roles = array_values(array_intersect(array_unique(array_map('strval', $roles)), $known));
         $pdo->prepare(<<<'SQL'
             INSERT INTO member_site_roles (member_id, scope_id, role_key, roles, capability)
-            SELECT :m, :s, :r, CAST(:rs AS text[]), :c WHERE EXISTS (SELECT 1 FROM sites WHERE scope_id = :s AND removed_at IS NULL)
+            SELECT :m, :s, :r, CAST(:rs AS text[]), :c WHERE EXISTS (SELECT 1 FROM sites WHERE scope_id = :s)
         SQL)->execute(['m' => $memberId, 's' => $scopeId, 'r' => in_array($sc['role'] ?? null, $known, true) ? $sc['role'] : ($roles[0] ?? null),
                        'rs' => '{' . implode(',', $roles) . '}', 'c' => $capability]);
     }

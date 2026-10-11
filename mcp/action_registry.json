@@ -1,6 +1,6 @@
 {
     "generated_from": "docs/restaurant-inventory-action-manifest.md",
-    "generated_at": "2026-10-11T13:47:48+00:00",
+    "generated_at": "2026-10-11T14:56:22+00:00",
     "screens": {
         "home": {
             "screen": "home",
@@ -28,7 +28,7 @@
             "section": "Home, me and the shell (Phase 2 and slice 9)",
             "when": "their own preferences: display units (metric or imperial), the default storage area for counts, email and text notifications and their kinds",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "my-notifications": {
@@ -39,7 +39,7 @@
             "params": [
                 "unread"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "my-tokens": {
@@ -48,7 +48,7 @@
             "section": "Home, me and the shell (Phase 2 and slice 9)",
             "when": "their MCP tokens: mint one with a label, see the last four, revoke",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "my-trail": {
@@ -60,7 +60,7 @@
                 "from",
                 "to"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "search": {
@@ -69,7 +69,7 @@
             "section": "Home, me and the shell (Phase 2 and slice 9)",
             "when": "one search across ingredients, recipes, menu items, supplier items and suppliers (`ri_find`)",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "ingredient-list": {
@@ -85,7 +85,7 @@
                 "is_prep"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "ingredient-add": {
             "screen": "ingredient-add",
@@ -152,7 +152,7 @@
             "when": "the global units by measure class with their factors; add one, retire one (`settings.manage`)",
             "params": [],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "category-list": {
             "screen": "category-list",
@@ -161,7 +161,7 @@
             "when": "the ingredient categories in order with kind, safety-stock %, price-alert %, temperature check; add or rename one",
             "params": [],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "supplier-list": {
             "screen": "supplier-list",
@@ -174,7 +174,7 @@
                 "status"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "supplier-add": {
             "screen": "supplier-add",
@@ -239,7 +239,7 @@
             "when": "the storage areas of this site in walk order: kind, allows negative, items on hand; drag to reorder; add, archive (`ingredients.write`)",
             "params": [],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "area-add": {
             "screen": "area-add",
@@ -271,7 +271,7 @@
                 "status"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "recipe-add": {
             "screen": "recipe-add",
@@ -353,7 +353,7 @@
                 "unmapped"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "menu-item-view": {
             "screen": "menu-item-view",
@@ -383,7 +383,7 @@
                 "unmapped"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "modifier-map": {
             "screen": "modifier-map",
@@ -404,7 +404,7 @@
                 "site"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "menu-category-list": {
             "screen": "menu-category-list",
@@ -413,7 +413,7 @@
             "when": "the menu categories in order; add or rename one",
             "params": [],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "stock-levels": {
             "screen": "stock-levels",
@@ -428,7 +428,7 @@
                 "format"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "stock-movements": {
             "screen": "stock-movements",
@@ -443,7 +443,7 @@
                 "to"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "stock-value": {
             "screen": "stock-value",
@@ -454,7 +454,7 @@
                 "as_of"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "receipt-list": {
             "screen": "receipt-list",
@@ -468,7 +468,7 @@
                 "to"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "receipt-add": {
             "screen": "receipt-add",
@@ -510,7 +510,7 @@
                 "status"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "transfer-add": {
             "screen": "transfer-add",
@@ -545,7 +545,7 @@
                 "reason"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "adjustment-add": {
             "screen": "adjustment-add",
@@ -581,7 +581,7 @@
                 "to"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "production-add": {
             "screen": "production-add",
@@ -616,7 +616,7 @@
                 "station"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "waste-add": {
             "screen": "waste-add",
@@ -652,7 +652,7 @@
                 "to"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "purchase-order-add": {
             "screen": "purchase-order-add",
@@ -694,7 +694,7 @@
                 "on"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "invoice-list": {
             "screen": "invoice-list",
@@ -708,7 +708,7 @@
                 "to"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "invoice-add": {
             "screen": "invoice-add",
@@ -751,7 +751,7 @@
                 "from"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "source-list": {
             "screen": "source-list",
@@ -762,7 +762,7 @@
                 "status"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "source-add": {
             "screen": "source-add",
@@ -811,7 +811,7 @@
             "when": "the sales-file mappings: the built-in templates and the business's own; the columns each expects",
             "params": [],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "mapping-edit": {
             "screen": "mapping-edit",
@@ -831,7 +831,7 @@
                 "source"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "sales-day-list": {
             "screen": "sales-day-list",
@@ -843,7 +843,7 @@
                 "to"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "sales-day-view": {
             "screen": "sales-day-view",
@@ -867,7 +867,7 @@
                 "to"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "depletion-run-view": {
             "screen": "depletion-run-view",
@@ -894,7 +894,7 @@
             "when": "the count sheets of this site as cards: kind, areas, lines; **New sheet**, **Fill from the shelves**",
             "params": [],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "count-sheet-edit": {
             "screen": "count-sheet-edit",
@@ -914,7 +914,7 @@
                 "ingredient"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "count-list": {
             "screen": "count-list",
@@ -928,7 +928,7 @@
                 "to"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "count-add": {
             "screen": "count-add",
@@ -983,7 +983,7 @@
                 "status"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "period-view": {
             "screen": "period-view",
@@ -1008,7 +1008,7 @@
                 "format"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "usage-ingredient": {
             "screen": "usage-ingredient",
@@ -1026,7 +1026,7 @@
             "when": "COGS, food sales and food-cost % by period at this site, actual and theoretical, with the variance (walled)",
             "params": [],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "calendar-list": {
             "screen": "calendar-list",
@@ -1035,7 +1035,7 @@
             "when": "the costing calendars: kind, year start, the default; **New**, **Make the year's periods** (`settings.manage`)",
             "params": [],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "forecast-list": {
             "screen": "forecast-list",
@@ -1048,7 +1048,7 @@
                 "sort"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "forecast-item": {
             "screen": "forecast-item",
@@ -1068,7 +1068,7 @@
                 "month"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "demand-report": {
             "screen": "demand-report",
@@ -1080,7 +1080,7 @@
                 "ingredient"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "projected-stock": {
             "screen": "projected-stock",
@@ -1093,7 +1093,7 @@
                 "stockouts_only"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "projected-ingredient": {
             "screen": "projected-ingredient",
@@ -1114,7 +1114,7 @@
                 "due_hours"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "special-check": {
             "screen": "special-check",
@@ -1123,7 +1123,7 @@
             "when": "can we run the special: a recipe, a date and the portions — what it needs per ingredient against the projected stock that day, the shortfalls and the supplier that can bring them by then",
             "params": [],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "proposal-list": {
             "screen": "proposal-list",
@@ -1136,7 +1136,7 @@
                 "status"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "watch-list": {
             "screen": "watch-list",
@@ -1145,7 +1145,7 @@
             "when": "the watches at this site: mine (and everyone's for an admin): ingredient, kind, threshold, text me, last fired; **New watch**",
             "params": [],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "report-list": {
             "screen": "report-list",
@@ -1154,7 +1154,7 @@
             "when": "the reports: stock value, usage and variance, COGS and food-cost %, days on hand, price movers, waste by stage and reason, menu engineering, forecast accuracy, purchases by supplier, sales by day; each a card with its window",
             "params": [],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "report-view": {
             "screen": "report-view",
@@ -1179,7 +1179,7 @@
                 "as_of"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "multi-site": {
             "screen": "multi-site",
@@ -1188,7 +1188,7 @@
             "when": "the business's sites side by side: stock value, food-cost %, variance, waste, stock-outs projected (an admin or a Manager of several)",
             "params": [],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "admin-settings": {
             "screen": "admin-settings",
@@ -1197,7 +1197,7 @@
             "when": "the business settings: cost basis, blind counts, the price-alert threshold, the covers factor threshold, the weeks before a dynamic par, the late-receipt rule, the costing calendar, the forecast method",
             "params": [],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "admin-site-settings": {
             "screen": "admin-site-settings",
@@ -1215,7 +1215,7 @@
             "when": "the document numbers: prefix and next value per kind",
             "params": [],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "admin-tax-rates": {
             "screen": "admin-tax-rates",
@@ -1224,7 +1224,7 @@
             "when": "the tax rates (on supplier invoices)",
             "params": [],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "admin-reasons": {
             "screen": "admin-reasons",
@@ -1233,7 +1233,7 @@
             "when": "the reason codes: name, what they apply to, the waste stage, order; add, retire",
             "params": [],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "admin-agents": {
             "screen": "admin-agents",
@@ -1242,7 +1242,7 @@
             "when": "the agents here with their sites, roles and the duty's hour; the dispatches and their state; the proposals' acceptance rate",
             "params": [],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "admin-tokens": {
             "screen": "admin-tokens",
@@ -1251,7 +1251,7 @@
             "when": "every MCP token: who, label, last used, revoke",
             "params": [],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "admin-trail": {
             "screen": "admin-trail",
@@ -1265,7 +1265,7 @@
                 "to"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "supplier-door": {
             "screen": "supplier-door",
@@ -1348,7 +1348,7 @@
             "who": "own",
             "agent": false,
             "record_id": "the member",
-            "built": false
+            "built": true
         },
         "notification_read": {
             "action": "notification_read",
@@ -1369,7 +1369,7 @@
             "who": "own",
             "agent": true,
             "record_id": "the notification",
-            "built": false
+            "built": true
         },
         "token_mint": {
             "action": "token_mint",
@@ -1396,7 +1396,7 @@
             "who": "own and tokens.own",
             "agent": false,
             "record_id": "the token",
-            "built": false
+            "built": true
         },
         "token_revoke": {
             "action": "token_revoke",
@@ -1417,7 +1417,7 @@
             "who": "own",
             "agent": false,
             "record_id": "the token",
-            "built": false
+            "built": true
         },
         "ingredient_create": {
             "action": "ingredient_create",

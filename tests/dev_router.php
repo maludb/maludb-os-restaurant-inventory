@@ -13,12 +13,15 @@ if ($path !== '/' && is_file($root . $path) && !str_starts_with($path, '/api/'))
     return false;                                             // a static file or a real .php file
 }
 $set = static function (array $kv): void { foreach ($kv as $k => $v) { $_GET[$k] = $v; $_REQUEST[$k] = $v; } };
-$map = ['/sso' => '/sso.php', '/sso/logout' => '/sso/logout.php', '/api/v1/health' => '/api/v1/health.php'];
+$map = ['/sso' => '/sso.php', '/sso/logout' => '/sso/logout.php', '/api/v1/health' => '/api/v1/health.php', '/api/v1/health.php' => '/api/v1/health.php'];
 $rel = rtrim($path, '/') ?: '/';
 if (isset($map[$rel])) { $target = $map[$rel]; }
 elseif (preg_match('#^/api/v1/([a-z_]+)/([0-9]+)(?:/([a-z_]+))?$#', $path, $m)) { $set(['id' => $m[2], 'do' => $m[3] ?? '']); $target = '/api/v1/' . $m[1] . '.php'; }
 elseif (preg_match('#^/api/v1/([a-z_]+)(?:/([a-z_]+))?$#', $path, $m)) { $target = '/api/v1/' . $m[1] . (isset($m[2]) ? '/' . $m[2] : '') . '.php'; }
 elseif (str_starts_with($path, '/api/')) { http_response_code(404); echo 'Not found'; return true; }
+elseif (preg_match('#^/files/([0-9]+)$#', $path, $m)) { $set(['id' => $m[1]]); $target = '/files.php'; }
+elseif (preg_match('#^/s/([a-f0-9]{48})(?:/([a-z_]+))?$#', $path, $m)) { $set(['token' => $m[1], 'do' => $m[2] ?? '']); $target = '/s.php'; }
+elseif (preg_match('#^/reports/([a-z-]+)$#', $path, $m) && !is_file($root . '/reports/' . $m[1] . '.php')) { $set(['report' => $m[1]]); $target = '/reports/report.php'; }
 elseif (preg_match('#^/((?:[a-z_-]+/)?[a-z_-]+)/new$#', $path, $m)) { $target = '/' . $m[1] . '/form.php'; }
 elseif (preg_match('#^/((?:[a-z_-]+/)?[a-z_-]+)/([0-9]+)/edit$#', $path, $m)) { $set(['id' => $m[2]]); $target = '/' . $m[1] . '/form.php'; }
 elseif (preg_match('#^/((?:[a-z_-]+/)?[a-z_-]+)/([0-9]+)$#', $path, $m)) { $set(['id' => $m[2]]); $target = '/' . $m[1] . '/view.php'; }
