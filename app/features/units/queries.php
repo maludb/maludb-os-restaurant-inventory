@@ -245,3 +245,11 @@ function money_price(?string $amount): string
     $f = (float) $amount;
     return money($amount, abs(round($f, 2) - $f) > 0.000001 ? 4 : 2);
 }
+
+/** A quantity for a dense table: fewer decimals as the number grows (0.033, 2.53, 14 855.6, 26 633) — never a long tail on a big figure. Added by slice 7 (usage). */
+function fmt_num_adaptive(float|int|string|null $n): string
+{
+    if ($n === null || $n === '') { return ''; }
+    $a = abs((float) $n);
+    return fmt_num($n, $a < 1 ? 3 : ($a < 100 ? 2 : ($a < 10000 ? 1 : 0)));
+}

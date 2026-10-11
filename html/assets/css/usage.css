@@ -1,0 +1,45 @@
+/* slice 7 — periods and usage (periods.md "Mobile rule"): the actual-vs-theoretical table pins its key columns at 375 px; the period cards stack; the COGS chart scales. Kept apart from the shared app-overrides.css. */
+.usage-table th, .usage-table td { white-space: nowrap; }
+.usage-table th.num, .usage-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.usage-table .u-key { background: var(--bs-body-bg, #fff); }
+.usage-table tfoot td, .usage-table tfoot th { border-top: 1px solid rgba(0, 0, 0, .12); }
+.usage-table .u-sub td, .usage-table .u-sub th { background: rgba(0, 0, 0, .025); font-size: .8rem; }
+.usage-legend { font-size: .8rem; }
+html.app-skin-dark .usage-table .u-key { background: var(--bs-body-bg, #0f1626); }
+html.app-skin-dark .usage-table .u-sub td, html.app-skin-dark .usage-table .u-sub th { background: rgba(255, 255, 255, .04); }
+.usage-picks .btn { min-height: 44px; display: inline-flex; align-items: center; }
+@media (max-width: 767.98px) {
+  /* ingredient · actual · theoretical · unexplained first and pinned; the rest reachable by scrolling right */
+  .usage-table, .usage-table thead, .usage-table tbody, .usage-table tfoot { display: block; width: max-content; min-width: 100%; }
+  .usage-table tr { display: flex; }
+  .usage-table th, .usage-table td { flex: 0 0 64px; width: 64px; padding: .45rem .3rem !important; font-size: .78rem; overflow: hidden; text-overflow: ellipsis; }
+  .usage-table .u-ing { order: -4; flex-basis: 104px; width: 104px; white-space: normal; line-height: 1.15; position: sticky; left: 0; z-index: 3; overflow-wrap: anywhere; }
+  .usage-table .u-actual { order: -3; position: sticky; left: 104px; z-index: 3; }
+  .usage-table .u-theo { order: -2; position: sticky; left: 168px; z-index: 3; }
+  .usage-table .u-unexp { order: -1; position: sticky; left: 232px; z-index: 3; box-shadow: 4px 0 4px -3px rgba(0, 0, 0, .25); }
+  .usage-table th.u-key { background: var(--bs-body-bg, #fff); }
+  .usage-table td.u-ing, .usage-table th.u-ing { text-overflow: clip; }
+  .usage-table td.u-ing a { white-space: normal; display: inline; }
+}
+.usage-table .u-sub td.u-key, .usage-table .u-sub th.u-key { background: #f5f6f8; }
+html.app-skin-dark .usage-table .u-sub td.u-key, html.app-skin-dark .usage-table .u-sub th.u-key { background: #182137; }
+.usage-picks { overflow-x: auto; flex-wrap: nowrap !important; }
+.usage-picks .btn { flex: 0 0 auto; white-space: nowrap; }
+/* the COGS chart: two neutrals of the data palette, scaling to the container */
+.cogs-chart-wrap { max-width: 600px; }
+.cogs-chart-svg { width: 100%; height: auto; display: block; }
+.cogs-bar-actual { fill: #475569; }
+.cogs-bar-theoretical { fill: #a9b6c8; }
+.cogs-grid { stroke: rgba(100, 116, 139, .25); stroke-width: 1; }
+.cogs-axis { fill: #64748b; font-size: 10px; }
+.cogs-key-actual { background: #475569; }
+.cogs-key-theoretical { background: #a9b6c8; }
+.cogs-key { display: inline-block; width: 12px; height: 12px; border-radius: 2px; vertical-align: -1px; margin-right: 4px; }
+html.app-skin-dark .cogs-bar-actual { fill: #94a3b8; }
+html.app-skin-dark .cogs-bar-theoretical { fill: #475569; }
+html.app-skin-dark .cogs-axis { fill: #94a3b8; }
+/* the period cards (375 px) */
+.period-card { border-left: 4px solid transparent; }
+.period-card.closes-next { border-left-color: var(--bs-primary, #3454d1); }
+.period-figure .fig-value { font-size: 1.15rem; font-weight: 600; }
+@media (max-width: 575.98px) { .period-close-form .form-select, .period-close-form .btn, .period-reopen-form .form-control, .period-reopen-form .btn { min-height: 44px; } }

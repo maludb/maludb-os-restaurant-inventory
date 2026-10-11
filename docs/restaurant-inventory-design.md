@@ -747,3 +747,12 @@ db/018 and the decisions the specs took, §16) — Phase 2 begins.
   cost per gram, so equal prices differed by cents and $6.00 read $5.99 (it now divides the receipt line's own unit price). Also: a public door needs no session
   (`RI_PUBLIC_DOOR`); the activity log has no source `door` (the door's rows are `portal`); the canonical `/edit` goes to `form.php`; deliveries due, invoices and
   alerts read under `ri.read` (invoices and alerts tell one who sees no cost so). The 10 % alert read 9.98 % at six decimals per gram — **db/026** (the planning model, in review) reads the move from the quoted per-unit prices, so a 10 % rise trips the default 10 % alert.
+- 2026-10-11 — **SLICE 7 PERIODS AND USAGE BUILT AND PROVEN BY A SONNET 5.5 WORKER** (`tests/phase3/slice7/run.sh`: 269 checks under php -S and under Apache — costing calendars with a preview of the periods a calendar
+  would make (weeks 52–53 of seven days, months, 4-4-5), the year's periods made per site, the period list with the first open period past its end marked and its figures live from `ri_usage()` and frozen once closed,
+  **actual vs theoretical with every bucket** (opening, purchases, transfers, production, adjustments, closing, actual, theoretical, variance, waste, comps, unexplained) in the count unit with the base figure beside it and at
+  cost, the identity re-derived against the ledger for eggs (theoretical 76, waste 31, comps 1, unexplained −41 = −$12.30), category subtotals, quick picks, the basis, CSV and JSON; one ingredient's week with the recipes that
+  consumed it and their shares; COGS and the food-cost % by period with a monthly roll-up and an inline-SVG chart; the **close** in the schema's own refusals (after its last day, in order, every day depleted, an approved
+  closing count), freezing the figures, the next period opening on the ending value; a late receipt landing in the next open period flagged, said in the receipt's sentence and on the Late tab; **reopen** of the last closed
+  period by the administrator with a reason; the usage export; the `period_due` notice once per period). Reads open to `ri.read` with cost walled per field; 97 of 119 screens and 123 of 146 actions built. No migration. Found: a
+  six-decimal cost per gram cannot give a $26.00 bag back to the cent (it says $25.9926), so the last-price basis shows the receipt line's quoted price and other figures show their true precision; `/usage/{ingredient}` is the canonical
+  `view.php`; a period that has not begun is not computed.

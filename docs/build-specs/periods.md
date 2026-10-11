@@ -228,3 +228,47 @@ depleted, the waste, the transfer to Airport, the approved count) and `sales_dai
 
 ## Open questions
 (none)
+
+## Built and proven
+
+Built 2026-10-11 by a Sonnet 5.5 worker from `worker-brief.md`, on `/srv/apps/restaurant_inventory`; reviewed and committed by the planning model; the application's commits are not pushed.
+
+**Proof:** `tests/phase3/slice7/run.sh` — calendars 21, periods 25, usage 36, the ingredient's week 21, COGS 16, close 31, late 14, reopen 15, who sees what 18, JSON mode 30 (the log
+vocabulary and the registry counts with it), the browser 39 (headless Chromium at 375 × 740 and 1280 × 800 and with JavaScript off), the registry, the approvals and the Phase 1
+claim check: **269 checks under php -S and 269 under a user-level Apache rendering `deploy/apache-restaurant_inventory.conf`** (target ≥ 170). The scratch database is `ri_dev_s7` and the
+port block 9333–9336. The registry this commit carries reads 97 of 119 screens and 123 of 146 actions built (6 and 5 of them this slice's). Screenshots in `/tmp/ri-shots/slice7`.
+The world is `period_world()` in `tests/phase3/slice7/lib.php`: a weekly calendar whose first week began five weeks before this Monday, receipts back-dated through the receipts door, POS days
+depleted by `ri_depletion_run()` (one day of week 3 left undepleted on purpose), every bucket of the identity for eggs in week 4 (purchases 300, transfers in 12 and out 30, adjustments −5, waste 31,
+a comped sandwich, a prep batch) and an approved count on that week's last day that finds 41 eggs more than the book — so eggs read theoretical 76, waste 31, comps 1, unexplained −41 (−$12.30), the
+same figures the Phase 0 proof ties.
+
+**Files:** `html/periods/{index,view,ensure,close,reopen}.php`, `html/periods/calendars/{index,save}.php`, `html/usage/{index,view,cogs,export}.php` (the placeholders replaced; `html/periods/calendars.php` removed
+for the directory); `app/features/periods/{queries,present,write,handler}.php`, `app/features/usage/{queries,present,csv}.php`; the views under `app/views/periods/` and `app/views/usage/` (as the spec lists, plus
+`usage/partials/assets.php`); `html/assets/css/usage.css`; `app/partial_targets/periods.php` (`calendar_set`'s `any field of`); `record_url()` in `app/features/shell/nav.php`; `fmt_num_adaptive()` appended to
+`app/features/units/queries.php`; `html/receipts/post.php` (the late sentence); `tests/phase3/slice7/*`; the Phase 2 suite follows the screens now built (`tests/phase2/gates.php`). No migration: the schema needed nothing.
+
+**What the spec or the schema got wrong (fixed or reported):**
+- **A per-base cost of six decimals cannot show a unit price to the cent.** Flour bought at $26.00 a bag costs 0.001146 a gram; times 22 679.6185 that is $25.9926, not $26. The usage table's unit cost per count
+  unit therefore takes the receipt line's own quoted price (`mcp_price_history.per_unit_price`) when the basis is the last price and the quote's unit is the count unit — exactly $26.00 — and otherwise shows
+  the computed figure the way `money_price()` does (two decimals only when it is whole cents, else four) with the per-base figure in its title. Every value column is the function's own `round(qty × cost, 2)`,
+  proven exact against hand arithmetic for eggs (−41 × $0.30 = −$12.30). No schema change: the six-decimal valuation is the accepted precision.
+- **`/usage/{ingredient}` is `html/usage/view.php`, not `ingredient.php`** and no router or vhost line is added: the registry builder's canonical-URL rule and both servers' generic rewrites already send a numbered
+  record to `view.php`, and `/usage/cogs` and `/periods/calendars` resolve by their own files (the spec's "two lines each" are not needed).
+- **`ri_usage()` answers a row for every ingredient with a balance, so a window with no movement is not empty** — the "nothing moved" state is for a window before the ledger began.
+- **The late sentence is slice 3's handler reading this slice's `late_landing_sentence()`** (DECISION 1): "Posted GR-00031: 1 line into Walk-in — dated Sep 23 inside closed week 4; landed in week 6."
+- **`ri_notify()` dedupes only through the email outbox**, so a Manager with email off would be told again every run; `period_due_check()` also looks for its own notification before making one.
+- The worker's `morning_note_inputs` pass is still slice 9's stub; `period_due_check()` is proven by calling it directly (a CLI run of the function, twice: made, then 0).
+
+**Decisions taken here (within the spec):**
+- Who opens what (the brief's rule of 2026-10-11): the period list, a period, the usage report, an ingredient's week and COGS open to `ri.read` with every value walled per field (`sees_cost()`; a Viewer or a Kitchen member reads
+  units and every value is "—", `cost_withheld` in JSON); the calendars are configuration (`settings.manage`); Close and Make the year's periods `periods.close`, Reopen `settings.manage`, the export `exports.all`. The menu keeps `reports.read` for the three usage items.
+  The record-before-right order of the brief: the right is asked at the current site first (`stock_begin`), so Marco signed on at Airport is told 403 for a Downtown period, the owner who holds the right there gets the 404.
+- A period's **closing count choices** are the approved counts whose moment lies inside the period's last business day — after the sales cut that opens it, up to the cut that ends it — not the calendar date of the spec: a count taken at the day's cut (the default) is dated the next morning.
+- A period **that has not begun** is not computed (a weekly year has 47 of them; each would be a `ri_usage()` call): its figures are "—" (title "not begun"), the phone's cards leave it out with a count, and the COGS report and its chart list only periods that have begun.
+- COGS and the food-cost % use all food sales (`ri_food_sales(…, NULL)`), the same figure the close freezes; the period list's "closes next" is the first open period of each calendar past its end by the database's `current_date` — the clock `ri_period_close()` uses.
+- The usage report's default window is the period holding today (the last seven days when none); **basis** defaults to the setting's; the sort by unexplained is by |value| — by |units| for a reader who sees no cost.
+- Quantities in the count unit show fewer decimals as they grow (`fmt_num_adaptive()`: 0.033, 2.53, 14 856); the base figure is the cell's title and `<bucket>_base` in JSON beside `<bucket>` in the count unit.
+- The consumers table adds the prep batches that took the ingredient as an input (the ledger's `production_out` rows through their batch, reversals netted) to the menu items sold, so a prep's share is visible; shares add to 100.
+- At 375 px the table's four key columns are first and sticky (ingredient 104 px, the others 64 px), the rest scroll under them; the movements list is slice 3's first page (100) with a link to the ledger.
+- `usage_export` answers GET (a link) and POST (the registry); `format=json` over 2 000 rows is told to narrow; CSV carries every bucket in the count unit and in base units, values only for who sees cost.
+- Reopen's reason lives in the log (`period.reopen.after.reason`) — `periods` has no column for it.

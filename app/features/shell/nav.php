@@ -263,6 +263,7 @@ function record_url(?string $type, int|string|null $id): ?string
         'count_sheet' => '/counts/sheets/' . $id,
         'container' => '/counts/containers/?edit=' . $id . '#container-form',
         'period' => '/periods/' . $id,
+        'costing_calendar', 'calendar' => '/periods/calendars#calendar-row-' . $id,
         'forecast_override' => '/projection/',
         'watch' => '/projection/watches#watch-row-' . $id,
         'buyer_proposal', 'proposal' => '/projection/proposals#proposal-card-' . $id,

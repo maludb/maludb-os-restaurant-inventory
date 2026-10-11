@@ -2,6 +2,7 @@
 declare(strict_types=1);
 /** Action `receipt_post`: stock.receive; ri_post_receipt() — the balances move, the site's average advances, price history is written, a PO's lines advance. The header's temperature_ok is the AND of the lines'. Log receipt.post (purchase_order_id, the lines in base with their units, value only for a cost-seer). */
 require_once dirname(__DIR__, 2) . '/app/features/stock/handler.php';
+require_once dirname(__DIR__, 2) . '/app/features/usage/queries.php';
 stock_begin('stock.receive');
 $pdo = db();
 $g = receipt_or_404($pdo, (int) (req_val('receipt') ?? 0) ?: null);
@@ -17,5 +18,5 @@ ri_guard($pdo, static function () use ($pdo, $g, $me): void {
 });
 $lines = receipt_lines($pdo, $g['goods_receipt_id']);
 $txns = stock_doc_txns($pdo, 'goods_receipt', $g['goods_receipt_id']);
-ri_done('Posted ' . $g['number'] . ': ' . count($lines) . ' line' . (count($lines) === 1 ? '' : 's') . ' into ' . $g['area'], $g['goods_receipt_id'], ri_land('/receipts/' . $g['goods_receipt_id'], 'posted'), 'stockChanged',
+ri_done('Posted ' . $g['number'] . ': ' . count($lines) . ' line' . (count($lines) === 1 ? '' : 's') . ' into ' . $g['area'] . late_landing_sentence($pdo, (int) $g['scope_id'], $txns), $g['goods_receipt_id'], ri_land('/receipts/' . $g['goods_receipt_id'], 'posted'), 'stockChanged',
     ['receipt_id' => $g['goods_receipt_id'], 'transactions' => $txns, 'lines' => array_map(static fn (array $l): array => ['ingredient_id' => $l['ingredient_id'], 'qty' => $l['qty_received'], 'unit' => $l['purchase_unit_code'], 'qty_base' => $l['qty_base'], 'base_unit' => $l['base_unit_code']], $lines)]);

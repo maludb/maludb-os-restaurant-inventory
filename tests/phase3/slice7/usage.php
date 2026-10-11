@@ -1,0 +1,94 @@
+<?php
+/** Slice 7 — actual vs theoretical (periods.md "Proof": Usage): every bucket of the identity for eggs against ri_usage() and against the ledger, the count unit, the values, the sort, the subtotals, the legend, the basis, the CSV, the window's refusals, the "check the data" mark, the quick picks. */
+require __DIR__ . '/lib.php';
+$w = period_world();
+$dana = person(30);
+$f = wk(4); $t = wk(4, 6); $egg = $w['egg'];
+$ref = usage_ref($f, $t);
+$j = jget(30, "/usage/?from=$f&to=$t")['json']['data'] ?? [];
+$rows = array_column($j['rows'] ?? [], null, 'ingredient_id');
+$e = $rows[$egg] ?? [];
+$B = ['opening', 'purchases', 'transfers_in', 'transfers_out', 'production_in', 'production_out', 'adjustments', 'closing', 'actual', 'theoretical', 'variance', 'waste', 'comps', 'unexplained'];
+
+echo "1. The report and its referee\n";
+$h = page($dana, "/usage/?from=$f&to=$t");
+ok($h['code'] === 200 && has($h, 'data-screen="usage-report"') && has($h, 'id="usage-table"') && has($h, 'id="usage-row-' . $egg . '"') && has($h, 'id="usage-form"') && has($h, 'id="usage-form-field-from"') && has($h, 'id="usage-form-field-sort"') && has($h, 'id="usage-legend"'), 'the screen: the table, the eggs\' row, the form and the legend');
+$same = true;
+foreach ($ref as $id => $r) { foreach ($B as $b) { $same = $same && near($rows[$id][$b . '_base'] ?? null, (float) $r[$b . '_base'], 0.0001); } }
+ok($same && count($rows) === count($ref), 'every bucket of every ingredient (' . count($ref) . ' rows) equals ri_usage() — the function is the referee');
+ok(near($e['purchases_base'], 300) && near($e['transfers_in_base'], 12) && near($e['transfers_out_base'], 30) && near($e['adjustments_base'], -5) && near($e['production_in_base'], 0) && near($e['production_out_base'], 0), 'eggs: purchases 300, transfers in 12 and out 30, adjustments −5, no production');
+ok(near($e['theoretical_base'], 76) && near($e['waste_base'], 31) && near($e['comps_base'], 1) && near($e['unexplained_base'], -41) && near($e['variance_base'], -10), 'eggs: theoretical 76 (the sandwiches sold), waste 31, comps 1, variance −10 and unexplained −41 (the count surplus)');
+$ident = (float) $e['opening_base'] + $e['purchases_base'] + $e['transfers_in_base'] - $e['transfers_out_base'] + $e['production_in_base'] - $e['production_out_base'] + $e['adjustments_base'] - $e['closing_base'];
+ok(near($e['actual_base'], $ident, 0.0001) && near($e['variance_base'], $e['actual_base'] - $e['theoretical_base'], 0.0001) && near($e['unexplained_base'], $e['variance_base'] - $e['waste_base'], 0.0001), 'the identity reads across: actual = opening + purchases + in − out + production + adjustments − closing; variance = actual − theoretical; unexplained = variance − waste');
+$t0 = one('SELECT ri_site_moment(101, :d::date, false)', ['d' => $f]); $t1 = one('SELECT ri_site_moment(101, :d::date, true)', ['d' => $t]);
+$open = (float) one('SELECT ri_on_hand_as_of(:i, 101, :t::timestamptz)', ['i' => $egg, 't' => $t0]); $close = (float) one('SELECT ri_on_hand_as_of(:i, 101, :t::timestamptz)', ['i' => $egg, 't' => $t1]);
+$corr = (float) one("SELECT sum(qty_base) FROM inventory_transactions WHERE ingredient_id = :i AND scope_id = 101 AND txn_type = 'count_correction' AND occurred_at > :a::timestamptz AND occurred_at <= :b::timestamptz", ['i' => $egg, 'a' => $t0, 'b' => $t1]);
+ok(near($e['opening_base'], $open) && near($e['closing_base'], $close) && near($corr, 41), 'opening and closing are the ledger at the site\'s sales cut (the cut opens the day: 04:00), and the approved count\'s +41 is inside the closing');
+$sql = (float) one("SELECT -sum(qty_base) FROM inventory_transactions WHERE ingredient_id = :i AND scope_id = 101 AND txn_type = 'depletion' AND occurred_at > :a::timestamptz AND occurred_at <= :b::timestamptz", ['i' => $egg, 'a' => $t0, 'b' => $t1]);
+ok(near($sql, 76) && near($e['theoretical_base'], $sql), 'theoretical is the depletions the ledger holds for the window (76 eggs)');
+
+echo "2. The count unit, the values\n";
+ok($e['count_unit'] === 'flat' && $e['base_unit'] === 'each' && near($e['opening'], (float) $e['opening_base'] / 30, 0.0001) && near($e['unexplained'], -41 / 30, 0.0001) && near($e['theoretical'], 76 / 30, 0.0001), 'quantities are shown in the ingredient\'s count unit (eggs by the flat of 30) and the base figure rides in the JSON');
+$c = $rows[$w['chicken']];
+ok($c['count_unit'] === 'g' && near($c['theoretical'], $c['theoretical_base']) && near($c['production_out_base'], 2000) && near($c['waste_base'], 1000), 'an ingredient with no count unit shows in its base unit (chicken in grams), with its production out 2 000 and waste 1 000');
+ok(near($e['unexplained_value'], -12.30, 0.0001) && near($e['unit_cost_per_base'], 0.30, 0.000001) && near($e['unit_cost_per_count_unit'], 9.00, 0.0001) && near($e['waste_value'], 9.30, 0.0001), 'eggs at $0.30 each: unexplained −$12.30 exactly (41 × 0.30), waste $9.30, $9.00 a flat — to the cent');
+ok(near($e['actual_value'], round(66 * 0.30, 2), 0.0001) && near($e['theoretical_value'], 22.80, 0.0001) && near($e['variance_value'], -3.00, 0.0001), 'actual $19.80 (66 × 0.30), theoretical $22.80, variance −$3.00');
+$flour = $rows[$w['flour']];
+ok(near($flour['unit_cost_per_count_unit'], round((float) $ref[$w['flour']]['unit_cost'] * 22679.6185, 2), 0.011) && (float) $flour['unit_cost_per_count_unit'] > 25.0 && (float) $flour['unit_cost_per_count_unit'] < 26.0, 'flour\'s cost is the weighted average of the opening and the week\'s purchase at $26: between $25 and $26 a bag');
+
+echo "3. Order, subtotals, totals, the legend\n";
+$order = array_column($j['rows'], 'ingredient_id');
+ok($order[0] === $egg, 'sorted by |unexplained value| first: eggs lead (−$12.30; nothing else is unexplained)');
+$byName = array_column(jget(30, "/usage/?from=$f&to=$t&sort=name")['json']['data']['rows'] ?? [], 'name');
+$sorted = $byName; usort($sorted, 'strcasecmp');
+ok($byName === $sorted && $byName !== [], 'sort=name is alphabetical');
+$byActual = jget(30, "/usage/?from=$f&to=$t&sort=actual")['json']['data']['rows'] ?? [];
+ok(($byActual[0]['ingredient_id'] ?? 0) === $w['chicken'], 'sort=actual puts the largest actual value (the chicken) first');
+$cents = fn (array $v): int => (int) round(array_sum(array_map(fn ($x) => (float) $x, $v)) * 100);
+$tot = $j['totals'];
+ok($cents(array_column($j['rows'], 'unexplained_value')) === (int) round((float) $tot['unexplained_value'] * 100) && $cents(array_column($j['rows'], 'actual_value')) === (int) round((float) $tot['actual_value'] * 100) && $tot['ingredients'] === count($j['rows']), 'the totals row sums the rows (values only; units across ingredients do not add)');
+$catSum = $cents(array_column($j['categories'], 'actual_value'));
+ok($catSum === (int) round((float) $tot['actual_value'] * 100) && has($h, 'id="usage-cat-dairy"') && has($h, 'id="usage-totals"'), 'the category subtotals add up to the total and are rows in the foot (usage-cat-dairy, usage-totals)');
+$dairy = array_values(array_filter($j['categories'], fn ($c) => $c['category_key'] === 'dairy'))[0] ?? [];
+ok(near($dairy['unexplained_value'] ?? null, array_sum(array_map(fn ($r) => $r['category_key'] === 'dairy' ? (float) $r['unexplained_value'] : 0, $j['rows'])), 0.005), 'a category\'s subtotal is the sum of its rows');
+ok(str_contains(says_text($h), 'actual = opening + purchases + transfers in − transfers out + production in − production out + adjustments − closing; variance = actual − theoretical; unexplained = variance − waste'), 'the legend row reads the identity in words');
+$cat = jget(30, "/usage/?from=$f&to=$t&category=dairy")['json']['data']['rows'] ?? [];
+ok(count($cat) === 1 && $cat[0]['ingredient_id'] === $egg, 'a category filter keeps its ingredients only');
+
+echo "4. The basis, the CSV, the refusals\n";
+$last = array_column(jget(30, "/usage/?from=$f&to=$t&basis=last")['json']['data']['rows'] ?? [], null, 'ingredient_id');
+$avg = array_column(jget(30, "/usage/?from=$f&to=$t&basis=avg")['json']['data']['rows'] ?? [], null, 'ingredient_id');
+$lastRef = usage_ref($f, $t, 'last');
+ok(near($last[$w['flour']]['unit_cost_per_count_unit'], 26.00, 0.00001) && (float) $avg[$w['flour']]['unit_cost_per_count_unit'] < 26.0 && near($last[$w['flour']]['unit_cost_per_base'], (float) $lastRef[$w['flour']]['unit_cost'], 0.000001), 'basis=last values flour at the last price, exactly $26.00 a bag (the receipt line\'s own quoted price — six decimals per gram would say 25.9926); the average is lower');
+ok(near($last[$w['flour']]['actual_base'], $avg[$w['flour']]['actual_base'], 0.0001) && near($last[$egg]['unexplained_base'], -41, 0.0001), 'the basis changes the cost and not the units');
+$r = page($dana, "/usage/?from=$f&to=$t&format=csv");
+$lines = array_values(array_filter(explode("\n", trim($r['body']))));
+$hdr = str_getcsv($lines[0]);
+$eggLine = array_values(array_filter(array_map('str_getcsv', array_slice($lines, 1)), fn ($l) => $l[1] === 'L-EGG'))[0] ?? [];
+ok($r['code'] === 200 && str_contains($r['headers'], 'text/csv') && str_contains($r['headers'], 'usage-' . $f . '-' . $t . '.csv') && $hdr[0] === 'ingredient' && count($lines) - 1 === count($rows), 'format=csv answers text/csv, named usage-<from>-<to>.csv, one row per ingredient');
+ok(count($eggLine) === count($hdr) && (float) $eggLine[array_search('unexplained_base', $hdr)] === -41.0 && $eggLine[3] === 'flat', 'the eggs\' CSV row carries the same figures (unexplained_base −41, in flats)');
+$sv = activity('screen.view');
+$last = $sv[count($sv) - 1];
+$af = json_decode($last['after'], true);
+ok($last['screen'] === 'usage-report' && $af['format'] === 'csv' && $af['from'] === $f, 'the CSV is logged as screen.view with after.format');
+$r = page($dana, '/usage/?from=' . date('Y-m-d', strtotime($f . ' -400 days')) . "&to=$t");
+ok($r['code'] === 422 && str_contains(says_text($r), '400 days'), 'a window over 400 days is refused in words');
+$r = jget(30, "/usage/?from=$t&to=$f");
+ok($r['code'] === 422 && str_contains((string) ($r['json']['error']['message'] ?? ''), 'ends before it starts'), 'a window that ends before it starts is refused in words (JSON 422)');
+$r = page($dana, "/usage/?from=2026-13-01&to=$t");
+ok($r['code'] === 422, 'a date that is not a date is refused');
+
+echo "5. The mark, the picks\n";
+$eggRow = preg_match('#id="usage-row-' . $egg . '".*?</tr>#s', $h['body'], $m) ? $m[0] : '';
+ok(str_contains($eggRow, 'actual below theoretical — check the data') && str_contains($eggRow, 'text-danger'), 'a negative variance carries the "check the data" mark (the eggs\' −10)');
+$cRow = preg_match('#id="usage-row-' . $w['chicken'] . '".*?</tr>#s', $h['body'], $m) ? $m[0] : '';
+ok(!str_contains($cRow, 'check the data') && str_contains($cRow, 'text-warning'), 'a positive variance over 5 % of theoretical is amber, with no mark (chicken: 1 000 g on 14 356 g)');
+$pk = fn (string $p): array => jget(30, "/usage/?pick=$p")['json']['data']['window'] ?? [];
+ok($pk('this')['from'] === wk(6) && $pk('this')['to'] === wk(6, 6), 'this period: the week holding today');
+ok($pk('last')['from'] === wk(5) && $pk('last')['to'] === wk(5, 6), 'last period: the week before it');
+$today = (new DateTimeImmutable('today', new DateTimeZone((string) one('SELECT timezone FROM sites WHERE scope_id = 101'))));
+ok($pk('4weeks')['to'] === $today->format('Y-m-d') && $pk('4weeks')['from'] === $today->modify('-27 days')->format('Y-m-d'), 'last 4 weeks: today − 27 to today');
+ok($pk('month')['from'] === $today->modify('first day of last month')->format('Y-m-d') && $pk('month')['to'] === $today->modify('last day of last month')->format('Y-m-d'), 'last month: the calendar month before this one');
+ok(has(page($dana, '/usage/'), 'id="usage-pick-this"') && ($jget = jget(30, '/usage/')['json']['data']['window'] ?? []) && $jget['from'] === wk(6), 'with no window the report opens on this period');
+ok(count(array_filter($j['rows'], fn ($r) => (float) $r['unexplained_base'] != 0.0)) >= 1 && has($h, 'u-actual') && has($h, 'u-theo') && has($h, 'u-unexp'), 'the key columns carry their pinning classes for the phone');
+finish();

@@ -1,6 +1,6 @@
 {
     "generated_from": "docs/restaurant-inventory-action-manifest.md",
-    "generated_at": "2026-10-11T21:16:00+00:00",
+    "generated_at": "2026-10-11T22:34:16+00:00",
     "screens": {
         "home": {
             "screen": "home",
@@ -982,8 +982,8 @@
                 "year",
                 "status"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "period-view": {
             "screen": "period-view",
@@ -993,7 +993,7 @@
             "params": [
                 "tab"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "usage-report": {
@@ -1007,8 +1007,8 @@
                 "sort",
                 "format"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "usage-ingredient": {
             "screen": "usage-ingredient",
@@ -1016,7 +1016,7 @@
             "section": "Periods, usage, variance and the close (slice 7)",
             "when": "one ingredient's week: the buckets, the recipes that consumed it and how much each, the waste logged, the count lines, the movements",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "cogs-report": {
@@ -1025,8 +1025,8 @@
             "section": "Periods, usage, variance and the close (slice 7)",
             "when": "COGS, food sales and food-cost % by period at this site, actual and theoretical, with the variance (walled)",
             "params": [],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "calendar-list": {
             "screen": "calendar-list",
@@ -1034,8 +1034,8 @@
             "section": "Periods, usage, variance and the close (slice 7)",
             "when": "the costing calendars: kind, year start, the default; **New**, **Make the year's periods** (`settings.manage`)",
             "params": [],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "forecast-list": {
             "screen": "forecast-list",
@@ -6375,7 +6375,7 @@
             "who": "settings.manage",
             "agent": true,
             "record_id": "the calendar",
-            "built": false
+            "built": true
         },
         "periods_ensure": {
             "action": "periods_ensure",
@@ -6402,7 +6402,7 @@
             "who": "periods.close",
             "agent": true,
             "record_id": "the site",
-            "built": false
+            "built": true
         },
         "period_close": {
             "action": "period_close",
@@ -6429,7 +6429,7 @@
             "who": "periods.close",
             "agent": true,
             "record_id": "the period",
-            "built": false
+            "built": true
         },
         "period_reopen": {
             "action": "period_reopen",
@@ -6456,7 +6456,7 @@
             "who": "settings.manage",
             "agent": true,
             "record_id": "the period",
-            "built": false
+            "built": true
         },
         "usage_export": {
             "action": "usage_export",
@@ -6495,7 +6495,7 @@
             "who": "exports.all",
             "agent": true,
             "record_id": "the export",
-            "built": false
+            "built": true
         },
         "forecast_run": {
             "action": "forecast_run",

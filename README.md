@@ -7,14 +7,14 @@ actual usage, COGS by period).
 
 ## Status
 
-**Phase 2 the shell and slices 1 (the catalog), 2 (recipes, the first exemplar), 3 (the ledger), 4 (purchasing and the supplier's door, by a Sonnet 5.5 worker, 452 checks), 5 (the POS, the second exemplar) and 6 (counts, by a Sonnet 5.5 worker, 327 checks) built and proven (2026-10-11); slices 7–9 with Sonnet 5.5 workers.** The action manifest (119 screens, 146 actions), the MCP tool surface,
+**Phase 2 the shell and slices 1 (the catalog), 2 (recipes, the first exemplar), 3 (the ledger), 4 (purchasing and the supplier's door, by a Sonnet 5.5 worker, 452 checks), 5 (the POS, the second exemplar), 6 (counts, by a Sonnet 5.5 worker, 327 checks) and 7 (periods and usage, by a Sonnet 5.5 worker, 269 checks) built and proven (2026-10-11); slices 8–9 with Sonnet 5.5 workers.** The action manifest (119 screens, 146 actions), the MCP tool surface,
 three build specs and ten slice specs, every manifest row claimed once (`tests/phase1/check_specs.sh`); db/018 carries the schema
 items the documents found. **Phase 0 complete the same day.** The design was approved by the owner the same day it was written, every recommendation
 (D1–D16, §15). The kernel's catalog row (K47) is applied. The kit is proven without a kernel (123 checks), the schema by
 164 checks on a scratch database (`tests/phase0/schema.sh`), the manifest, the two agents, twelve skills and `deploy/` are
 written, and the installer's `plan` reads the repository clean. No screens yet.
 
-Next: the slices in the design's order — 1 catalog, 2 recipes (the first exemplar), 3 the ledger, 5 the POS (the second exemplar), then 4 and 6 (built) and 7–9.
+Next: the slices in the design's order — 1 catalog, 2 recipes (the first exemplar), 3 the ledger, 5 the POS (the second exemplar), then 4, 6 and 7 (built) and 8–9.
 
 ## Documents
 
