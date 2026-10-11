@@ -5,13 +5,14 @@
 #   (Playwright + its Chromium, for the browser proof). Screenshots go to $SHOTS (default /tmp/ri-shots).
 set -uo pipefail
 ROOT=$(cd "$(dirname "$0")/../.." && pwd)
+export P_APP=${P_APP:-9301} P_KERNEL=${P_KERNEL:-9302} P_FAKE=${P_FAKE:-9303} P_INTERNAL=${P_INTERNAL:-9307}   # the port block (design §14); set all four to run beside another suite
 export RI_DEV_DB=${RI_DEV_DB:-ri_dev2} RI_DEV_ENV=${RI_DEV_ENV:-/tmp/ri-dev2.env} RI_DEV_STATE=${RI_DEV_STATE:-/tmp/ri-dev2-state} SHOTS=${SHOTS:-/tmp/ri-shots}
 mkdir -p "$SHOTS"
 "$ROOT/tests/setup_dev.sh" >/dev/null || { echo "setup failed"; exit 1; }
 "$ROOT/tests/phase2/servers.sh" start >/dev/null || { echo "servers failed"; exit 1; }
 trap '"$ROOT/tests/phase2/servers.sh" stop' EXIT
 set -a; . "$RI_DEV_ENV"; set +a
-export APP_URL="http://127.0.0.1:9301" OS_INTERNAL_URL="http://127.0.0.1:9302" MALUDB_API_URL="http://127.0.0.1:9303" MALUMAIL_API_URL="http://127.0.0.1:9303"
+export APP_URL="http://127.0.0.1:$P_APP" OS_INTERNAL_URL="http://127.0.0.1:$P_KERNEL" MALUDB_API_URL="http://127.0.0.1:$P_FAKE" MALUMAIL_API_URL="http://127.0.0.1:$P_FAKE"
 export FAKE_KERNEL_STATE="$RI_DEV_STATE/kernel.json" FAKE_MALUDB_LOG="$RI_DEV_STATE/maludb.log" RI_PICKER_EXTRA="$ROOT/tests/phase2/picker.php"
 cd "$ROOT"
 php bin/directory_sync.php --full >/dev/null || { echo "the first sync failed"; exit 1; }

@@ -11,7 +11,7 @@
 chdir(dirname(__DIR__, 2));
 $GLOBALS['fails'] = 0;
 $GLOBALS['passes'] = 0;
-const BASE = 'http://127.0.0.1:9301';
+define('BASE', 'http://127.0.0.1:' . (getenv('P_APP') ?: '9301'));
 const APP = 'restaurant_inventory';
 const DOWNTOWN = 101;
 const AIRPORT = 102;

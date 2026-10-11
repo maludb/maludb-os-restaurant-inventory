@@ -709,4 +709,25 @@ db/018 and the decisions the specs took, §16) — Phase 2 begins.
   slice 2 215, the Phase 1 check 52). **A proof lesson:** two proofs sharing ports kill each other's servers (each stop step clears its
   ports), and PHP's built-in server with several workers flakes under load ("Failed to poll event") — each slice proof now owns a port block
   (§14) and the shared suites run alone at the end.
-  NEXT slice 3 (the ledger) and slice 5 (the POS, the second exemplar), side by side.
+  Slices 3 and 5 followed the same day.
+- 2026-10-11 — **SLICE 3 THE LEDGER BUILT AND PROVEN** (`tests/phase3/slice3/run.sh`: 347 checks under php -S and under Apache — receiving at
+  375 px with catch weight, the temperature check and a short line, transfers between sites, adjustments, prep batches, waste at the plate
+  stage exploding, reversals, levels, movements and value, cost walled for a Viewer and for Kitchen). Found: **db/022** — a cost typed on an
+  adjustment's DECREASE valued the movement at the typed cost instead of the running average (refused now in words); the theme's content
+  panel is a scroll container, so `position: sticky` never engages, and it forces `nowrap` on every table cell (the ledger fixes its own;
+  every slice should look); the kit never refused an evaluation run's write (the ledger's writes do; it belongs in the kit).
+- 2026-10-11 — **SLICE 5 THE POS — THE SECOND EXEMPLAR — BUILT AND PROVEN** (`tests/phase3/slice5/run.sh`: 328 checks under php -S and under
+  Apache — sources with sealed credentials, the four mapping templates and the preview, uploads, the email intake and the Square pull against a
+  fake, imports idempotent on external ids, unknown PLUs queued, voids and comps, one depletion run a day re-runnable and voidable, the
+  worker's three POS passes). Found and fixed in **db/023**: a run failed on any day with a check closed outside every day part; run numbers
+  restarted after a void; the unmapped list counted every sale ever made; the Square template read a name column as the price.
+- 2026-10-11 — **Reconciled by the planning model.** db/023's rewrite of `ri_unmapped_plus()` had dropped db/018's `no_depletion` filter AND its
+  SECURITY DEFINER (a CREATE OR REPLACE resets a function to the caller's rights, so the records role could no longer call it) — **db/024**
+  restores both, and the schema proof now checks that every read function keeps its rights (180 checks). The two slices had taken opposite
+  rules for who opens a list; design §3 decides it — a read-only screen opens to every reader at the site with cost walled per field, a
+  configuration screen and every write to the right that writes it — so slice 5's depletion-runs list opens to readers; the rule is in
+  `docs/build-specs/worker-brief.md`. The Phase 2 suite takes its ports from `P_APP`/`P_KERNEL`/`P_FAKE`/`P_INTERNAL`; the Phase 0 worker
+  check follows built passes. Every suite re-run green one at a time: Phase 0 124 (schema 180), Phase 2 347 under php -S and under Apache,
+  slice 1 237, slice 2 215, slice 3 347 and slice 5 328 under both, the Phase 1 check 52, the registry clean.
+  **THE HANDOFF POINT:** slices 4, 6, 7, 8, 9 and Phases 4–5 go to Sonnet 5.5 workers one at a time (`docs/build-specs/worker-brief.md`),
+  each verified and committed by the planning model.

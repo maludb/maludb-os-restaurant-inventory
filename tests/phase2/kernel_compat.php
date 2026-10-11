@@ -46,9 +46,9 @@ posix_kill($pid, 15);
 usleep(400000);
 kernel_state(function ($s) { $s['facts']['88'] = ['valid' => true, 'is_agent' => true, 'member_id' => 901, 'run_id' => 88, 'request_id' => 'req-run-88', 'trigger' => 'chat', 'endpoints' => [['name' => 'Records MCP']]]; return $s; });
 ok(req('GET', '/me/trail', ['headers' => as_agent($tok)])['code'] === 401 && q('SELECT capability FROM members WHERE id = 901')[0]['capability'] === null, 'the kernel down → refused (fail closed), no admission');
-$cmd = 'sh -c ' . escapeshellarg('cd ' . escapeshellarg(dirname(__DIR__, 2)) . ' && exec php -S 127.0.0.1:9302 tests/fake_kernel.php >' . escapeshellarg(need('RI_DEV_STATE') . '/kernel.log') . ' 2>&1') . ' & echo $!';
+$cmd = 'sh -c ' . escapeshellarg('cd ' . escapeshellarg(dirname(__DIR__, 2)) . ' && exec php -S 127.0.0.1:' . (getenv('P_KERNEL') ?: '9302') . ' tests/fake_kernel.php >' . escapeshellarg(need('RI_DEV_STATE') . '/kernel.log') . ' 2>&1') . ' & echo $!';
 file_put_contents(need('RI_DEV_STATE') . '/kernel.pid', trim((string) shell_exec($cmd)));
-for ($i = 0; $i < 30; $i++) { usleep(200000); if (req('GET', 'http://127.0.0.1:9302/api/v1/runs/facts.php')['code'] > 0) { break; } }
+for ($i = 0; $i < 30; $i++) { usleep(200000); if (req('GET', 'http://127.0.0.1:' . (getenv('P_KERNEL') ?: '9302') . '/api/v1/runs/facts.php')['code'] > 0) { break; } }
 ok(req('GET', '/me/trail', ['headers' => as_agent($tok)])['code'] === 200 && q('SELECT capability FROM members WHERE id = 901')[0]['capability'] === 'write', 'the kernel back and vouching → 200, admitted');
 // the expert (40, Chef at both sites) with a run token: source agent, run id, the site given
 $tok2 = run_token(40, 89);

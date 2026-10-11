@@ -14,7 +14,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import { spawn, execFileSync } from 'node:child_process';
 
-const BASE = 'http://127.0.0.1:9301';
+const BASE = `http://127.0.0.1:${process.env.P_APP || '9301'}`;
 const SHOTS = process.env.SHOTS || '/tmp/ri-shots';
 const KEY = process.env.ACTION_TOKEN_KEY;
 const STATE = process.env.FAKE_KERNEL_STATE;
@@ -248,7 +248,7 @@ const smallControls = (page, scope) => page.evaluate((s) => [...document.querySe
   await page.click('#assistant-send');
   await page.waitForSelector('#assistant-reply-error');
   ok((await page.locator('#assistant-reply-error').innerText()).includes('The kernel is not reachable right now.'), 'with the fake kernel stopped the bar says "The kernel is not reachable right now."');
-  const child = spawn('php', ['-S', '127.0.0.1:9302', 'tests/fake_kernel.php'], { cwd: new URL('../../', import.meta.url).pathname, detached: true, stdio: 'ignore', env: process.env });
+  const child = spawn('php', ['-S', `127.0.0.1:${process.env.P_KERNEL || '9302'}`, 'tests/fake_kernel.php'], { cwd: new URL('../../', import.meta.url).pathname, detached: true, stdio: 'ignore', env: process.env });
   child.unref();
   fs.writeFileSync(STATE_DIR + '/kernel.pid', String(child.pid));
   await page.waitForTimeout(800);

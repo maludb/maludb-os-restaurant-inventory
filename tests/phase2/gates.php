@@ -19,7 +19,7 @@ $matrix = [
     '/receipts/new' => $kitchen, '/transfers/new' => $kitchen, '/adjustments/new' => $chef, '/production/new' => $kitchen, '/waste/new' => $kitchen,
     '/counts/' => $kitchen, '/counts/sheets/' => $chef, '/counts/containers/' => $chef,
     '/purchasing/suggested' => $chef, '/purchasing/' => $everyone, '/purchasing/due' => $kitchen, '/invoices/' => $manager, '/purchasing/alerts' => $chef,
-    '/sales/' => $everyone, '/sales/sources/' => 'owner', '/sales/upload' => $kitchen, '/sales/runs/' => $kitchen, '/sales/mappings/' => 'owner',
+    '/sales/' => $everyone, '/sales/sources/' => 'owner', '/sales/upload' => $kitchen, '/sales/runs/' => $everyone, '/sales/mappings/' => 'owner',
     '/usage/' => $chef, '/periods/' => $chef, '/usage/cogs' => $chef, '/periods/calendars' => 'owner',
     '/projection/' => $chef, '/projection/stock' => $everyone, '/projection/demand' => $chef, '/projection/calendar' => $manager, '/projection/special' => $everyone, '/projection/proposals' => $chef, '/projection/watches' => $everyone,
     '/reports/' => $chef, '/reports/exports' => $manager, '/reports/sites' => $chef,

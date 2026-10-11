@@ -24,9 +24,9 @@ ok(req('GET', '/api/v1/health.php')['code'] === 200, '/api/v1/health.php answers
 ok(req('GET', '/api/v1/other')['code'] === 404 && req('GET', '/api/')['code'] === 404 && req('GET', '/api/anything')['code'] === 404, 'anything else under /api is 404');
 if (getenv('RI_APP') === 'apache') {
     ok(in_array(req('GET', '/mcp/records')['code'], [502, 503], true) && in_array(req('GET', '/mcp/activity')['code'], [502, 503], true), 'the MCP proxies are in the vhost and answer 502 until Phase 4 starts the servers');
-    $i = req('GET', 'http://127.0.0.1:9307/api/v1/health');
-    ok($i['code'] === 200 && json_decode($i['body'], true)['application'] === 'restaurant_inventory', 'the internal vhost on 9307 answers health the same');
-    ok(req('GET', 'http://127.0.0.1:9307/recipes/', ['jar' => $j])['code'] === 200 && req('GET', 'http://127.0.0.1:9307/files/1')['code'] === 401, 'and the canonical rewrites and the attachment door');
+    $i = req('GET', 'http://127.0.0.1:' . (getenv('P_INTERNAL') ?: '9307') . '/api/v1/health');
+    ok($i['code'] === 200 && json_decode($i['body'], true)['application'] === 'restaurant_inventory', 'the internal vhost answers health the same');
+    ok(req('GET', 'http://127.0.0.1:' . (getenv('P_INTERNAL') ?: '9307') . '/recipes/', ['jar' => $j])['code'] === 200 && req('GET', 'http://127.0.0.1:' . (getenv('P_INTERNAL') ?: '9307') . '/files/1')['code'] === 401, 'and the canonical rewrites and the attachment door');
     $hdr = req('GET', '/api/v1/health')['headers'];
     $mod = is_file('/etc/apache2/mods-enabled/headers.load');
     ok($mod === (stripos($hdr, 'X-Content-Type-Options') !== false), 'the Header lines are ' . ($mod ? 'present with' : 'absent without') . ' mod_headers (the guard holds)');

@@ -56,6 +56,12 @@ checklist, and run the installer's `plan` only through the planning model.
 ## The kit's idiom (must match)
 - **Every screen is of the current site.** `require_login()` → `require_site()` / `current_site_id()`; a site row the person does not hold is
   the same 404 as a missing one. Rights are asked AT the site: `has_right($right, $scopeId)`, `require_right()`; cost through `sees_cost($scopeId)`.
+- **Who may open a screen (decided 2026-10-11 when slices 3 and 5 differed):** a screen that only READS opens to every role at the site whose
+  reach in design §3 covers its data — `ri.read` for the ledger, sales days, depletion runs, counts, waste, purchase orders and their status,
+  usage and the reports' facts — with cost walled per field through `sees_cost()`. A **configuration** screen (POS sources, their
+  credentials, mappings, settings, sequences, agents, tokens) and **every form and write** opens only to the right that writes it. The menu
+  (`app/features/shell/nav.php`) shows the items a role works with; a URL a role may read still opens when the menu hides it, and a
+  breadcrumb links to a list whenever that list opens for the person.
 - A write handler: `ri_handler_begin()` → load the record (a hidden record is the same 404 as a missing one) → the right at the site →
   field readers (`req_val`, `ri_text`, `ri_int`, `ri_choice`, `ri_ref`, `ri_yes`, `request_list`, …) collecting `$errors` →
   `ri_refuse_fields($errors)` → `ri_guard($pdo, fn)` (a transaction + `log_activity()`; it turns the schema's refusals into 422/404/403 with the
@@ -90,7 +96,7 @@ resumed with the answer. Never improvise around a gap.
 
 ## Proof (the slice is not done until all of this is green)
 - `tests/phase3/slice<N>/run.sh` modelled on slice 5's (and slice 2's `servers.sh`, which takes `P_APP`/`P_KERNEL`/`P_FAKE` and stops ONLY its
-  own ports): a fresh scratch database (env `/tmp/ri-dev-s<N>.env`, state `/tmp/ri-dev-s<N>-state`, shots `/tmp/ri-shots/slice<N>`), your
+  own ports; `tests/phase2/run.sh` takes the same three plus `P_INTERNAL`, defaulting to 9301–9303 and 9307): a fresh scratch database (env `/tmp/ri-dev-s<N>.env`, state `/tmp/ri-dev-s<N>-state`, shots `/tmp/ri-shots/slice<N>`), your
   port block above, the schema proof, one PHP proof per area plus a JSON proof (every screen and handler in JSON mode under the action token,
   the HTMX stamps, the log vocabulary, the registry counts) and `browser.mjs` (Playwright from `/var/www/web/node_modules`, read only: the
   slice's screens at 375×740 and 1280×800, no sideways scroll, no console error, the enhancements and the no-JavaScript path), the server-log

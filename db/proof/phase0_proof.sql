@@ -482,6 +482,19 @@ SELECT pg_temp.refused($$SELECT ri_require_reader(102)$$, 'not a site you hold',
 SELECT pg_temp.check((SELECT count(*) FROM ri_share_cogs_summary(101, pg_temp.i('p_now'))) >= 1 AND (SELECT count(*) FROM mcp_access_tokens_mine) = 0 AND (SELECT display_units FROM mcp_notification_prefs) IS NULL, 'the shares answer the read role; the new views answer');
 RESET ROLE;
 
+-- ================================================================ the read functions keep db/018's rights (a CREATE OR REPLACE resets them — db/024)
+SELECT pg_temp.check(NOT EXISTS (
+    SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace AND n.nspname = 'public'
+     WHERE p.proname IN ('ri_find', 'ri_recipe_cost', 'ri_recipe_what_if', 'ri_explode', 'ri_recipe_version_on', 'ri_recipes_using', 'ri_menu_engineering',
+                         'ri_usage', 'ri_usage_by_category', 'ri_variance_top', 'ri_stock_value', 'ri_days_on_hand', 'ri_price_movers', 'ri_pos_health',
+                         'ri_unmapped_plus', 'ri_sales_by_item', 'ri_count_variance', 'ri_count_areas_skipped', 'ri_purchase_orders_open', 'ri_deliveries_due',
+                         'ri_invoice_mismatches', 'ri_stockouts_projected', 'ri_item_forecast', 'ri_ingredient_demand', 'ri_projected_stock', 'ri_suggested_order',
+                         'ri_suppliers_due', 'ri_on_hand', 'ri_on_order', 'ri_cost_as_of', 'ri_to_base', 'ri_from_base', 'ri_watch_events', 'ri_morning_note',
+                         'ri_require_reader', 'ri_share_purchases_received', 'ri_share_stock_valuation', 'ri_share_cogs_summary', 'ri_share_waste_summary',
+                         'ri_share_sales_by_day', 'ri_share_ingredients_index')
+       AND (NOT p.prosecdef OR NOT has_function_privilege('restaurant_inventory_records_ro', p.oid, 'EXECUTE'))),
+    'every read function is SECURITY DEFINER and callable by the records role (a rewrite in a later migration keeps db/018''s rights)');
+
 -- ================================================================ the count
 \o
 SELECT CASE WHEN ok THEN 'ok   ' ELSE 'FAIL ' END || label FROM proof ORDER BY n;
