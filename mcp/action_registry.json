@@ -1,6 +1,6 @@
 {
     "generated_from": "docs/restaurant-inventory-action-manifest.md",
-    "generated_at": "2026-10-11T17:48:22+00:00",
+    "generated_at": "2026-10-11T18:14:23+00:00",
     "screens": {
         "home": {
             "screen": "home",
@@ -427,8 +427,8 @@
                 "below_par",
                 "format"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "stock-movements": {
             "screen": "stock-movements",
@@ -442,8 +442,8 @@
                 "from",
                 "to"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "stock-value": {
             "screen": "stock-value",
@@ -453,8 +453,8 @@
             "params": [
                 "as_of"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "receipt-list": {
             "screen": "receipt-list",
@@ -467,8 +467,8 @@
                 "from",
                 "to"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "receipt-add": {
             "screen": "receipt-add",
@@ -480,7 +480,7 @@
                 "supplier",
                 "area"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "receipt-view": {
@@ -489,7 +489,7 @@
             "section": "The ledger: receiving, transfers, adjustments, production, waste (slice 3)",
             "when": "**the receiving screen** at 375 px: the header; the line form — ingredient through the picker (or the PO line), quantity in the purchase unit, the declared weight for catch weight, the cost per unit (walled), the temperature for a checked category, discrepancy, put-away area; the lines; **Post**, **Cancel**; posted: the movements and the trail",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "receipt-edit": {
@@ -498,7 +498,7 @@
             "section": "The ledger: receiving, transfers, adjustments, production, waste (slice 3)",
             "when": "a draft's header",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "transfer-list": {
@@ -509,8 +509,8 @@
             "params": [
                 "status"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "transfer-add": {
             "screen": "transfer-add",
@@ -523,7 +523,7 @@
                 "to_area",
                 "ingredient"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "transfer-view": {
@@ -532,7 +532,7 @@
             "section": "The ledger: receiving, transfers, adjustments, production, waste (slice 3)",
             "when": "a draft: the lines (ingredient, quantity with its unit); **Send**; in transit: quantities received per line, **Receive**; received: both halves' movements",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "adjustment-list": {
@@ -544,8 +544,8 @@
                 "status",
                 "reason"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "adjustment-add": {
             "screen": "adjustment-add",
@@ -557,7 +557,7 @@
                 "reason",
                 "ingredient"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "adjustment-view": {
@@ -566,7 +566,7 @@
             "section": "The ledger: receiving, transfers, adjustments, production, waste (slice 3)",
             "when": "a draft: the lines (ingredient, signed quantity with its unit, a cost for an opening balance (walled), note); **Post**, **Cancel**; posted: the movements",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "production-list": {
@@ -580,8 +580,8 @@
                 "from",
                 "to"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "production-add": {
             "screen": "production-add",
@@ -591,7 +591,7 @@
             "params": [
                 "recipe"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "production-view": {
@@ -600,7 +600,7 @@
             "section": "The ledger: receiving, transfers, adjustments, production, waste (slice 3)",
             "when": "one batch: what it consumed and what it made, at cost (walled), the movements",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "waste-list": {
@@ -615,8 +615,8 @@
                 "reason",
                 "station"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "waste-add": {
             "screen": "waste-add",
@@ -628,7 +628,7 @@
                 "ingredient",
                 "recipe"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "waste-view": {
@@ -637,7 +637,7 @@
             "section": "The ledger: receiving, transfers, adjustments, production, waste (slice 3)",
             "when": "one waste log with its movements; **Review**; **Void**",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "purchase-order-list": {
@@ -3786,7 +3786,7 @@
             "who": "stock.receive",
             "agent": true,
             "record_id": "the receipt",
-            "built": false
+            "built": true
         },
         "receipt_update": {
             "action": "receipt_update",
@@ -3855,7 +3855,7 @@
             "who": "stock.receive",
             "agent": true,
             "record_id": "the receipt",
-            "built": false,
+            "built": true,
             "partial": true
         },
         "receipt_line_add": {
@@ -3967,7 +3967,7 @@
             "who": "stock.receive",
             "agent": true,
             "record_id": "the receipt line",
-            "built": false
+            "built": true
         },
         "receipt_line_remove": {
             "action": "receipt_line_remove",
@@ -3988,7 +3988,7 @@
             "who": "stock.receive",
             "agent": true,
             "record_id": "the receipt line",
-            "built": false
+            "built": true
         },
         "receipt_post": {
             "action": "receipt_post",
@@ -4009,7 +4009,7 @@
             "who": "stock.receive",
             "agent": true,
             "record_id": "the receipt",
-            "built": false
+            "built": true
         },
         "receipt_cancel": {
             "action": "receipt_cancel",
@@ -4030,7 +4030,7 @@
             "who": "stock.receive",
             "agent": true,
             "record_id": "the receipt",
-            "built": false
+            "built": true
         },
         "stock_reverse": {
             "action": "stock_reverse",
@@ -4057,7 +4057,7 @@
             "who": "counts.approve",
             "agent": true,
             "record_id": "the reversal",
-            "built": false
+            "built": true
         },
         "transfer_draft": {
             "action": "transfer_draft",
@@ -4102,7 +4102,7 @@
             "who": "stock.transfer",
             "agent": true,
             "record_id": "the transfer",
-            "built": false
+            "built": true
         },
         "transfer_update": {
             "action": "transfer_update",
@@ -4147,7 +4147,7 @@
             "who": "stock.transfer",
             "agent": true,
             "record_id": "the transfer",
-            "built": false
+            "built": true
         },
         "transfer_line_set": {
             "action": "transfer_line_set",
@@ -4192,7 +4192,7 @@
             "who": "stock.transfer",
             "agent": true,
             "record_id": "the transfer line",
-            "built": false
+            "built": true
         },
         "transfer_line_remove": {
             "action": "transfer_line_remove",
@@ -4213,7 +4213,7 @@
             "who": "stock.transfer",
             "agent": true,
             "record_id": "the transfer line",
-            "built": false
+            "built": true
         },
         "transfer_send": {
             "action": "transfer_send",
@@ -4234,7 +4234,7 @@
             "who": "stock.transfer",
             "agent": true,
             "record_id": "the transfer",
-            "built": false
+            "built": true
         },
         "transfer_receive": {
             "action": "transfer_receive",
@@ -4261,7 +4261,7 @@
             "who": "stock.transfer",
             "agent": true,
             "record_id": "the transfer",
-            "built": false
+            "built": true
         },
         "transfer_cancel": {
             "action": "transfer_cancel",
@@ -4282,7 +4282,7 @@
             "who": "stock.transfer",
             "agent": true,
             "record_id": "the transfer",
-            "built": false
+            "built": true
         },
         "adjustment_draft": {
             "action": "adjustment_draft",
@@ -4321,7 +4321,7 @@
             "who": "counts.approve",
             "agent": true,
             "record_id": "the adjustment",
-            "built": false
+            "built": true
         },
         "adjustment_line_set": {
             "action": "adjustment_line_set",
@@ -4378,7 +4378,7 @@
             "who": "counts.approve",
             "agent": true,
             "record_id": "the adjustment line",
-            "built": false
+            "built": true
         },
         "adjustment_line_remove": {
             "action": "adjustment_line_remove",
@@ -4399,7 +4399,7 @@
             "who": "counts.approve",
             "agent": true,
             "record_id": "the adjustment line",
-            "built": false
+            "built": true
         },
         "stock_adjust": {
             "action": "stock_adjust",
@@ -4420,7 +4420,7 @@
             "who": "counts.approve",
             "agent": true,
             "record_id": "the adjustment",
-            "built": false
+            "built": true
         },
         "adjustment_cancel": {
             "action": "adjustment_cancel",
@@ -4441,7 +4441,7 @@
             "who": "counts.approve",
             "agent": true,
             "record_id": "the adjustment",
-            "built": false
+            "built": true
         },
         "production_post": {
             "action": "production_post",
@@ -4510,7 +4510,7 @@
             "who": "stock.produce",
             "agent": true,
             "record_id": "the batch",
-            "built": false
+            "built": true
         },
         "production_cancel": {
             "action": "production_cancel",
@@ -4531,7 +4531,7 @@
             "who": "stock.produce",
             "agent": true,
             "record_id": "the batch",
-            "built": false
+            "built": true
         },
         "waste_log": {
             "action": "waste_log",
@@ -4636,7 +4636,7 @@
             "who": "stock.waste",
             "agent": true,
             "record_id": "the waste log",
-            "built": false
+            "built": true
         },
         "waste_review": {
             "action": "waste_review",
@@ -4657,7 +4657,7 @@
             "who": "waste.review",
             "agent": true,
             "record_id": "the waste log",
-            "built": false
+            "built": true
         },
         "waste_void": {
             "action": "waste_void",
@@ -4684,7 +4684,7 @@
             "who": "waste.review",
             "agent": true,
             "record_id": "the waste log",
-            "built": false
+            "built": true
         },
         "purchase_order_draft": {
             "action": "purchase_order_draft",

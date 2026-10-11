@@ -237,3 +237,11 @@ function ri_from_base_db(PDO $pdo, int $ingredientId, string $qtyBase, string $u
         return null;
     }
 }
+
+/** A unit price as money: two decimals, four when the price carries them ($25.00, $3.10, $0.0450); "—" withheld (money()). Added by slice 3 (the ledger) for a document line's price. */
+function money_price(?string $amount): string
+{
+    if ($amount === null || $amount === '') { return money(null); }
+    $f = (float) $amount;
+    return money($amount, abs(round($f, 2) - $f) > 0.000001 ? 4 : 2);
+}

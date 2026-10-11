@@ -1,0 +1,34 @@
+<?php /** THE WASTE LOG at 375 px (screen `waste-add`). Data: prefill (stage, ingredient, recipe), reasons, dayParts, currentDayPart, areas, stations, unitOptions, errors? */
+$errors = $errors ?? [];
+$err = static fn (string $k): string => isset($errors[$k]) ? '<div class="invalid-feedback d-block" id="waste-form-error-' . e($k) . '">' . e($errors[$k]) . '</div>' : '';
+$val = static fn (string $k, mixed $d = ''): string => (string) ($_POST[$k] ?? $d);
+$stage = $val('stage', $prefill['stage'] ?: 'ingredient');
+?>
+<?= view('shared/header.php', ['id' => 'waste-add', 'title' => 'Log waste', 'crumbs' => [['Home', '/'], ['Waste', '/waste/'], ['Log', null]], 'back' => back_link() ?? ['/waste/', 'Waste']]) ?>
+<div class="main-content" id="waste-add-content">
+    <?= view('stock/_assets.php') ?>
+    <form method="post" action="/waste/save.php" hx-post="/waste/save.php" hx-target="#flash" hx-encoding="multipart/form-data" enctype="multipart/form-data" id="waste-form" data-stock-form="waste">
+        <?= csrf_field() ?>
+        <div class="card mb-3"><div class="card-body">
+            <div class="fs-12 text-muted mb-1">Stage</div>
+            <div class="btn-group w-100 mb-3 stock-stage" role="group" aria-label="Stage" id="waste-form-field-stage">
+                <?php foreach (WASTE_STAGES as $k => $w): ?><input type="radio" class="btn-check" name="stage" value="<?= $k ?>" id="waste-form-field-stage-<?= $k ?>" <?= $stage === $k ? 'checked' : '' ?>><label class="btn btn-outline-danger btn-touch" for="waste-form-field-stage-<?= $k ?>" data-stock-stage="<?= $k ?>"><?= e($w) ?></label><?php endforeach; ?>
+            </div><?= $err('stage') ?>
+            <div class="mb-3"><label class="form-label fs-12 text-muted" for="waste-form-field-reason">Reason</label><select name="reason" id="waste-form-field-reason" class="form-select btn-touch<?= isset($errors['reason']) ? ' is-invalid' : '' ?>" required><option value="">Choose…</option><?php foreach ($reasons as $r): ?><option value="<?= e($r['code']) ?>" <?= $val('reason') === $r['code'] ? 'selected' : '' ?>><?= e($r['name']) ?></option><?php endforeach; ?></select><?= $err('reason') ?></div>
+            <div class="mb-3 stock-for-ingredient<?= $stage === 'plate' ? ' d-none' : '' ?>"><label class="form-label fs-12 text-muted" id="waste-form-field-ingredient-label">The ingredient</label><?= picker_field(['id' => 'waste-form-field-ingredient', 'name' => 'ingredient', 'source' => 'ingredient', 'value' => $val('ingredient', $prefill['ingredient']), 'invalid' => isset($errors['ingredient']), 'labelledby' => 'waste-form-field-ingredient-label', 'extra' => ' data-stock-ingredient']) ?><?= $err('ingredient') ?></div>
+            <div class="mb-3 stock-for-recipe<?= $stage === 'ingredient' ? ' d-none' : '' ?>"><label class="form-label fs-12 text-muted" id="waste-form-field-recipe-label">or the plate / the prep (a recipe)</label><?= picker_field(['id' => 'waste-form-field-recipe', 'name' => 'recipe', 'source' => 'recipe', 'value' => $val('recipe', $prefill['recipe']), 'invalid' => isset($errors['recipe']), 'labelledby' => 'waste-form-field-recipe-label', 'extra' => ' data-stock-waste-recipe']) ?><?= $err('recipe') ?></div>
+            <div class="mb-3"><?= view('stock/_qty-unit.php', ['prefix' => 'waste-form', 'name' => 'qty', 'unitName' => 'unit', 'label' => 'Quantity (a recipe: portions or batches)', 'qty' => $val('qty'), 'unit' => $val('unit'), 'options' => $unitOptions, 'errors' => $errors]) ?></div>
+            <div class="mb-3 stock-weigh stock-for-ingredient<?= $stage === 'plate' ? ' d-none' : '' ?>" id="waste-form-weigh"><div class="fs-12 text-muted mb-1">or weigh it — the scale's reading and the container's tare (grams)</div>
+                <div class="row g-2"><div class="col-6"><input type="number" step="any" min="0" inputmode="decimal" name="gross_weight_g" id="waste-form-field-gross_weight_g" class="form-control stock-qty<?= isset($errors['gross_weight_g']) ? ' is-invalid' : '' ?>" placeholder="gross g" value="<?= e($val('gross_weight_g')) ?>"></div><div class="col-6"><input type="number" step="any" min="0" inputmode="decimal" name="tare_g" id="waste-form-field-tare_g" class="form-control stock-qty" placeholder="tare g" value="<?= e($val('tare_g')) ?>"></div></div><?= $err('gross_weight_g') ?><?= $err('tare_g') ?></div>
+            <div class="row g-2 mb-3">
+                <div class="col-6"><label class="form-label fs-12 text-muted" for="waste-form-field-station">Station</label><input type="text" list="waste-stations" maxlength="60" name="station" id="waste-form-field-station" class="form-control btn-touch" value="<?= e($val('station')) ?>"><datalist id="waste-stations"><?php foreach ($stations as $s): ?><option value="<?= e($s) ?>"><?php endforeach; ?></datalist></div>
+                <div class="col-6"><label class="form-label fs-12 text-muted" for="waste-form-field-day_part">Day part</label><select name="day_part" id="waste-form-field-day_part" class="form-select btn-touch"><option value="">—</option><?php foreach ($dayParts as $d): ?><option value="<?= $d['day_part_id'] ?>" <?= $val('day_part', (string) $currentDayPart) === (string) $d['day_part_id'] ? 'selected' : '' ?>><?= e($d['name']) ?></option><?php endforeach; ?></select></div>
+                <div class="col-6"><label class="form-label fs-12 text-muted" for="waste-form-field-area">Area</label><select name="area" id="waste-form-field-area" class="form-select btn-touch"><option value="">Its own area</option><?php foreach ($areas as $a): ?><option value="<?= $a['storage_area_id'] ?>" <?= $val('area') === (string) $a['storage_area_id'] ? 'selected' : '' ?>><?= e($a['name']) ?></option><?php endforeach; ?></select><?= $err('area') ?></div>
+                <div class="col-6"><label class="form-label fs-12 text-muted" for="waste-form-field-disposition">Disposition</label><select name="disposition" id="waste-form-field-disposition" class="form-select btn-touch"><?php foreach (WASTE_DISPOSITIONS as $k => $w): ?><option value="<?= $k ?>" <?= $val('disposition', 'trash') === $k ? 'selected' : '' ?>><?= e($w) ?></option><?php endforeach; ?></select></div>
+            </div>
+            <div class="mb-3"><label class="form-label fs-12 text-muted" for="waste-form-field-photo">Photo</label><input type="file" accept="image/*" capture="environment" name="photo" id="waste-form-field-photo" class="form-control btn-touch"><?= $err('photo') ?></div>
+            <div><label class="form-label fs-12 text-muted" for="waste-form-field-notes">Notes</label><input type="text" maxlength="2000" name="notes" id="waste-form-field-notes" class="form-control btn-touch" value="<?= e($val('notes')) ?>"></div>
+        </div></div>
+        <div class="stock-post-bar"><button type="submit" class="btn btn-danger btn-touch w-100 stock-big-btn" id="waste-form-submit"><i class="feather-trash-2 me-1"></i>Log</button></div>
+    </form>
+</div>

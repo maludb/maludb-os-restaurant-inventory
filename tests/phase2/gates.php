@@ -15,7 +15,8 @@ $manager = 'owner marco';
 $matrix = [
     '/' => $everyone, '/search' => $everyone, '/ingredients/' => $everyone, '/suppliers/' => $everyone, '/areas/' => $everyone, '/categories/' => $chef, '/units/' => 'owner',
     '/recipes/' => $everyone, '/menu/' => $everyone, '/modifiers/' => $chef, '/menu/engineering' => $chef, '/menu/categories' => $chef,
-    '/stock/' => $everyone, '/stock/movements' => $everyone, '/stock/value' => $chef, '/receipts/' => $kitchen, '/transfers/' => $kitchen, '/adjustments/' => $chef, '/production/' => $kitchen, '/waste/' => $kitchen,
+    '/stock/' => $everyone, '/stock/movements' => $everyone, '/stock/value' => $everyone, '/receipts/' => $everyone, '/transfers/' => $everyone, '/adjustments/' => $everyone, '/production/' => $everyone, '/waste/' => $everyone,   // slice 3: the ledger's lists read under ri.read (design §2, ledger.md); its doors that act keep the role's right
+    '/receipts/new' => $kitchen, '/transfers/new' => $kitchen, '/adjustments/new' => $chef, '/production/new' => $kitchen, '/waste/new' => $kitchen,
     '/counts/' => $kitchen, '/counts/sheets/' => $chef, '/counts/containers/' => $chef,
     '/purchasing/suggested' => $chef, '/purchasing/' => $everyone, '/purchasing/due' => $kitchen, '/invoices/' => $manager, '/purchasing/alerts' => $chef,
     '/sales/' => $everyone, '/sales/sources/' => 'owner', '/sales/upload' => $kitchen, '/sales/runs/' => $kitchen, '/sales/mappings/' => 'owner',
@@ -36,7 +37,7 @@ foreach ($matrix as $route => $allowed) {
     }
 }
 ok($wrong === [], "$n role × screen checks (" . count($matrix) . ' screens × 6 people) answer 200 or 403 as the rights say at the site' . ($wrong ? ': ' . implode('; ', array_slice($wrong, 0, 8)) : ''));
-ok(str_contains(page($jars['ann'], '/receipts/')['body'], 'Your role at SMOKE Downtown (Viewer) does not let you do that') && str_contains(page($jars['bea'], '/modifiers/')['body'], '(Kitchen) does not let you') && str_contains(page($jars['dana'], '/invoices/')['body'], '(Chef) does not let you'), "a refusal says what the person may not do, in words (Ann on Receive, Bea on Modifiers, Dana on Invoices)");
+ok(str_contains(page($jars['ann'], '/receipts/new')['body'], 'Your role at SMOKE Downtown (Viewer) does not let you do that') && str_contains(page($jars['bea'], '/modifiers/')['body'], '(Kitchen) does not let you') && str_contains(page($jars['dana'], '/invoices/')['body'], '(Chef) does not let you'), "a refusal says what the person may not do, in words (Ann on Receive, Bea on Modifiers, Dana on Invoices)");
 $stubs = trim((string) shell_exec('grep -rl "render_nav_stub(" ' . escapeshellarg(dirname(__DIR__, 2) . '/html') . ' 2>/dev/null | wc -l'));
 $stubsWanted = count(array_filter(json_decode((string) file_get_contents(dirname(__DIR__, 2) . '/mcp/action_registry.json'), true)['screens'] ?? [], static fn (array $s): bool => !empty($s['stub'])));
 ok((int) $stubs === $stubsWanted && $stubsWanted > 0, "every placeholder controller names its slice ($stubs; the registry reads $stubsWanted stubs — 52 before slice 1)");

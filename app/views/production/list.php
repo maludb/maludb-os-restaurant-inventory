@@ -1,0 +1,16 @@
+<?php /** The prep batches at this site (screen `production-list`). Data: rows, total, page, filters, seesCost, mayProduce, notice */ $pdo = db(); $tz = site_timezone(); ?>
+<?= view('shared/header.php', ['id' => 'production-list', 'title' => 'Prep batches', 'crumbs' => [['Home', '/'], ['Stock', '/stock/'], ['Prep batches', null]], 'action' => $mayProduce ? hx_link('/production/new', '<i class="feather-plus me-1"></i>Record a prep batch', 'btn btn-primary btn-touch', 'id="production-list-new-btn"') : '']) ?>
+<div class="main-content" id="production-list-content">
+    <?= view('shared/notice.php', ['notice' => $notice]) ?>
+    <form method="get" action="/production/" hx-get="/production/" hx-target="#page-content" hx-push-url="true" hx-trigger="change from:select" class="card mb-3" id="production-list-filters"><div class="card-body row g-2 align-items-end">
+        <div class="col-6 col-md-3"><label class="form-label fs-12 text-muted" for="production-filter-status">Status</label><select name="status" id="production-filter-status" class="form-select btn-touch"><option value="">Any</option><?php foreach (['draft', 'posted', 'cancelled'] as $s): ?><option value="<?= $s ?>" <?= $filters['status'] === $s ? 'selected' : '' ?>><?= ucfirst($s) ?></option><?php endforeach; ?></select></div>
+        <div class="col-6 col-md-2"><label class="form-label fs-12 text-muted" for="production-filter-from">From</label><input type="date" name="from" id="production-filter-from" class="form-control btn-touch" value="<?= e($filters['from']) ?>"></div>
+        <div class="col-6 col-md-2"><label class="form-label fs-12 text-muted" for="production-filter-to">To</label><input type="date" name="to" id="production-filter-to" class="form-control btn-touch" value="<?= e($filters['to']) ?>"></div>
+        <div class="col-6 col-md-2"><button type="submit" class="btn btn-light btn-touch w-100" id="production-filter-apply">Filter</button></div></div></form>
+    <?php if ($rows === []): ?><div class="card" id="production-list-empty"><div class="card-body text-center text-muted py-5">No prep batches.</div></div><?php else: ?>
+    <div class="card"><div class="stock-table-wrap"><table class="table table-hover align-middle mb-0" id="production-table"><thead><tr><th>Number</th><th>Recipe</th><th class="text-end">Batches</th><th class="text-end">Output</th><th>Made</th><th>Status</th><th class="text-end">Cost</th><th>By</th></tr></thead><tbody>
+    <?php foreach ($rows as $b): ?><tr id="batch-row-<?= $b['production_batch_id'] ?>"><td><?= hx_link('/production/' . $b['production_batch_id'], e($b['number']), 'fw-semibold') ?></td><td><?= hx_link('/recipes/' . $b['recipe_id'], e($b['recipe'])) ?></td><td class="text-end"><?= e(fmt_num($b['batches'], 4)) ?></td>
+        <td class="text-end"><?= $b['output_qty_base'] === null || $b['output_ingredient_id'] === null ? '' : e(format_qty($pdo, $b['output_ingredient_id'], $b['output_qty_base'])) ?></td><td class="fs-12"><?= e(format_ts($b['made_at'], $tz, 'M j g:i A')) ?></td><td><?= doc_chip($b['status']) ?></td><td class="text-end"><?= $seesCost ? money($b['cost_total'] === null ? null : (string) $b['cost_total']) : money(null) ?></td><td class="fs-12"><?= e((string) $b['made_by_name']) ?></td></tr><?php endforeach; ?>
+    </tbody></table></div></div><?php endif; ?>
+</div>
+<?= view('stock/_assets.php') ?>

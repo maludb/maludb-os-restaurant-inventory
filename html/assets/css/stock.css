@@ -1,0 +1,26 @@
+/* slice 3 — the ledger (ledger.md "Mobile rule"): receiving, the batch form and the waste log at 375 px first. Kept apart from the shared
+   app-overrides.css so slices built side by side never edit one file. */
+.stock-qty-unit .stock-qty { min-height: 56px; font-size: 1.35rem; font-weight: 600; }
+.stock-qty-unit .stock-unit { min-height: 56px; max-width: 45%; flex: 0 0 auto; width: auto; min-width: 6.5rem; }   /* the input group's .form-select is width 1 % — never 32 px on a phone */
+input.stock-qty { min-height: 56px; font-size: 1.25rem; }
+.stock-big-btn { min-height: 64px; font-size: 1.05rem; font-weight: 600; }
+.stock-stage .btn { min-height: 56px; }
+.stock-tile { border-radius: .5rem; }
+.stock-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.stock-table-wrap table { min-width: 720px; }
+@media (max-width: 991.98px) {
+    .stock-post-bar { position: sticky; bottom: 124px; z-index: 6; background: var(--bs-body-bg, #fff); padding: .5rem 0; }
+    /* the theme's .main-content is a scroll container (overflow-x hidden, overflow-y auto), where sticky never engages: clip instead — it still
+       clips sideways but scrolls nothing, so the bar sticks to the viewport above the tab bar and the assistant bar */
+    .nxl-container .nxl-content .main-content:has(.stock-post-bar) { overflow: visible; overflow-x: clip; }
+}
+/* the theme sets white-space: nowrap on every cell; at the desk the ledger's tables wrap their cells and fit (ledger.md: at 1280 the tables in
+   full); on a phone they keep nowrap and scroll inside their card */
+@media (min-width: 992px) {
+    .stock-table-wrap .table tr td, .stock-table-wrap .table tr th { white-space: normal; padding-left: .6rem; padding-right: .6rem; }
+    .stock-table-wrap table { min-width: 0; }
+}
+@media (max-width: 575.98px) {
+    .stock-qty-unit .stock-unit { max-width: 50%; }
+    .stock-line-form .card-body { padding: .75rem; }
+}

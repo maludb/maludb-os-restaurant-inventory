@@ -216,3 +216,58 @@ weight, per lb) and the Produce Co with limes; slice 2's `recipe_world()` — th
 
 ## Open questions
 None. Every rule here is the schema's or the design's (§6.3, D10, D12).
+
+## Built and proven
+
+Built 2026-10-11 by the planning model's fork, beside slice 5 in the same working tree; the application's commits are not pushed. All 19 screens and
+24 actions of this spec are built (the registry reads 72 screens and 85 actions built in all).
+
+**Proof:** `tests/phase3/slice3/run.sh` runs on the scratch database `ri_dev3d`, with this slice's port block: the app on :9316, the fake kernel :9317,
+the fake MaluDB :9318 and the internal vhost :9319. **347 checks pass under php -S and 347 under a user-level Apache rendering
+`deploy/apache-restaurant_inventory.conf`.**
+
+| File | Checks | What it proves |
+|---|---|---|
+| `receipts.php` | 78 | receipts, catch weight and temperature, the moving average, a price alert, a free sample, cancel, a late receipt, a PO receipt, `kitchen_sees_cost` |
+| `levels.php` | 50 | the empty state, on hand, below par, CSV, movements of every type, value, the `mcp_*` walls |
+| `transfers.php` | 75 | transfers, adjustments, an agent's `stock_adjust`, the ledger's rules, reversal, a negative balance, db/022 |
+| `production.php` | 60 | the batch form and preview, posting, an actual output, draft and cancel, waste at three stages, the scale, the photo, review, void, the week |
+| `json.php` | 38 | the action-token shape, `_partial`, 422 fields, the expert under its run token, an evaluation run |
+| `browser.mjs` | 43 | headless Chromium at 375 × 740 and 1280 × 800, and with JavaScript off |
+| registry, approvals, claim check | 3 | |
+
+The shared suites ran once at the end:
+- `tests/phase2/run.sh`: 349 green, after its gate matrix was brought to the built screens (below).
+- `tests/phase1/check_specs.sh`: 52 green.
+- `php bin/build_action_registry.php --check`: green.
+- `tests/phase0/run.sh`: 122 green and 2 red, both from slice 5's commit 16f60f0, not this slice. The schema proof's "a no-depletion PLU leaves the unmapped queue" fails against db/023's new `ri_unmapped_plus()`. The worker check still expects `depletion_runs` to be a stub naming slice 5, but that pass is built now.
+
+Screenshots are in `/tmp/ri-shots-s3`. The proofs are order-dependent by design: receipts first on the fresh database, for its first prices; levels makes its empty state and on-hand checks at Airport.
+
+**Files:**
+- **Feature code:** `app/features/stock/{queries,present,handler}.php` and `app/partial_targets/stock.php` (receipt_update's `_partial`).
+- **Views:** `app/views/{stock,receipts,transfers,adjustments,production,waste}/`.
+- **Controllers:** `html/{stock,receipts,transfers,adjustments,production,waste}/*`. The eight placeholders were replaced.
+- **Assets:** `html/assets/js/stock-forms.js` and `html/assets/css/stock.css`, kept apart from `app-overrides.css`.
+- **Shared helper:** `money_price()`, appended to `app/features/units/queries.php`.
+- **Migration:** `db/022_slice3_adjustment_decrease_cost.sql`.
+- **Tests:** `tests/phase3/slice3/*`, plus the Phase 2 gate matrix in `tests/phase2/{gates,sso}.php`.
+
+**Decisions taken while building (reported, not questions):**
+- **A Viewer reads the ledger.** The lists and views of receipts, transfers, adjustments, production, waste and stock value open under `ri.read`. This follows design §2 (a Viewer reads stock on hand, counts, waste, orders and their status, never cost) and this spec (a Viewer reaches `stock-value` and reads `withheld`; a Viewer sees no cost on the waste list). The doors that act keep the role's right: `/receipts/new` `stock.receive`, `/transfers/new` `stock.transfer`, `/adjustments/new` `counts.approve`, `/production/new` `stock.produce`, `/waste/new` `stock.waste`, and every write. Phase 2's gate matrix had the placeholders' menu rights; it now says so, and its "may not receive" checks use `/receipts/new`. The shell's menu rows are unchanged.
+- **The proof's Kitchen cost.** The spec's proof has Bea, a Kitchen member, price flour at $25. Kitchen sees no cost at Downtown, so Dana (Chef) enters the costed lines and Bea's cost is the 422. With `kitchen_sees_cost` on, Bea prices a line.
+- **`is_eval` refuses every write** (the manifest's rule). The kit never enforces it, because it asks for run facts only at an agent's first admission. `stock_refuse_eval()` in the slice prelude asks for each ledger write and answers 403 in words. A run the kernel does not vouch for gets 401.
+- **No `stock/units.php`.** The spec's `app/features/stock/units.php` `qty_with_unit()` would collide with the catalog's request parser of that name. The slice uses the shared unit helpers and `stock_qty_in()`.
+- **`production_post` posts a saved draft** through a `batch` parameter, which the manifest does not list. `draft=yes` saves a batch, and without `batch` a draft could never be posted.
+- **A transfer received at a site the person does not hold answers 404**, the kit's `require_site()`. Drafting to such a site answers 403 in words, as the spec says.
+- **An edited line keeps its ingredient.** A transfer line edited by `line` without an `ingredient` keeps the line's ingredient.
+- **The business day folds under the time.** The movements and waste lists show the business day under the time in one cell, with the late chip there. A list's cells wrap at 992 px and wider, so every table fits at 1280. On a phone they keep `nowrap` and scroll inside their card.
+- **`stock-forms.js` asks `/stock/unit-options` for JSON** without `HX-Request`, which would answer the options partial.
+
+**What the spec or the schema got wrong:**
+- **A cost on a decrease (schema; fixed by db/022).** `ri_post_adjustment()` hands a line's cost to its movement, and `ri_transactions_before()` fills the average only for a NULL. A cost typed on a decrease therefore valued that movement at the typed cost, not the running average. db/022 adds `ri_adjustment_line_cost()`, which refuses it in words.
+- **The average keeps six decimals (schema).** `ingredient_site_costs.avg_cost_per_base` holds the spec's $0.0012125 / g as $0.001213. The proof allows the column's precision.
+- **The negative-balance sentence shows raw base numbers (schema wording).** It reads "Only 0.0000 on hand in that area — the move needs 5.0000 …" with no units.
+- **Sticky never engages under the theme (affects every slice).** The theme's `.main-content` is a scroll container (`overflow-x: hidden; overflow-y: auto`), so `position: sticky` never engages. Slice 2's "the cost panel sticks" checked only the computed style. The ledger sets `overflow-x: clip` on a panel holding a post bar.
+- **The theme forces nowrap on table cells.** It sets `white-space: nowrap` on every cell, which is why wide tables overflow at 1280.
+- **The spec's proof header names other slices' resources.** It names scratch `ri_dev3` and ports 9301–9303, which are Phase 2's. This slice's block is 9316–9319, per design §14.
