@@ -1,0 +1,10 @@
+Order #,Order Date,Sent Date,PLU,Menu Item,Qty,Price,Net Price,Void?,Comp,Modifiers,# of Guests
+SMK-001,10/05/2026,10/05/2026 12:30 PM,1001,SMOKE Chicken Sandwich,2,14.00,28.00,false,false,XCHK,2
+SMK-001,10/05/2026,10/05/2026 12:30 PM,3001,SMOKE Gin and Tonic,1,11.00,11.00,false,false,,2
+SMK-002,10/05/2026,10/05/2026 7:10 PM,1001,SMOKE Chicken Sandwich,1,14.00,14.00,true,false,,3
+SMK-002,10/05/2026,10/05/2026 7:10 PM,1001,SMOKE Chicken Sandwich,1,14.00,0.00,false,true,NOTOM,3
+SMK-002,10/05/2026,10/05/2026 7:10 PM,2002,SMOKE Mystery Special,1,16.00,16.00,false,false,,3
+SMK-003,10/05/2026,10/06/2026 3:30 AM,3001,SMOKE Gin and Tonic,2,11.00,22.00,false,false,,1
+SMK-004,10/06/2026,10/06/2026 1:05 PM,1001,SMOKE Chicken Sandwich,1,14.00,14.00,false,false,"XCHK:2, NOTOM",2
+SMK-005,10/06/2026,10/06/2026 8:40 PM,3001,SMOKE Gin and Tonic,3,11.00,33.00,false,false,,2
+SMK-006,10/06/2026,10/06/2026 8:45 PM,1001,SMOKE Chicken Sandwich,abc,14.00,14.00,false,false,,1

@@ -1,0 +1,10 @@
+check_id,date,closed_at,plu,item,qty,price,total,voided,comp,modifiers,covers
+SMK-001,2026-10-05,12:30,1001,SMOKE Chicken Sandwich,2,14.00,28.00,no,no,XCHK,2
+SMK-001,2026-10-05,12:30,3001,SMOKE Gin and Tonic,1,11.00,11.00,no,no,,2
+SMK-002,2026-10-05,19:10,1001,SMOKE Chicken Sandwich,1,14.00,14.00,yes,no,,3
+SMK-002,2026-10-05,19:10,1001,SMOKE Chicken Sandwich,1,14.00,0,no,yes,NOTOM,3
+SMK-002,2026-10-05,19:10,2002,SMOKE Mystery Special,1,16.00,16.00,no,no,,3
+SMK-003,2026-10-05,03:30,3001,SMOKE Gin and Tonic,2,11.00,22.00,no,no,,1
+SMK-004,2026-10-06,13:05,1001,SMOKE Chicken Sandwich,1,14.00,14.00,no,no,XCHK:2;NOTOM,2
+SMK-005,2026-10-06,20:40,3001,SMOKE Gin and Tonic,3,11.00,33.00,no,no,,2
+SMK-006,2026-10-06,20:45,1001,SMOKE Chicken Sandwich,abc,14.00,14.00,no,no,,1

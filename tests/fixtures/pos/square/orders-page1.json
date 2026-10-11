@@ -1,0 +1,18 @@
+{"orders": [
+  {"id": "SQ-ORDER-1", "location_id": "L-SMOKE", "state": "COMPLETED", "closed_at": "2026-10-08T16:30:00Z",
+   "line_items": [
+     {"uid": "SQ-1-L1", "catalog_object_id": "1001", "name": "SMOKE Chicken Sandwich", "variation_name": "Regular", "quantity": "2",
+      "base_price_money": {"amount": 1400, "currency": "USD"}, "total_money": {"amount": 2800, "currency": "USD"},
+      "modifiers": [{"uid": "m1", "catalog_object_id": "XCHK", "name": "Extra chicken", "quantity": "1"}]},
+     {"uid": "SQ-1-L2", "catalog_object_id": "3001", "name": "SMOKE Gin and Tonic", "variation_name": "Regular", "quantity": "1",
+      "base_price_money": {"amount": 1100, "currency": "USD"}, "total_money": {"amount": 1100, "currency": "USD"}}],
+   "total_money": {"amount": 3900, "currency": "USD"}, "total_tax_money": {"amount": 0, "currency": "USD"}},
+  {"id": "SQ-ORDER-2", "location_id": "L-SMOKE", "state": "COMPLETED", "closed_at": "2026-10-08T23:10:00Z",
+   "line_items": [
+     {"uid": "SQ-2-L1", "catalog_object_id": "1001", "name": "SMOKE Chicken Sandwich", "variation_name": "Regular", "quantity": "1",
+      "base_price_money": {"amount": 1400, "currency": "USD"}, "total_money": {"amount": 0, "currency": "USD"},
+      "applied_discounts": [{"uid": "d1", "discount_uid": "COMP"}]},
+     {"uid": "SQ-2-L2", "catalog_object_id": "2002", "name": "SMOKE Mystery Special", "quantity": "1",
+      "base_price_money": {"amount": 1600, "currency": "USD"}, "total_money": {"amount": 1600, "currency": "USD"}}],
+   "total_money": {"amount": 1600, "currency": "USD"}}
+ ], "cursor": "SMOKE-CURSOR-2"}

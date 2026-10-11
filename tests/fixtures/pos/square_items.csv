@@ -1,0 +1,10 @@
+Date,Time,Transaction ID,Item,SKU,Qty,Gross Sales,Discounts,Net Sales,Modifiers Applied,Event Type,Price Point Name
+2026-10-05,12:30:00,SMK-001,SMOKE Chicken Sandwich,1001,2,$28.00,$0.00,$28.00,XCHK,Payment,Regular
+2026-10-05,12:30:00,SMK-001,SMOKE Gin and Tonic,3001,1,$11.00,$0.00,$11.00,,Payment,Regular
+2026-10-05,19:10:00,SMK-002,SMOKE Chicken Sandwich,1001,1,$14.00,$0.00,$14.00,,Refund,Regular
+2026-10-05,19:10:00,SMK-002,SMOKE Chicken Sandwich,1001,1,$14.00,-$14.00,$0.00,NOTOM,Payment,Regular
+2026-10-05,19:10:00,SMK-002,SMOKE Mystery Special,2002,1,$16.00,$0.00,$16.00,,Payment,Regular
+2026-10-05,03:30:00,SMK-003,SMOKE Gin and Tonic,3001,2,$22.00,$0.00,$22.00,,Payment,Regular
+2026-10-06,13:05:00,SMK-004,SMOKE Chicken Sandwich,1001,1,$14.00,$0.00,$14.00,"XCHK x 2, NOTOM",Payment,Regular
+2026-10-06,20:40:00,SMK-005,SMOKE Gin and Tonic,3001,3,$33.00,$0.00,$33.00,,Payment,Regular
+2026-10-06,20:45:00,SMK-006,SMOKE Chicken Sandwich,1001,abc,$14.00,$0.00,$14.00,,Payment,Regular

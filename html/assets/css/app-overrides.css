@@ -133,3 +133,11 @@ html.app-skin-dark .viz-root { --viz-series-1: #3987e5; --viz-series-2: #d95926;
     .editor-add-form .d-flex > * { width: 100% !important; }
     .editor-side { position: sticky; bottom: 0; z-index: 5; }
 }
+
+/* ---- slice 5: the POS ---------------------------------------------------------------------------------------------------------------- */
+.pos-subform-chosen { border-color: var(--bs-primary, #3454d1) !important; }
+@media (max-width: 575.98px) {
+  /* the upload's Import fixed at the bottom on a phone, above the tab bar and the command bar */
+  #upload-actions { position: sticky; bottom: 7.5rem; z-index: 5; background: var(--bs-body-bg, #fff); }
+  #day-tiles .fs-4 { font-size: 1.1rem !important; }
+}

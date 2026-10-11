@@ -21,6 +21,8 @@ elseif (preg_match('#^/api/v1/([a-z_]+)(?:/([a-z_]+))?$#', $path, $m)) { $target
 elseif (str_starts_with($path, '/api/')) { http_response_code(404); echo 'Not found'; return true; }
 elseif (preg_match('#^/files/([0-9]+)$#', $path, $m)) { $set(['id' => $m[1]]); $target = '/files.php'; }
 elseif (preg_match('#^/s/([a-f0-9]{48})(?:/([a-z_]+))?$#', $path, $m)) { $set(['token' => $m[1], 'do' => $m[2] ?? '']); $target = '/s.php'; }
+elseif (preg_match('#^/sales/(\d{4}-\d{2}-\d{2})$#', $path, $m)) { $set(['date' => $m[1]]); $target = '/sales/view.php'; }                                   // a business date (slice 5)
+elseif (preg_match('#^/sales/mappings/([a-z][a-z0-9_]{0,39})$#', $path, $m) && !is_file($root . '/sales/mappings/' . $m[1] . '.php')) { $set(['key' => $m[1]]); $target = '/sales/mappings/view.php'; }   // a mapping by key (slice 5)
 elseif (preg_match('#^/reports/([a-z-]+)$#', $path, $m) && !is_file($root . '/reports/' . $m[1] . '.php')) { $set(['report' => $m[1]]); $target = '/reports/report.php'; }
 elseif (preg_match('#^/((?:[a-z_-]+/)?[a-z_-]+)/new$#', $path, $m)) { $target = '/' . $m[1] . '/form.php'; }
 elseif (preg_match('#^/((?:[a-z_-]+/)?[a-z_-]+)/([0-9]+)/edit$#', $path, $m)) { $set(['id' => $m[2]]); $target = '/' . $m[1] . '/form.php'; }

@@ -14,7 +14,7 @@ declare(strict_types=1);
  * clock a pass selects by; honoured only when APP_ENV is not prod. Exits 1 when a pass failed.
  *
  * PHASE 0: every pass but `key_usage_prune` is a STUB that changes nothing and answers 0 — the slice whose data it touches fills it in
- * (design §10): `price_alerts`, `link_expiry` slice 4's; `pos_pulls`, `email_intake`, `depletion_runs` slice 5's; `forecast_pass`,
+ * (design §10): `price_alerts`, `link_expiry` slice 4's; `pos_pulls`, `email_intake`, `depletion_runs` slice 5's (BUILT); `forecast_pass`,
  * `suggested_orders`, `watches` slice 8's; `notify_outbox`, `dispatches`, `morning_note_inputs` slice 9's. Each stub names its slice.
  * REAL from the kit: `key_usage_prune` (ri_prune_key_usage, db/005).
  */
@@ -77,12 +77,12 @@ exit($report['errors'] === [] ? 0 : 1);
 
 // ---- the passes (stubs until their slice) ------------------------------------------------------------------------------------------
 
-/** SLICE 5 — sources due by schedule: the POS's file over SFTP, the Square API; a pull per fetch, backoff on failure. */
-function worker_pass_pos_pulls(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['pulled' => 0, 'stub' => 'slice 5']; }
-/** SLICE 5 — the email intake at MaluMail: a POS report mailed to the intake address lands as a pull (`\\Seen` as handled). */
-function worker_pass_email_intake(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['read' => 0, 'stub' => 'slice 5']; }
-/** SLICE 5 — one depletion run per site per business date with new sales: the mapped lines exploded through the recipes in force, one ledger row per ingredient per area per date; unmapped PLUs queued. */
-function worker_pass_depletion_runs(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['ran' => 0, 'stub' => 'slice 5']; }
+/** SLICE 5 (built) — sources due by schedule: the POS's file over SFTP, the Square API; a pull per fetch, backoff on failure (app/features/pos/worker.php). */
+function worker_pass_pos_pulls(PDO $pdo, int $limit, DateTimeImmutable $now): array { require_once APP_ROOT . '/app/features/pos/worker.php'; return pos_pass_pulls($pdo, $limit, $now); }
+/** SLICE 5 (built) — the email intake at MaluMail: a POS report mailed to the intake address lands as a pull (`\\Seen` only once the pull row is written). */
+function worker_pass_email_intake(PDO $pdo, int $limit, DateTimeImmutable $now): array { require_once APP_ROOT . '/app/features/pos/worker.php'; return pos_pass_email_intake($pdo, $limit, $now); }
+/** SLICE 5 (built) — one depletion run per site per business date with new sales (ri_depletion_due() → ri_depletion_run()); a failure leaves the day due and notifies the Manager once a day. */
+function worker_pass_depletion_runs(PDO $pdo, int $limit, DateTimeImmutable $now): array { require_once APP_ROOT . '/app/features/pos/worker.php'; return pos_pass_depletion($pdo, $limit, $now); }
 /** SLICE 4 — price alerts: an invoice line whose price moved past the threshold (per category or ingredient) raises one. */
 function worker_pass_price_alerts(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['raised' => 0, 'stub' => 'slice 4']; }
 /** SLICE 4 — the supplier's secure link dies 30 days after its purchase order closes. */

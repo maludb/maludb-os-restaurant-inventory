@@ -1,0 +1,10 @@
+<?php /** One depletion run (screen depletion-run-view). Data: run, moves, seesCost, mayRun, mayVoid, tz, notice, back */ $date = (string) $run['business_date']; ?>
+<?= view('shared/header.php', ['id' => 'depletion-run-view', 'title' => 'Run ' . (int) $run['run_no'] . ' · ' . format_date($date), 'crumbs' => [['Home', '/'], ['Depletion runs', '/sales/runs/'], [format_date($date) . ' · run ' . (int) $run['run_no'], null]], 'back' => $back,
+    'action' => hx_link('/sales/' . $date, 'The day', 'btn btn-light btn-touch', 'id="depletion-run-view-day"')]) ?>
+<div class="main-content" id="depletion-run-view-content">
+    <?= view('shared/notice.php', ['notice' => $notice]) ?>
+    <?= view('pos/_run-card.php', ['run' => $run, 'date' => $date, 'seesCost' => $seesCost, 'mayRun' => $mayRun, 'mayVoid' => $mayVoid, 'tz' => $tz]) ?>
+    <div class="card" id="run-movements"><div class="card-header"><h5 class="card-title mb-0">The movements</h5></div><div class="card-body p-0"><?php if ($moves === []): ?><div class="p-3 text-muted fs-12">No movement — no mapped line that day.</div><?php else: ?><div class="table-responsive"><table class="table table-sm mb-0 fs-12" id="run-movements-table"><thead><tr><th>Type</th><th>Ingredient</th><th class="text-end">Quantity</th><th>Area</th><th class="text-end">Value</th><th>When</th></tr></thead><tbody>
+    <?php foreach ($moves as $m): ?><tr id="movement-row-<?= (int) $m['transaction_id'] ?>"><td><span class="badge <?= $m['txn_type'] === 'reversal' ? 'bg-soft-danger text-danger' : 'bg-soft-light text-dark border' ?>"><?= e($m['txn_type']) ?></span></td><td><?= hx_link('/ingredients/' . (int) $m['ingredient_id'], e($m['name'])) ?></td><td class="text-end"><?= e($m['qty_display']) ?></td><td><?= e((string) $m['area']) ?></td><td class="text-end"><?= money($m['value'] === null ? null : (string) $m['value']) ?></td><td><?= e(format_ts((string) $m['occurred_at'], $tz)) ?></td></tr><?php endforeach; ?>
+    </tbody></table></div><?php endif; ?></div></div>
+</div>

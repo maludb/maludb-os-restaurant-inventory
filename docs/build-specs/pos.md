@@ -197,5 +197,64 @@ unknown PLU 2002; the admin (1), Marco (Manager), Dana (Chef), Bea (Kitchen), An
 - The SFTP connector reads through `curl`'s `sftp://` when present; the proof exercises the file path through a local directory the fixture provides.
 - The `unmapped` notice goes to the site's Manager once a day; the queue itself lives on the home screen and the source's tab.
 
+## Built and proven
+
+Built 2026-10-11 by the planning model (a fork beside slice 3's), on `/srv/apps/restaurant_inventory`; the application's commits are not pushed.
+
+**Proof:** `tests/phase3/slice5/run.sh` — sources 35, credentials 25, mappings and the preview 34, the upload and import (with resolution, day
+parts and the JSON shapes) 61, the depletion run with re-run and void 58, the worker's passes 46, health and the queue 23, the browser 32 (headless
+Chromium at 1280 × 800, 375 × 740 and with JavaScript off), the registry, the approvals and the Phase 1 claim check: **317 checks under php -S and 317
+under a user-level Apache rendering `deploy/apache-restaurant_inventory.conf`** (target ≥ 260). The scratch database is `ri_dev3e` and the port block
+9320–9324 (the application, the fake kernel, the fake MaluDB + MaluMail with the mailbox MCP, the POS fixture server — a fake Square Orders API —,
+the internal vhost), not this spec's `ri_dev5` / 9301–9306, so the proof runs beside the other slices'. The registry this commit carries reads
+53 screens and 61 actions built (13 + 11 of them this slice's). Screenshots in `/tmp/ri-shots-s5`.
+
+**Files:** `app/features/pos/{handler,queries,present,import,worker,credentials,mailbox}.php` and `app/features/pos/connectors/{Connector,Csv,Xlsx,
+Normalizer,FileConnector,SquareConnector,ManualConnector}.php`; `html/sales/` (`index.php`, `view.php`, `upload.php`, `sources/{index,form,view,save,
+credential,schedule,pause,pull,probe,pulls,delete}.php`, `mappings/{index,view,save,preview}.php`, `runs/{index,view,run,void}.php` — the five
+placeholders replaced); the views under `app/views/pos/`; `html/assets/js/pos-forms.js`; the slice's CSS at the end of
+`html/assets/css/app-overrides.css`; the worker's three passes in `bin/worker.php` (now one line each into `app/features/pos/worker.php`); two
+rewrites — a business date and a mapping by key — in both vhosts of `deploy/apache-restaurant_inventory.conf` and in `tests/dev_router.php`;
+`db/023_slice5_pos.sql`; `tests/fixtures/pos/` (five template CSVs, the SFTP and email days, two Square pages, `router.php`); `tests/phase3/slice5/*`.
+
+**What the schema and this spec got wrong (fixed or reported):**
+- **`ri_depletion_run()` refused any day with a check closed outside every day part** (db/011): its per-day-part branch made a second whole-day
+  row and `sales_daily`'s key (`COALESCE(day_part_id, 0)`) refused it. db/023 limits that branch to checks with a day part.
+- **A run's number restarted after a void** (db/011 took the live run's number + 1): run, void, run again was "run 1" twice. db/023 counts every run
+  of the day, so it is run 3.
+- **`ri_unmapped_plus()` counted every sale a PLU ever had** (db/016): its 28-day window sat on an outer join that never limited the lines. db/023
+  joins the lines to their checks inside the window (proven with a sale 40 days old).
+- **Square's template named "Price Point Name" as the unit price** (db/018) — that column is the variation's name. db/023 nulls it; the price is
+  derived from Gross Sales ÷ Qty. db/023 also gives every builtin mapping its void and comp words, `comp_rule` and modifier separator.
+- **`attachments.record_type` admits no `source_pull`** (db/006), so "the file kept as an attachment on its pull" failed silently. The file is kept
+  on the SOURCE (`record_type = 'source'`) and the pull's `attachment_id` names it; `mcp_source_pulls` has no `attachment_id` either, so the pulls
+  list reads it from the pull's row, admitted only through `mcp_attachments`. No migration: the other slice's fork shares db/006's check.
+- **"is_eval refuses every write" is not the application's to prove:** the kit's handler prelude reads run facts only on an agent's first admission;
+  the kernel's actions server withholds an evaluation run's writes before they reach any application. Not proven here — owed by the kit if wanted.
+- **"Preview → ten rows":** the fixture holds eight readable lines and one malformed row; the preview shows every readable row up to ten.
+- **The expert's `source_create` → `other`** (and every pause) is the kernel's hook: proven from the registry's approval class, not by a run.
+- `settings.manage` and `sources.credentials` are the admin's alone (db/004): Marco (Manager) is refused a source, a mapping and a credential.
+
+**Decisions taken while building (reported, not questions):**
+- With no PLU column, the **item name is the line's PLU** (menu items keyed by name for that source).
+- The upload's preview lists the **PLUs it will create**; a PLU already there but unmapped is the queue's (the source's Unmapped tab), not the preview's.
+- A modifier's quantity is **per line, as the file states it** (`XCHK` on a line of two sandwiches is 85 g once; `XCHK:2` is twice) — the spec's
+  "sandwiches × 188.9 g + XCHK × 85 g".
+- A check whose content is unchanged is skipped (no day becomes due); a changed check replaces its lines and makes its day due — a re-imported file
+  with one changed check re-runs only that day.
+- A mail from a known sender with no CSV or XLSX is **handled**: a failed `email` pull says why and the mail is marked seen. A stranger's mail is left
+  unread and the admins get one notice a day naming the sender.
+- The run card **omits** the value for someone who cannot see cost (not "Value: —"); the day's tiles go two and one on a phone.
+- A source's state reads active / paused / backing off; the card counts its failures.
+- Probe is not a manifest action: a pull of kind `probe` and `source.probe` in the log, nothing else changed.
+- The mailbox MCP client (`malumail_mcp_call()`) lives in `app/features/pos/mailbox.php`, not the kit's `app/mail.php`.
+- **The files differ from "Files (exactly these)"** where the registry builder or the seed decides: the day is `html/sales/view.php` and the
+  mapping editor `html/sales/mappings/view.php` (the builder maps `/sales/{date}` and `/sales/mappings/{mapping}` to `view.php`, not `day.php` /
+  `edit.php`); the sub-forms and the day's tables are inline in `sources/form.php` and `day.php` (plus `_pulls-table.php`, shared by the view and
+  the pulls page); `pos_import()` is `pos_import_file()` over `pos_import_checks()`; the fixtures are named after db/018's seeded keys
+  (`toast_items.csv`, `square_items.csv`, `clover_items.csv`, `lightspeed_items.csv`) with the SFTP and email days and Square's second page beside
+  them; the fake mailbox is `tests/phase3/slice5/fake_mail.php` and the servers `servers.sh`; the proof is split by area (`sources.php` …
+  `health.php`). Every query and present function the list names exists under its name.
+
 ## Open questions
 None. The connector interface, the mapping templates and the import's shape are `pos-and-depletion.md`'s; this spec builds exactly them.

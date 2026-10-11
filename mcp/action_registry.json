@@ -1,6 +1,6 @@
 {
     "generated_from": "docs/restaurant-inventory-action-manifest.md",
-    "generated_at": "2026-10-11T16:42:51+00:00",
+    "generated_at": "2026-10-11T17:48:22+00:00",
     "screens": {
         "home": {
             "screen": "home",
@@ -761,8 +761,8 @@
             "params": [
                 "status"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "source-add": {
             "screen": "source-add",
@@ -772,7 +772,7 @@
             "params": [
                 "connector"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "source-view": {
@@ -783,7 +783,7 @@
             "params": [
                 "tab"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "source-edit": {
@@ -792,7 +792,7 @@
             "section": "POS sources, sales and depletion — THE SECOND EXEMPLAR (slice 5)",
             "when": "to change a source's name, settings, mapping, intake, schedule",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "source-credential": {
@@ -801,7 +801,7 @@
             "section": "POS sources, sales and depletion — THE SECOND EXEMPLAR (slice 5)",
             "when": "to set or rotate the source's credential: kind, label, the secret (never shown again)",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "mapping-list": {
@@ -810,8 +810,8 @@
             "section": "POS sources, sales and depletion — THE SECOND EXEMPLAR (slice 5)",
             "when": "the sales-file mappings: the built-in templates and the business's own; the columns each expects",
             "params": [],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "mapping-edit": {
             "screen": "mapping-edit",
@@ -819,7 +819,7 @@
             "section": "POS sources, sales and depletion — THE SECOND EXEMPLAR (slice 5)",
             "when": "to edit a mapping: the column names, the date format, the delimiter; a sample file previewed",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "sales-upload": {
@@ -830,8 +830,8 @@
             "params": [
                 "source"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "sales-day-list": {
             "screen": "sales-day-list",
@@ -842,8 +842,8 @@
                 "from",
                 "to"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "sales-day-view": {
             "screen": "sales-day-view",
@@ -853,7 +853,7 @@
             "params": [
                 "day_part"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "depletion-run-list": {
@@ -866,8 +866,8 @@
                 "from",
                 "to"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "depletion-run-view": {
             "screen": "depletion-run-view",
@@ -875,7 +875,7 @@
             "section": "POS sources, sales and depletion — THE SECOND EXEMPLAR (slice 5)",
             "when": "one run: the counts and the movements it posted; **Re-run**, **Void**",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "pull-list": {
@@ -884,7 +884,7 @@
             "section": "POS sources, sales and depletion — THE SECOND EXEMPLAR (slice 5)",
             "when": "the source's pulls: kind, when, status, file, dates seen, sales new, PLUs new, error",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "count-sheet-list": {
@@ -5537,7 +5537,7 @@
             "who": "settings.manage",
             "agent": true,
             "record_id": "the source",
-            "built": false
+            "built": true
         },
         "source_update": {
             "action": "source_update",
@@ -5588,7 +5588,7 @@
             "who": "settings.manage",
             "agent": true,
             "record_id": "the source",
-            "built": false,
+            "built": true,
             "partial": true
         },
         "source_credential_set": {
@@ -5628,7 +5628,7 @@
             "who": "sources.credentials",
             "agent": true,
             "record_id": "the credential",
-            "built": false
+            "built": true
         },
         "source_schedule_set": {
             "action": "source_schedule_set",
@@ -5655,7 +5655,7 @@
             "who": "settings.manage",
             "agent": true,
             "record_id": "the source",
-            "built": false
+            "built": true
         },
         "source_pause": {
             "action": "source_pause",
@@ -5688,7 +5688,7 @@
             "who": "settings.manage",
             "agent": true,
             "record_id": "the source",
-            "built": false
+            "built": true
         },
         "source_pull": {
             "action": "source_pull",
@@ -5709,7 +5709,7 @@
             "who": "purchasing.draft",
             "agent": true,
             "record_id": "the pull",
-            "built": false
+            "built": true
         },
         "source_delete": {
             "action": "source_delete",
@@ -5730,7 +5730,7 @@
             "who": "records.delete",
             "agent": true,
             "record_id": "the source",
-            "built": false
+            "built": true
         },
         "sales_upload": {
             "action": "sales_upload",
@@ -5769,7 +5769,7 @@
             "who": "stock.receive",
             "agent": true,
             "record_id": "the pull",
-            "built": false
+            "built": true
         },
         "mapping_save": {
             "action": "mapping_save",
@@ -5808,7 +5808,7 @@
             "who": "settings.manage",
             "agent": true,
             "record_id": "the mapping",
-            "built": false
+            "built": true
         },
         "depletion_run": {
             "action": "depletion_run",
@@ -5829,7 +5829,7 @@
             "who": "stock.receive",
             "agent": true,
             "record_id": "the run",
-            "built": false
+            "built": true
         },
         "depletion_run_void": {
             "action": "depletion_run_void",
@@ -5856,7 +5856,7 @@
             "who": "counts.approve",
             "agent": true,
             "record_id": "the run",
-            "built": false
+            "built": true
         },
         "count_sheet_save": {
             "action": "count_sheet_save",

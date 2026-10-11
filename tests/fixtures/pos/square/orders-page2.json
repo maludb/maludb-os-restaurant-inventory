@@ -1,0 +1,7 @@
+{"orders": [
+  {"id": "SQ-ORDER-3", "location_id": "L-SMOKE", "state": "COMPLETED", "closed_at": "2026-10-09T00:40:00Z",
+   "line_items": [
+     {"uid": "SQ-3-L1", "catalog_object_id": "3001", "name": "SMOKE Gin and Tonic", "variation_name": "Regular", "quantity": "3",
+      "base_price_money": {"amount": 1100, "currency": "USD"}, "total_money": {"amount": 3300, "currency": "USD"}}],
+   "total_money": {"amount": 3300, "currency": "USD"}}
+ ]}

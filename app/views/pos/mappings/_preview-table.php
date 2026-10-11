@@ -1,0 +1,8 @@
+<?php /** A sample file through a mapping: the first five rows, the missing required columns in red. Data: headers, rows, missing, bad, columns */ ?>
+<div id="mapping-preview-result">
+<?php if ($missing !== []): ?><div class="alert alert-danger fs-12" id="mapping-preview-missing">The file lacks: <?= e(implode(', ', $missing)) ?> — the mapping names <?= e(implode(', ', array_map(static fn ($f) => '"' . ($columns[$f] ?? '—') . '"', $missing))) ?>; the file's columns are <?= e(implode(', ', $headers)) ?>.</div><?php endif; ?>
+<?php if ($rows !== []): ?><div class="table-responsive"><table class="table table-sm fs-12 mb-1" id="mapping-preview-table"><thead><tr><th>Check</th><th>Date</th><th>PLU</th><th>Item</th><th class="text-end">Qty</th><th class="text-end">Total</th><th>Flags</th><th>Modifiers</th></tr></thead><tbody>
+<?php foreach ($rows as $r): ?><tr><td><?= e($r['external_id']) ?></td><td><?= e($r['business_date']) ?></td><td><?= e($r['plu']) ?></td><td><?= e((string) $r['name']) ?></td><td class="text-end"><?= e(fmt_num($r['qty'], 2)) ?></td><td class="text-end"><?= $r['line_total'] === null ? '' : e(ri_money($r['line_total'])) ?></td><td><?= $r['voided'] ? '<span class="badge bg-soft-danger text-danger">void</span>' : '' ?><?= $r['comp'] ? '<span class="badge bg-soft-warning text-warning">comp</span>' : '' ?></td><td><?= e(implode(', ', $r['modifiers'])) ?></td></tr><?php endforeach; ?>
+</tbody></table></div><?php endif; ?>
+<?php if ($bad !== []): ?><div class="fs-12 text-danger" id="mapping-preview-bad"><?= count($bad) ?> row<?= count($bad) === 1 ? '' : 's' ?> cannot be read: <?= e(implode('; ', array_map(static fn ($b) => 'row ' . $b['row'] . ' — ' . $b['reason'], array_slice($bad, 0, 5)))) ?></div><?php endif; ?>
+</div>

@@ -1,0 +1,13 @@
+<?php /** A depletion run's card. Data: run (an mcp_depletion_runs row or null), date, seesCost, mayRun, mayVoid, tz */ ?>
+<div class="card mb-3" id="run-card"><div class="card-header d-flex justify-content-between align-items-center"><h5 class="card-title mb-0">Depletion<?= $run === null ? '' : ' — run ' . (int) $run['run_no'] ?></h5><?php if ($run !== null): ?><span class="badge <?= pos_chip($run['status']) ?>" id="run-card-status"><?= e($run['status']) ?></span><?php endif; ?></div><div class="card-body fs-12">
+<?php if ($run === null): ?><div class="text-muted" id="run-card-none">No run yet for this day.</div><?php else: ?>
+    <div class="row g-2 text-center" id="run-card-counts">
+        <?php foreach (['lines_total' => 'Lines', 'lines_depleted' => 'Depleted', 'lines_unmapped' => 'Unmapped', 'lines_voided' => 'Voided', 'modifiers_unmapped' => 'Modifiers unmapped', 'ingredients' => 'Ingredients'] as $k => $l): ?><div class="col-4 col-md-2"><div class="fs-5 fw-semibold" id="run-card-<?= $k ?>"><?= (int) $run[$k] ?></div><div class="text-muted"><?= $l ?></div></div><?php endforeach; ?>
+    </div>
+    <div class="mt-2"><?php if ($seesCost): ?>Value: <strong id="run-card-value"><?= money($run['value'] !== null ? (string) $run['value'] : null) ?></strong> · <?php endif; ?><?= hx_link('/sales/runs/' . (int) $run['depletion_run_id'], 'the movements', '', 'id="run-card-link"') ?> · <?= e(format_ts((string) $run['started_at'], $tz)) ?></div>
+<?php endif; ?>
+<div class="d-flex flex-wrap gap-2 mt-2">
+    <?php if ($mayRun): ?><form method="post" action="/sales/runs/run.php" hx-post="/sales/runs/run.php" hx-target="#flash" <?= $run !== null ? 'hx-confirm="Re-run ' . e($date) . '? The current run is voided and its rows reversed first."' : '' ?> id="run-card-run-form"><?= csrf_field() ?><input type="hidden" name="business_date" value="<?= e($date) ?>"><button type="submit" class="btn btn-sm btn-primary btn-touch" id="run-card-rerun"><?= $run === null || $run['status'] === 'void' ? 'Deplete' : 'Re-run' ?></button></form><?php endif; ?>
+    <?php if ($mayVoid && $run !== null && $run['status'] !== 'void'): ?><form method="post" action="/sales/runs/void.php" hx-post="/sales/runs/void.php" hx-target="#flash" hx-confirm="Void run <?= (int) $run['run_no'] ?>? Its rows are reversed; the day becomes due again." id="run-card-void-form"><?= csrf_field() ?><input type="hidden" name="run" value="<?= (int) $run['depletion_run_id'] ?>"><button type="submit" class="btn btn-sm btn-light text-danger btn-touch" id="run-card-void">Void the run</button></form><?php endif; ?>
+</div>
+</div></div>
