@@ -80,9 +80,15 @@ CREATE OR REPLACE FUNCTION ri_po_lines_before() RETURNS trigger
     LANGUAGE plpgsql AS $$
 DECLARE st text;
 BEGIN
-    IF COALESCE(current_setting('ri.balance_writer', true), '') = 'on' THEN RETURN COALESCE(NEW, OLD); END IF;
     SELECT status INTO st FROM purchase_orders WHERE id = COALESCE(NEW.purchase_order_id, OLD.purchase_order_id);
-    IF st <> 'draft' THEN RAISE EXCEPTION 'The lines of a purchase order change only while it is a draft' USING ERRCODE = 'check_violation'; END IF;
+    IF st <> 'draft' THEN
+        -- after sending, only what the supplier and the receipts write changes: status, received quantity, note, date
+        IF TG_OP = 'UPDATE' AND NEW.qty_ordered = OLD.qty_ordered AND NEW.unit_cost = OLD.unit_cost AND NEW.ingredient_id = OLD.ingredient_id AND NEW.purchase_unit_code = OLD.purchase_unit_code
+           AND NEW.supplier_item_id IS NOT DISTINCT FROM OLD.supplier_item_id AND NEW.line_no = OLD.line_no THEN
+            RETURN NEW;
+        END IF;
+        RAISE EXCEPTION 'The lines of a purchase order change only while it is a draft' USING ERRCODE = 'check_violation';
+    END IF;
     IF TG_OP = 'DELETE' THEN RETURN OLD; END IF;
     NEW.qty_ordered_base := ri_to_base(NEW.ingredient_id, NEW.qty_ordered, NEW.purchase_unit_code);
     RETURN NEW;

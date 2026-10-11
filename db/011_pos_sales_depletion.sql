@@ -256,12 +256,11 @@ BEGIN
     -- the daily sales table
     DELETE FROM sales_daily WHERE scope_id = p_scope_id AND business_date = p_date;
     INSERT INTO sales_daily (scope_id, menu_item_id, business_date, day_part_id, qty, net, comps_qty)
-    SELECT s.scope_id, l.menu_item_id, s.business_date, s.day_part_id, sum(l.qty), sum(COALESCE(l.line_total, 0)) FILTER (WHERE NOT l.comp), sum(l.qty) FILTER (WHERE l.comp)
+    SELECT s.scope_id, l.menu_item_id, s.business_date, s.day_part_id, sum(l.qty), COALESCE(sum(COALESCE(l.line_total, 0)) FILTER (WHERE NOT l.comp), 0), COALESCE(sum(l.qty) FILTER (WHERE l.comp), 0)
       FROM pos_sale_lines l JOIN pos_sales s ON s.id = l.sale_id WHERE s.scope_id = p_scope_id AND s.business_date = p_date AND NOT l.voided GROUP BY 1, 2, 3, 4
     UNION ALL
-    SELECT s.scope_id, l.menu_item_id, s.business_date, NULL, sum(l.qty), sum(COALESCE(l.line_total, 0)) FILTER (WHERE NOT l.comp), sum(l.qty) FILTER (WHERE l.comp)
+    SELECT s.scope_id, l.menu_item_id, s.business_date, NULL, sum(l.qty), COALESCE(sum(COALESCE(l.line_total, 0)) FILTER (WHERE NOT l.comp), 0), COALESCE(sum(l.qty) FILTER (WHERE l.comp), 0)
       FROM pos_sale_lines l JOIN pos_sales s ON s.id = l.sale_id WHERE s.scope_id = p_scope_id AND s.business_date = p_date AND NOT l.voided GROUP BY 1, 2, 3;
-    UPDATE sales_daily SET net = COALESCE(net, 0), comps_qty = COALESCE(comps_qty, 0) WHERE scope_id = p_scope_id AND business_date = p_date;
     UPDATE depletion_runs SET status = CASE WHEN n_unmapped > 0 OR n_mod > 0 THEN 'partial' ELSE 'done' END, lines_depleted = n_total - n_unmapped - n_void, ingredients = n, value = round(tot, 2), finished_at = now()
      WHERE id = r.id RETURNING * INTO r;
     RETURN r;

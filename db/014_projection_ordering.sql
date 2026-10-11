@@ -178,6 +178,7 @@ CREATE OR REPLACE FUNCTION ri_suggested_order(p_scope_id bigint, p_supplier_id b
                    par_mode text, demand_base numeric, safety_base numeric, need_base numeric, have_base numeric, on_hand_base numeric, on_order_base numeric, cap_base numeric,
                    raw_base numeric, qty_units numeric, unit_cost numeric, thin_history boolean, rounding_note text)
     LANGUAGE plpgsql STABLE AS $$
+#variable_conflict use_column
 DECLARE w record; si record; st ingredient_site_settings%ROWTYPE; i ingredients%ROWTYPE; cat ingredient_categories%ROWTYPE; dmd numeric; sig numeric; p_days integer; z numeric;
         hist_weeks integer; dyn_after integer; units numeric; floor_units numeric; split boolean; cap numeric; dq numeric; sumsq numeric; n integer;
 BEGIN

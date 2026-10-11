@@ -270,8 +270,9 @@ BEGIN
                 SELECT * INTO sub_rows FROM ri_recipe_cost(sub_v, p_scope_id, p_as_of, p_basis);
                 unc := unc + sub_rows.uncosted;
                 IF sub_r.kind = 'prep' THEN
-                    -- the sub's batch yield is in its output's unit; the line's qty_base is in that output's base unit
-                    sub_cost := sub_rows.batch_cost / (ri_to_base(sub_r.output_ingredient_id, sub_rows.batch_yield_qty, (SELECT batch_yield_unit_code FROM recipe_versions WHERE id = sub_v)));
+                    -- the sub's batch yield is in its output's unit, net of its expected loss; the line's qty_base is in that output's base unit
+                    sub_cost := sub_rows.batch_cost / (ri_to_base(sub_r.output_ingredient_id, sub_rows.batch_yield_qty, (SELECT batch_yield_unit_code FROM recipe_versions WHERE id = sub_v))
+                                                       * (1 - (SELECT expected_loss_pct FROM recipe_versions WHERE id = sub_v) / 100.0));
                 ELSE
                     sub_cost := sub_rows.portion_cost;   -- per portion
                 END IF;

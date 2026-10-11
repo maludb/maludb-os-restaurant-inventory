@@ -193,7 +193,7 @@ BEGIN
     SELECT * INTO p FROM periods WHERE id = p_period_id FOR UPDATE;
     IF NOT FOUND THEN RAISE EXCEPTION 'No such period' USING ERRCODE = 'no_data_found'; END IF;
     IF p.status = 'closed' THEN RAISE EXCEPTION 'Period % is closed', p.no USING ERRCODE = 'check_violation'; END IF;
-    IF p.ends_on > current_date THEN RAISE EXCEPTION 'Period % ends % — it closes after its last day', p.no, p.ends_on USING ERRCODE = 'check_violation'; END IF;
+    IF p.ends_on >= current_date THEN RAISE EXCEPTION 'Period % ends % — it closes after its last day', p.no, p.ends_on USING ERRCODE = 'check_violation'; END IF;
     IF EXISTS (SELECT 1 FROM periods WHERE scope_id = p.scope_id AND calendar_id = p.calendar_id AND status = 'open' AND ends_on < p.starts_on) THEN
         RAISE EXCEPTION 'An earlier period is still open — close it first' USING ERRCODE = 'check_violation';
     END IF;

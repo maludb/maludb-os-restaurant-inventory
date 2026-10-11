@@ -639,3 +639,26 @@ Manager named at install through `RI_MANAGER_EMAIL`, the first super-admin until
 
 - 2026-10-11 — the research written (three reports and the synthesis, commit 116ff7b); this design written the same day;
   **approved by the owner the same day, every recommendation (§15)**; the repository created public and pushed.
+- 2026-10-11 — **K47 built and applied in the kernel** (db/182: the catalog row under Operations, category `inventory`, nothing widened).
+- 2026-10-11 — **PHASE 0 COMPLETE.** The kit (db/001–006, app/, bin/, html/, mcp/, tests/) — MaluMail's kit made site-scoped the way
+  txtSchedules is, the five roles with rights per site and `ri_sees_cost()`, proven without a kernel by `tests/phase0/run.sh`
+  (123 checks + the schema proof). The schema db/007–017 (90 tables, 71 `mcp_*` views) proven by `db/proof/phase0_proof.sql`
+  (164 checks, `tests/phase0/schema.sh`): every actor at two sites; three measure classes with a density and an each-weight;
+  a case never one each; a receipt in bags landing in grams and advancing the average; catch weight at the declared pounds;
+  a recipe tree with a prep sub-recipe and a modifier, a cycle refused, versions with effective dates (today v1, tomorrow
+  v2), the plate cost with the prep at its batch cost net of loss; production making stock at the rolled-up cost; a POS day
+  with a void (not depleted), a comp (depleted), an unmapped PLU queued, one depletion row per ingredient, a re-run reversing
+  the first; waste at the plate stage exploding; a two-line transfer between sites at the sender's average; a PO sent,
+  acknowledged and a line declined through the door, received short, closed short; an invoice over tolerance settled into
+  price history; a blind count with case + loose, a bottle by weight, a skipped area, two lines over tolerance recounted by
+  another person, approval posting four corrections; `ri_usage()` tying with every bucket; weekly periods, a close, a late
+  receipt into the next open period, a reopen; the baseline forecast, a closure, an override, demand exploded, a projected
+  stock-out, the suggested order with fixed and dynamic pars and the arithmetic on the drafted line; a watch firing once;
+  cost and site as walls in the views; the read roles writing nothing. `maludb-os.json` (six scoped shares, one read, 25
+  approvals, two agents), `os/`, twelve skills, `deploy/` with `ROOT_STEPS.sh`; the installer's `plan` reads the repository
+  clean (37 steps, 8 notes). **Found and fixed along the way:** the ledger's after-trigger cleared the balance-writer flag a
+  posting function held across several lines (it restores the previous value now); a sent PO's lines must still take the
+  supplier's and the receipt's updates; a count taken at the end of the day must be as of the sales cut, or the day's
+  depletion (dated at the cut) is outside its book figure — the proof does so and the count screen should default to it.
+  NEXT: Phase 1 — the tool surface, the action manifest and registry, the three build specs and the eleven slice specs,
+  for the owner's approval before any PHP.

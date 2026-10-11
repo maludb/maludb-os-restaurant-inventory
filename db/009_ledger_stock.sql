@@ -108,7 +108,7 @@ CREATE TRIGGER inventory_transactions_before BEFORE INSERT OR UPDATE OR DELETE O
 -- opening adjustment; never on an issue; a count correction keeps the average).
 CREATE OR REPLACE FUNCTION ri_transactions_after() RETURNS trigger
     LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
-DECLARE newq numeric; neg boolean; sc ingredient_site_costs%ROWTYPE; oh numeric; avg numeric; inbound boolean;
+DECLARE newq numeric; neg boolean; sc ingredient_site_costs%ROWTYPE; oh numeric; avg numeric; inbound boolean; prev text := COALESCE(current_setting('ri.balance_writer', true), '');
 BEGIN
     PERFORM set_config('ri.balance_writer', 'on', true);
     INSERT INTO inventory_balances (ingredient_id, storage_area_id) VALUES (NEW.ingredient_id, NEW.storage_area_id) ON CONFLICT DO NOTHING;
@@ -132,7 +132,7 @@ BEGIN
         UPDATE ingredient_site_costs SET on_hand_base = oh + NEW.qty_base, on_hand_value = round((oh + NEW.qty_base) * avg, 2)
          WHERE ingredient_id = NEW.ingredient_id AND scope_id = NEW.scope_id;
     END IF;
-    PERFORM set_config('ri.balance_writer', '', true);
+    PERFORM set_config('ri.balance_writer', prev, true);   -- a posting function may hold the flag across several lines
     RETURN NEW;
 END$$;
 CREATE TRIGGER inventory_transactions_after AFTER INSERT ON inventory_transactions FOR EACH ROW EXECUTE FUNCTION ri_transactions_after();
@@ -286,10 +286,10 @@ BEGIN
     FOR l IN SELECT * FROM goods_receipt_lines WHERE goods_receipt_id = p_receipt_id ORDER BY line_no LOOP
         c := l.cost_per_base;
         IF (c IS NULL OR c = 0) AND NOT l.allow_zero_cost THEN c := ri_cost_as_of(l.ingredient_id, r.scope_id); END IF;   -- a costless line lands at the running cost, never at zero
+        SELECT last_cost_per_base INTO old FROM ingredient_site_costs WHERE ingredient_id = l.ingredient_id AND scope_id = r.scope_id;   -- before the ledger advances it
         PERFORM ri_post_txn('receipt', r.scope_id, l.ingredient_id, COALESCE(l.putaway_area_id, r.storage_area_id), l.qty_base, c, 'goods_receipt', p_receipt_id, 'receipt:' || l.id,
                             CASE WHEN r.supplier_id IS NULL THEN 'none' ELSE 'supplier' END, r.supplier_id, NULL, g, p_by, l.discrepancy_note, r.received_at, r.received_on);
         IF l.cost_per_base IS NOT NULL AND l.cost_per_base > 0 THEN
-            SELECT last_cost_per_base INTO old FROM ingredient_site_costs WHERE ingredient_id = l.ingredient_id AND scope_id = r.scope_id;
             INSERT INTO price_history (ingredient_id, scope_id, old_per_base, new_per_base, per_unit_code, per_unit_price, source_kind, reference_kind, reference_id, changed_by, changed_at)
             VALUES (l.ingredient_id, r.scope_id, old, l.cost_per_base, COALESCE(l.weight_unit_code, l.purchase_unit_code), l.unit_cost, 'receipt', 'goods_receipt', p_receipt_id, p_by, r.received_at);
             IF l.supplier_item_id IS NOT NULL THEN

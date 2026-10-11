@@ -7,11 +7,13 @@ actual usage, COGS by period).
 
 ## Status
 
-**Planning (Phase 0).** The research was written 2026-10-11 and the design the same day; **approved by the owner the same day,
-every recommendation (D1–D16, §15)**. No schema and no screens yet.
+**Phase 0 complete (2026-10-11).** The design was approved by the owner the same day it was written, every recommendation
+(D1–D16, §15). The kernel's catalog row (K47) is applied. The kit is proven without a kernel (123 checks), the schema by
+164 checks on a scratch database (`tests/phase0/schema.sh`), the manifest, the two agents, twelve skills and `deploy/` are
+written, and the installer's `plan` reads the repository clean. No screens yet.
 
-Next: K47 (the catalog row) → the rest of Phase 0 (the schema proven on a scratch database, the
-kit, the manifest, the agents, the skills, `deploy/`).
+Next: Phase 1 — the tool surface, the action manifest and registry, the build specs and the slice specs, for the owner's
+approval before any PHP.
 
 ## Documents
 
