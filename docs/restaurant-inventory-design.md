@@ -620,7 +620,8 @@ Spaces and Help Desk to read when they choose.
   `ATTACHMENT_MAX_BYTES`, `RI_PUBLIC_BASE_URL`, `RI_MANAGER_EMAIL` (seeds the per-site Manager — D14).
 - Vhost allow-list (public): `/s/`, `/api/v1/health`, `/mcp/records`, `/mcp/activity`.
 - Kernel files: `mcp/registries/restaurant_inventory.json` (made by the installer), `db/182` (K47).
-- Proof scratch ports: 9301–9307. Fixtures: `tests/fixtures/pos/` — one trimmed export per POS shape, synthetic.
+- Proof scratch ports: the 93xx block is this application's — 9301–9307 the kit and the shell (9307 the shell's Apache internal vhost),
+  9304–9306 + 9314 slice 2, 9316–9319 slice 3, 9320–9324 slice 5 (9323 its fixture server); later slices take the next blocks of four. Fixtures: `tests/fixtures/pos/` — one trimmed export per POS shape, synthetic.
 
 ## 15. The owner's answers
 
@@ -690,4 +691,20 @@ db/018 and the decisions the specs took, §16) — Phase 2 begins.
   proof: db/019** — the kit's site materialiser deleted every holding at a closed site, so a reopened site lost its people until the
   feed happened to resend them; holdings now survive a closure. Decisions: the site of an action-token request is `X-Site` or `?site=`
   when held, else the first held site by name (a person with no site is refused `no_site`); the first held site is chosen by name.
-  NEXT slice 1 (catalog) and slice 2 (recipes, the first exemplar).
+  Slices 1 and 2 followed the same day.
+- 2026-10-11 — **SLICE 1 THE CATALOG BUILT AND PROVEN** (`tests/phase3/slice1/run.sh`: 237 checks under php -S and under Apache — ingredients
+  with their classes and own units, pars and cost overrides per site, yield tests, units and categories, suppliers with schedules, items and
+  the order guide, storage areas in walk order, notes and attachments; the cost-history chart). Found: a number input rendered with a
+  thousands separator is dropped by the browser (`fmt_input()` for every number input); the registry builder did not resolve a nested
+  `new` URL. No schema defect.
+- 2026-10-11 — **SLICE 2 RECIPES, THE MENU MAP AND COSTING — THE FIRST EXEMPLAR — BUILT AND PROVEN** (`tests/phase3/slice2/run.sh`: 215 checks
+  under php -S and under Apache — the editor a line at a time with the conversion sentence and the live cost panel, a prep sub-recipe, a
+  cycle refused in words, activation ending the previous version, the what-if, the cost history, the menu map with `no_depletion`, modifiers
+  per parent, menu engineering's quadrants). Found: the manifest's editor URL had no route — a generic child-record rewrite `/x/{id}/y/{id2}`
+  in both vhosts, the dev router and the registry builder; **db/021** puts `no_depletion` into `mcp_menu_items` (db/018 added the column, not
+  the view). The two slices, built side by side, each wrote the shared unit helpers; reconciled into `app/features/units/queries.php` (the
+  one place a quantity or a cost renders) and `app/recipes_units.php` deleted, every suite re-run green (Phase 0 124, Phase 2 347, slice 1 237,
+  slice 2 215, the Phase 1 check 52). **A proof lesson:** two proofs sharing ports kill each other's servers (each stop step clears its
+  ports), and PHP's built-in server with several workers flakes under load ("Failed to poll event") — each slice proof now owns a port block
+  (§14) and the shared suites run alone at the end.
+  NEXT slice 3 (the ledger) and slice 5 (the POS, the second exemplar), side by side.

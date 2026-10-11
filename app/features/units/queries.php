@@ -209,3 +209,31 @@ function money(?string $amount, int $decimals = 2): string
 {
     return $amount === null || $amount === '' ? '<span class="text-muted" title="cost withheld">—</span>' : '$' . number_format((float) $amount, $decimals);
 }
+
+// ---- moved from app/recipes_units.php when the two copies were reconciled (2026-10-11): one place for every quantity and money helper
+/** A number with the thousands separator and at most $decimals decimals (a whole number prints without decimals). */
+function ri_fmt(string|float|int|null $n, int $decimals = 2): string
+{
+    if ($n === null || $n === '') { return ''; }
+    $f = (float) $n;
+    $s = number_format($f, $decimals, '.', ' ');
+    return str_contains($s, '.') ? rtrim(rtrim($s, '0'), '.') : $s;
+}
+
+function ri_money(string|float|int|null $n, string $currency = '$', int $decimals = 2): string
+{
+    return $n === null || $n === '' ? '' : $currency . number_format((float) $n, $decimals, '.', ',');
+}
+
+/** ri_from_base() through the database; null when the unit cannot be converted. */
+function ri_from_base_db(PDO $pdo, int $ingredientId, string $qtyBase, string $unit): ?string
+{
+    try {
+        $st = $pdo->prepare('SELECT ri_from_base(:i, :q, :u)');
+        $st->execute(['i' => $ingredientId, 'q' => $qtyBase, 'u' => $unit]);
+        $v = $st->fetchColumn();
+        return $v === false || $v === null ? null : (string) $v;
+    } catch (PDOException) {
+        return null;
+    }
+}

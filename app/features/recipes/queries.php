@@ -6,7 +6,7 @@ declare(strict_types=1);
  * view or a db/008–db/018 function AS THE MEMBER; PHP never sums a cost, converts a unit, walks the tree or decides a version — the
  * what-if is the one named exception and it goes through ri_recipe_what_if() (db/018), so even there the database re-sums.
  */
-require_once dirname(__DIR__, 2) . '/recipes_units.php';
+require_once __DIR__ . '/../../units.php';
 if (is_file(__DIR__ . '/../catalog/queries.php')) { require_once __DIR__ . '/../catalog/queries.php'; }   // slice 1's shared reads: recipes_using(), record_notes(), record_attachments()
 if (!function_exists('recipes_using')) {
     function recipes_using(PDO $pdo, int $ingredientId, int $limit = 50): array

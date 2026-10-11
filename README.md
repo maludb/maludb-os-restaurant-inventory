@@ -7,7 +7,7 @@ actual usage, COGS by period).
 
 ## Status
 
-**Phase 2 the shell built and proven (2026-10-11): 348 checks under php -S, 352 under Apache; slices 1 and 2 in build.** The action manifest (119 screens, 146 actions), the MCP tool surface,
+**Phase 2 the shell and slices 1 (the catalog) and 2 (recipes, the first exemplar) built and proven (2026-10-11); slices 3 and 5 in build.** The action manifest (119 screens, 146 actions), the MCP tool surface,
 three build specs and ten slice specs, every manifest row claimed once (`tests/phase1/check_specs.sh`); db/018 carries the schema
 items the documents found. **Phase 0 complete the same day.** The design was approved by the owner the same day it was written, every recommendation
 (D1–D16, §15). The kernel's catalog row (K47) is applied. The kit is proven without a kernel (123 checks), the schema by

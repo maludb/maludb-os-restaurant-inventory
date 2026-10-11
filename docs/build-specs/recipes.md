@@ -304,7 +304,7 @@ a user-level Apache rendering `deploy/apache-restaurant_inventory.conf` (scratch
 `tests/phase2/run.sh`, `tests/phase0/run.sh` (124), `tests/phase1/check_specs.sh` (52) and `php bin/build_action_registry.php --check` are green; the
 registry reads 40 screens and 50 actions built (14 + 17 of them this slice's). Screenshots in `/tmp/ri-shots-s2`.
 
-**Files:** `app/features/recipes/{queries,write,handler,present}.php`; `app/recipes_units.php` (the unit sentences; defers to slice 1's helpers when
+**Files:** `app/features/recipes/{queries,write,handler,present}.php`; the unit sentences from `app/units.php` (the two copies were reconciled into `app/features/units/queries.php` after the build, 2026-10-11; `app/recipes_units.php` is gone) — formerly deferring to slice 1's helpers when
 present); `app/pickers/recipes.php` (sources `recipe` with `kind`/`exclude`, `menu_item`, `modifier`) loaded by a glob in `app/pickers.php`;
 `app/partial_targets/recipes.php` loaded by `partial_update_targets()` in `app/partial_update.php`; `html/recipes/*` with `html/recipes/versions/*`
 (the editor `versions/view.php`, the cost panel, draft/save/line/line-remove/reorder/activate/discard/retire), `html/menu/*` with `menu/categories/*`,
