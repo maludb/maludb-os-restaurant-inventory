@@ -1,0 +1,845 @@
+{
+ "_comment": "Restaurant Inventory's directory fixture for the proofs without a kernel (testing-without-a-kernel.md): claims as the hand-off carries them (bin/dev_handoff.php <id> [scope]) and a full change feed (bin/directory_sync.php --from-file). Two sites: 101 SMOKE Downtown (America/New_York), 102 SMOKE Airport (America/Chicago). Every actor of design \u00a72: 1 the owner (super-admin, IT; admin at both sites); 26 Priya, Kitchen at Airport only; 27 Marco, Manager at Downtown and Kitchen at Airport (Operations, its admin and manager); 28 Bea, write at Downtown with no roles sent yet (read as Kitchen); 29 Ann, an external Viewer at Downtown (read); 30 Dana, Chef at Downtown; 31 Lee, read at Airport with no roles sent (read as Viewer); 32 Nico, a write grant naming NO site (holds nothing here \u2014 fail closed); 40 the expert, an agent Chef at both; 41 Watcher, an agent not admitted; 42 the Purchasing agent, Manager at Downtown; 43 Ada, an agent given the admin role at Downtown. Names are SMOKE so a proof's leftovers are recognised.",
+ "claims": {
+  "1": {
+   "display_name": "SMOKE Owner",
+   "email": "owner@example.invalid",
+   "business_role": "super_admin",
+   "is_external": false,
+   "status": "active",
+   "departments": [
+    {
+     "id": 5,
+     "name": "IT",
+     "is_admin": true
+    }
+   ],
+   "capability": "admin",
+   "role": "admin",
+   "roles": [
+    "admin"
+   ],
+   "rights": [],
+   "scopes": [
+    {
+     "scope_id": 101,
+     "kind": "location",
+     "id": 10,
+     "name": "SMOKE Downtown",
+     "role": "admin",
+     "roles": [
+      "admin"
+     ],
+     "rights": [],
+     "capability": "admin"
+    },
+    {
+     "scope_id": 102,
+     "kind": "location",
+     "id": 11,
+     "name": "SMOKE Airport",
+     "role": "admin",
+     "roles": [
+      "admin"
+     ],
+     "rights": [],
+     "capability": "admin"
+    }
+   ],
+   "scope": null
+  },
+  "26": {
+   "display_name": "SMOKE Priya",
+   "email": "priya@example.invalid",
+   "business_role": "user",
+   "is_external": false,
+   "status": "active",
+   "departments": [
+    {
+     "id": 8,
+     "name": "Kitchen",
+     "is_admin": false
+    }
+   ],
+   "capability": "write",
+   "role": "user",
+   "roles": [
+    "user"
+   ],
+   "rights": [],
+   "scopes": [
+    {
+     "scope_id": 102,
+     "kind": "location",
+     "id": 11,
+     "name": "SMOKE Airport",
+     "role": "user",
+     "roles": [
+      "user"
+     ],
+     "rights": [],
+     "capability": "write"
+    }
+   ],
+   "scope": null
+  },
+  "27": {
+   "display_name": "SMOKE Marco",
+   "email": "marco@example.invalid",
+   "business_role": "user",
+   "is_external": false,
+   "status": "active",
+   "departments": [
+    {
+     "id": 7,
+     "name": "Operations",
+     "is_admin": true
+    }
+   ],
+   "capability": "write",
+   "role": "manager",
+   "roles": [
+    "manager",
+    "user"
+   ],
+   "rights": [],
+   "scopes": [
+    {
+     "scope_id": 101,
+     "kind": "location",
+     "id": 10,
+     "name": "SMOKE Downtown",
+     "role": "manager",
+     "roles": [
+      "manager"
+     ],
+     "rights": [],
+     "capability": "write"
+    },
+    {
+     "scope_id": 102,
+     "kind": "location",
+     "id": 11,
+     "name": "SMOKE Airport",
+     "role": "user",
+     "roles": [
+      "user"
+     ],
+     "rights": [],
+     "capability": "write"
+    }
+   ],
+   "scope": null
+  },
+  "28": {
+   "display_name": "SMOKE Bea",
+   "email": "bea@example.invalid",
+   "business_role": "user",
+   "is_external": false,
+   "status": "active",
+   "departments": [
+    {
+     "id": 8,
+     "name": "Kitchen",
+     "is_admin": false
+    }
+   ],
+   "capability": "write",
+   "role": null,
+   "roles": [],
+   "rights": [],
+   "scopes": [
+    {
+     "scope_id": 101,
+     "kind": "location",
+     "id": 10,
+     "name": "SMOKE Downtown",
+     "role": null,
+     "roles": [],
+     "rights": [],
+     "capability": "write"
+    }
+   ],
+   "scope": null
+  },
+  "29": {
+   "display_name": "SMOKE Ann",
+   "email": "ann@client.invalid",
+   "business_role": "user",
+   "is_external": true,
+   "status": "active",
+   "departments": [],
+   "capability": "read",
+   "role": "viewer",
+   "roles": [
+    "viewer"
+   ],
+   "rights": [],
+   "scopes": [
+    {
+     "scope_id": 101,
+     "kind": "location",
+     "id": 10,
+     "name": "SMOKE Downtown",
+     "role": "viewer",
+     "roles": [
+      "viewer"
+     ],
+     "rights": [],
+     "capability": "read"
+    }
+   ],
+   "scope": null
+  },
+  "30": {
+   "display_name": "SMOKE Dana",
+   "email": "dana@example.invalid",
+   "business_role": "user",
+   "is_external": false,
+   "status": "active",
+   "departments": [
+    {
+     "id": 8,
+     "name": "Kitchen",
+     "is_admin": false
+    }
+   ],
+   "capability": "write",
+   "role": "chef",
+   "roles": [
+    "chef"
+   ],
+   "rights": [],
+   "scopes": [
+    {
+     "scope_id": 101,
+     "kind": "location",
+     "id": 10,
+     "name": "SMOKE Downtown",
+     "role": "chef",
+     "roles": [
+      "chef"
+     ],
+     "rights": [],
+     "capability": "write"
+    }
+   ],
+   "scope": null
+  },
+  "31": {
+   "display_name": "SMOKE Lee",
+   "email": "lee@example.invalid",
+   "business_role": "user",
+   "is_external": false,
+   "status": "active",
+   "departments": [
+    {
+     "id": 8,
+     "name": "Kitchen",
+     "is_admin": false
+    }
+   ],
+   "capability": "read",
+   "role": null,
+   "roles": [],
+   "rights": [],
+   "scopes": [
+    {
+     "scope_id": 102,
+     "kind": "location",
+     "id": 11,
+     "name": "SMOKE Airport",
+     "role": null,
+     "roles": [],
+     "rights": [],
+     "capability": "read"
+    }
+   ],
+   "scope": null
+  },
+  "32": {
+   "display_name": "SMOKE Nico",
+   "email": "nico@example.invalid",
+   "business_role": "user",
+   "is_external": false,
+   "status": "active",
+   "departments": [
+    {
+     "id": 7,
+     "name": "Operations",
+     "is_admin": false
+    }
+   ],
+   "capability": "write",
+   "role": "user",
+   "roles": [
+    "user"
+   ],
+   "rights": [],
+   "scopes": [],
+   "scope": null
+  }
+ },
+ "feed": {
+  "schema": "os.directory-changes/1",
+  "since": null,
+  "next": "2026-01-01T00:00:00.000000Z",
+  "full": true,
+  "members": [
+   {
+    "id": 1,
+    "display_name": "SMOKE Owner",
+    "email": "owner@example.invalid",
+    "member_kind": "human",
+    "business_role": "super_admin",
+    "is_external": false,
+    "status": "active",
+    "job_title": null,
+    "phone": null,
+    "timezone": "UTC",
+    "departments": [
+     {
+      "id": 5,
+      "name": "IT",
+      "is_admin": true,
+      "is_primary": true
+     }
+    ],
+    "updated_at": "2026-01-01T00:00:00Z"
+   },
+   {
+    "id": 26,
+    "display_name": "SMOKE Priya",
+    "email": "priya@example.invalid",
+    "member_kind": "human",
+    "business_role": "user",
+    "is_external": false,
+    "status": "active",
+    "job_title": null,
+    "phone": null,
+    "timezone": "UTC",
+    "departments": [
+     {
+      "id": 8,
+      "name": "Kitchen",
+      "is_admin": false,
+      "is_primary": true
+     }
+    ],
+    "updated_at": "2026-01-01T00:00:00Z"
+   },
+   {
+    "id": 27,
+    "display_name": "SMOKE Marco",
+    "email": "marco@example.invalid",
+    "member_kind": "human",
+    "business_role": "user",
+    "is_external": false,
+    "status": "active",
+    "job_title": null,
+    "phone": null,
+    "timezone": "UTC",
+    "departments": [
+     {
+      "id": 7,
+      "name": "Operations",
+      "is_admin": true,
+      "is_primary": true
+     }
+    ],
+    "updated_at": "2026-01-01T00:00:00Z"
+   },
+   {
+    "id": 28,
+    "display_name": "SMOKE Bea",
+    "email": "bea@example.invalid",
+    "member_kind": "human",
+    "business_role": "user",
+    "is_external": false,
+    "status": "active",
+    "job_title": null,
+    "phone": null,
+    "timezone": "UTC",
+    "departments": [
+     {
+      "id": 8,
+      "name": "Kitchen",
+      "is_admin": false,
+      "is_primary": true
+     }
+    ],
+    "updated_at": "2026-01-01T00:00:00Z"
+   },
+   {
+    "id": 29,
+    "display_name": "SMOKE Ann",
+    "email": "ann@client.invalid",
+    "member_kind": "human",
+    "business_role": "user",
+    "is_external": true,
+    "status": "active",
+    "job_title": null,
+    "phone": null,
+    "timezone": "UTC",
+    "departments": [],
+    "updated_at": "2026-01-01T00:00:00Z"
+   },
+   {
+    "id": 30,
+    "display_name": "SMOKE Dana",
+    "email": "dana@example.invalid",
+    "member_kind": "human",
+    "business_role": "user",
+    "is_external": false,
+    "status": "active",
+    "job_title": null,
+    "phone": null,
+    "timezone": "UTC",
+    "departments": [
+     {
+      "id": 8,
+      "name": "Kitchen",
+      "is_admin": false,
+      "is_primary": true
+     }
+    ],
+    "updated_at": "2026-01-01T00:00:00Z"
+   },
+   {
+    "id": 31,
+    "display_name": "SMOKE Lee",
+    "email": "lee@example.invalid",
+    "member_kind": "human",
+    "business_role": "user",
+    "is_external": false,
+    "status": "active",
+    "job_title": null,
+    "phone": null,
+    "timezone": "UTC",
+    "departments": [
+     {
+      "id": 8,
+      "name": "Kitchen",
+      "is_admin": false,
+      "is_primary": true
+     }
+    ],
+    "updated_at": "2026-01-01T00:00:00Z"
+   },
+   {
+    "id": 32,
+    "display_name": "SMOKE Nico",
+    "email": "nico@example.invalid",
+    "member_kind": "human",
+    "business_role": "user",
+    "is_external": false,
+    "status": "active",
+    "job_title": null,
+    "phone": null,
+    "timezone": "UTC",
+    "departments": [
+     {
+      "id": 7,
+      "name": "Operations",
+      "is_admin": false,
+      "is_primary": true
+     }
+    ],
+    "updated_at": "2026-01-01T00:00:00Z"
+   },
+   {
+    "id": 40,
+    "display_name": "SMOKE Expert",
+    "email": null,
+    "member_kind": "agent",
+    "business_role": "user",
+    "is_external": false,
+    "status": "active",
+    "job_title": null,
+    "phone": null,
+    "timezone": "UTC",
+    "departments": [],
+    "updated_at": "2026-01-01T00:00:00Z"
+   },
+   {
+    "id": 41,
+    "display_name": "SMOKE Watcher",
+    "email": null,
+    "member_kind": "agent",
+    "business_role": "user",
+    "is_external": false,
+    "status": "active",
+    "job_title": null,
+    "phone": null,
+    "timezone": "UTC",
+    "departments": [],
+    "updated_at": "2026-01-01T00:00:00Z"
+   },
+   {
+    "id": 42,
+    "display_name": "SMOKE Buyer",
+    "email": null,
+    "member_kind": "agent",
+    "business_role": "user",
+    "is_external": false,
+    "status": "active",
+    "job_title": null,
+    "phone": null,
+    "timezone": "UTC",
+    "departments": [],
+    "updated_at": "2026-01-01T00:00:00Z"
+   },
+   {
+    "id": 43,
+    "display_name": "SMOKE Ada",
+    "email": null,
+    "member_kind": "agent",
+    "business_role": "user",
+    "is_external": false,
+    "status": "active",
+    "job_title": null,
+    "phone": null,
+    "timezone": "UTC",
+    "departments": [],
+    "updated_at": "2026-01-01T00:00:00Z"
+   }
+  ],
+  "departments": [
+   {
+    "id": 5,
+    "name": "IT",
+    "description": null,
+    "parent_id": null,
+    "manager_member_id": 1,
+    "is_system": true,
+    "system_key": "it",
+    "archived_at": null,
+    "updated_at": "2026-01-01T00:00:00Z"
+   },
+   {
+    "id": 7,
+    "name": "Operations",
+    "description": null,
+    "parent_id": null,
+    "manager_member_id": 27,
+    "is_system": false,
+    "system_key": null,
+    "archived_at": null,
+    "updated_at": "2026-01-01T00:00:00Z"
+   },
+   {
+    "id": 8,
+    "name": "Kitchen",
+    "description": null,
+    "parent_id": 7,
+    "manager_member_id": 30,
+    "is_system": false,
+    "system_key": null,
+    "archived_at": null,
+    "updated_at": "2026-01-01T00:00:00Z"
+   }
+  ],
+  "memberships": [
+   {
+    "member_id": 1,
+    "department_id": 5,
+    "is_admin": true,
+    "is_primary": true,
+    "joined_at": "2026-01-01T00:00:00Z",
+    "left_at": null
+   },
+   {
+    "member_id": 26,
+    "department_id": 8,
+    "is_admin": false,
+    "is_primary": true,
+    "joined_at": "2026-01-01T00:00:00Z",
+    "left_at": null
+   },
+   {
+    "member_id": 27,
+    "department_id": 7,
+    "is_admin": true,
+    "is_primary": true,
+    "joined_at": "2026-01-01T00:00:00Z",
+    "left_at": null
+   },
+   {
+    "member_id": 28,
+    "department_id": 8,
+    "is_admin": false,
+    "is_primary": true,
+    "joined_at": "2026-01-01T00:00:00Z",
+    "left_at": null
+   },
+   {
+    "member_id": 30,
+    "department_id": 8,
+    "is_admin": false,
+    "is_primary": true,
+    "joined_at": "2026-01-01T00:00:00Z",
+    "left_at": null
+   },
+   {
+    "member_id": 31,
+    "department_id": 8,
+    "is_admin": false,
+    "is_primary": true,
+    "joined_at": "2026-01-01T00:00:00Z",
+    "left_at": null
+   },
+   {
+    "member_id": 32,
+    "department_id": 7,
+    "is_admin": false,
+    "is_primary": true,
+    "joined_at": "2026-01-01T00:00:00Z",
+    "left_at": null
+   }
+  ],
+  "deleted_departments": [],
+  "scopes": [
+   {
+    "scope_id": 101,
+    "kind": "location",
+    "location_id": 10,
+    "department_id": null,
+    "name": "SMOKE Downtown",
+    "address": "1 Main St",
+    "timezone": "America/New_York",
+    "removed_at": null,
+    "updated_at": "2026-01-01T00:00:00Z"
+   },
+   {
+    "scope_id": 102,
+    "kind": "location",
+    "location_id": 11,
+    "department_id": null,
+    "name": "SMOKE Airport",
+    "address": "Terminal B",
+    "timezone": "America/Chicago",
+    "removed_at": null,
+    "updated_at": "2026-01-01T00:00:00Z"
+   }
+  ],
+  "access": [
+   {
+    "member_id": 1,
+    "role": "admin",
+    "roles": [
+     "admin"
+    ],
+    "rights": [],
+    "capability": "admin",
+    "scopes": [
+     {
+      "scope_id": 101,
+      "role": "admin",
+      "roles": [
+       "admin"
+      ],
+      "capability": "admin"
+     },
+     {
+      "scope_id": 102,
+      "role": "admin",
+      "roles": [
+       "admin"
+      ],
+      "capability": "admin"
+     }
+    ]
+   },
+   {
+    "member_id": 26,
+    "role": "user",
+    "roles": [
+     "user"
+    ],
+    "rights": [],
+    "capability": "write",
+    "scopes": [
+     {
+      "scope_id": 102,
+      "role": "user",
+      "roles": [
+       "user"
+      ],
+      "capability": "write"
+     }
+    ]
+   },
+   {
+    "member_id": 27,
+    "role": "manager",
+    "roles": [
+     "manager",
+     "user"
+    ],
+    "rights": [],
+    "capability": "write",
+    "scopes": [
+     {
+      "scope_id": 101,
+      "role": "manager",
+      "roles": [
+       "manager"
+      ],
+      "capability": "write"
+     },
+     {
+      "scope_id": 102,
+      "role": "user",
+      "roles": [
+       "user"
+      ],
+      "capability": "write"
+     }
+    ]
+   },
+   {
+    "member_id": 28,
+    "role": null,
+    "roles": [],
+    "rights": [],
+    "capability": "write",
+    "scopes": [
+     {
+      "scope_id": 101,
+      "role": null,
+      "roles": [],
+      "capability": "write"
+     }
+    ]
+   },
+   {
+    "member_id": 29,
+    "role": "viewer",
+    "roles": [
+     "viewer"
+    ],
+    "rights": [],
+    "capability": "read",
+    "scopes": [
+     {
+      "scope_id": 101,
+      "role": "viewer",
+      "roles": [
+       "viewer"
+      ],
+      "capability": "read"
+     }
+    ]
+   },
+   {
+    "member_id": 30,
+    "role": "chef",
+    "roles": [
+     "chef"
+    ],
+    "rights": [],
+    "capability": "write",
+    "scopes": [
+     {
+      "scope_id": 101,
+      "role": "chef",
+      "roles": [
+       "chef"
+      ],
+      "capability": "write"
+     }
+    ]
+   },
+   {
+    "member_id": 31,
+    "role": null,
+    "roles": [],
+    "rights": [],
+    "capability": "read",
+    "scopes": [
+     {
+      "scope_id": 102,
+      "role": null,
+      "roles": [],
+      "capability": "read"
+     }
+    ]
+   },
+   {
+    "member_id": 32,
+    "role": "user",
+    "roles": [
+     "user"
+    ],
+    "rights": [],
+    "capability": "write",
+    "scopes": []
+   },
+   {
+    "member_id": 40,
+    "role": "chef",
+    "roles": [
+     "chef"
+    ],
+    "rights": [],
+    "capability": "write",
+    "scopes": [
+     {
+      "scope_id": 101,
+      "role": "chef",
+      "roles": [
+       "chef"
+      ],
+      "capability": "write"
+     },
+     {
+      "scope_id": 102,
+      "role": "chef",
+      "roles": [
+       "chef"
+      ],
+      "capability": "write"
+     }
+    ]
+   },
+   {
+    "member_id": 42,
+    "role": "manager",
+    "roles": [
+     "manager"
+    ],
+    "rights": [],
+    "capability": "write",
+    "scopes": [
+     {
+      "scope_id": 101,
+      "role": "manager",
+      "roles": [
+       "manager"
+      ],
+      "capability": "write"
+     }
+    ]
+   },
+   {
+    "member_id": 43,
+    "role": "admin",
+    "roles": [
+     "admin"
+    ],
+    "rights": [],
+    "capability": "admin",
+    "scopes": [
+     {
+      "scope_id": 101,
+      "role": "admin",
+      "roles": [
+       "admin"
+      ],
+      "capability": "admin"
+     }
+    ]
+   }
+  ]
+ }
+}

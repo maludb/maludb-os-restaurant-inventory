@@ -1,0 +1,15 @@
+{
+  "name": "Restaurant Inventory",
+  "short_name": "Kitchen",
+  "description": "The kitchen's and the bar's stock desk: purchasing, receiving, costed recipes, the POS's depletion, waste, counts, usage and the projection into a suggested order.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#a34a28",
+  "icons": [
+    { "src": "/assets/images/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/assets/images/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
