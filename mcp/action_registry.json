@@ -1,6 +1,6 @@
 {
     "generated_from": "docs/restaurant-inventory-action-manifest.md",
-    "generated_at": "2026-10-11T14:56:22+00:00",
+    "generated_at": "2026-10-11T15:22:29+00:00",
     "screens": {
         "home": {
             "screen": "home",

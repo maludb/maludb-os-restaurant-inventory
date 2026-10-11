@@ -681,4 +681,13 @@ db/018 and the decisions the specs took, §16) — Phase 2 begins.
   is `bin/forecast.py` (pure Python) shelled from the worker's pass; a no-depletion PLU is a flag, never a lineless recipe;
   `recipe_create` makes the recipe and its first draft in one POST; the morning note to `#kitchen` in Spaces stays Extended
   (the text goes in the notification); a count after the day's count is as of a moment after the sales cut (its corrections
-  are dated at the cut — the proof's second lesson on counts); `watch.fire` is logged by the worker's pass. **Phase 1 APPROVED by the owner the same day**; NEXT Phase 2 the shell (`docs/build-specs/sso-shell.md`).
+  are dated at the cut — the proof's second lesson on counts); `watch.fire` is logged by the worker's pass. **Phase 1 APPROVED by the owner the same day.**
+- 2026-10-11 — **PHASE 2 THE SHELL BUILT AND PROVEN** (`tests/phase2/run.sh`: 348 checks under php -S, 352 under a user-level Apache
+  rendering the deploy vhost; the Phase 0 proofs still green, the Phase 1 check green, the registry 7 screens and 5 actions built, the
+  installer's plan clean): the sign-on under the shell, the ONE menu table gated per site, the tab bar at 375 px, the site and
+  application switchers, the bell, the command bar through the kernel, the home with its placeholder cards, the me screens, `/search`
+  over `ri_find`, the record picker shipped with the shell, 52 placeholders naming their slice, the vhost's rewrites. **Found by the
+  proof: db/019** — the kit's site materialiser deleted every holding at a closed site, so a reopened site lost its people until the
+  feed happened to resend them; holdings now survive a closure. Decisions: the site of an action-token request is `X-Site` or `?site=`
+  when held, else the first held site by name (a person with no site is refused `no_site`); the first held site is chosen by name.
+  NEXT slice 1 (catalog) and slice 2 (recipes, the first exemplar).
