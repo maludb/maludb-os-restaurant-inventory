@@ -64,6 +64,8 @@ ok($r['code'] === 200 && has($r, 'id="source-view-settings-summary"') && !has($r
 $r = page($ann, '/sales/sources/' . $sftp);
 ok($r['code'] === 200 && !has($r, 'id="source-view-pull"') && !has($r, 'id="source-view-edit"'), 'Ann reads it with no Pull, no Edit');
 ok(page($admin, '/sales/sources/' . $toast . '/edit')['code'] === 200 && page($dana, '/sales/sources/' . $toast . '/edit')['code'] === 403, 'the edit form: the admin 200, Dana 403');
+ok(page($dana, '/sales/sources/')['code'] === 403 && page($ann, '/sales/sources/')['code'] === 403 && page(at(28, DOWNTOWN), '/sales/sources/')['code'] === 403, "the list is the admin's (the menu's gate, settings.manage): Dana, Bea and Ann 403");
+ok(preg_match('#<a[^>]+href="/sales/sources/"#', page($dana, '/sales/sources/' . $sftp)['body']) === 0 && preg_match('#<a[^>]+href="/sales/sources/"#', page($admin, '/sales/sources/' . $sftp)['body']) === 1, "the source's crumb links the list only for the admin");
 
 echo "4. Update, schedule, pause, delete\n";
 $r = post_json($admin, '/sales/sources/save.php', ['source' => (string) $sftp, '_partial' => 'yes', 'schedule_minutes' => '30']);

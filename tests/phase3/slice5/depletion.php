@@ -89,6 +89,9 @@ $r = req('GET', '/sales/runs/?status=partial', ['jar' => $bea, 'headers' => ['Ac
 $runs = json_decode($r['body'], true)['data'] ?? [];
 ok($r['code'] === 200 && ($runs['total'] ?? 0) === 1 && array_key_exists('value', $runs['runs'][0] ?? []) && $runs['runs'][0]['value'] === null, 'the runs list filtered partial: one, its value walled for Bea');
 ok(page($bea, '/sales/runs/')['code'] === 200 && has(page($bea, '/sales/runs/'), 'id="run-row-' . $run2 . '"'), 'the runs list page');
+ok(page($ann, '/sales/runs/')['code'] === 403, "the runs list is for who runs a day (the menu's gate, stock.receive): Ann 403");
+$r = page($ann, '/sales/runs/' . $run1);
+ok($r['code'] === 200 && preg_match('#<a[^>]+href="/sales/runs/"#', $r['body']) === 0 && !has($r, 'id="run-card-void"'), "a run's own page stays readable from its day for Ann: the crumb unlinked, no Void");
 
 echo "5. Refusals\n";
 $r = post_json($bea, '/sales/runs/run.php', ['business_date' => '2026-10-04']);

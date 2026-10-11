@@ -2,7 +2,7 @@
 $id = (int) $s['source_id']; $st = source_state($s); $here = here_url(); $h = $s['health'];
 $tabs = ['pulls' => 'Pulls', 'days' => 'Days', 'unmapped' => 'Unmapped' . ($unmapped !== [] ? ' (' . count($unmapped) . ')' : ''), 'trail' => 'Trail'];
 ?>
-<?= view('shared/header.php', ['id' => 'source-view', 'title' => $s['name'], 'crumbs' => [['Home', '/'], ['POS sources', '/sales/sources/'], [$s['name'], null]], 'back' => $back,
+<?= view('shared/header.php', ['id' => 'source-view', 'title' => $s['name'], 'crumbs' => [['Home', '/'], ['POS sources', has_right('settings.manage') ? '/sales/sources/' : null], [$s['name'], null]], 'back' => $back,
     'action' => $mayEdit ? hx_link(with_back('/sales/sources/' . $id . '/edit', $here), '<i class="feather-edit-2 me-1"></i>Edit', 'btn btn-light btn-touch', 'id="source-view-edit"') : '']) ?>
 <div class="main-content" id="source-view-content">
     <?= view('shared/notice.php', ['notice' => $notice]) ?>

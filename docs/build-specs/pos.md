@@ -201,9 +201,9 @@ unknown PLU 2002; the admin (1), Marco (Manager), Dana (Chef), Bea (Kitchen), An
 
 Built 2026-10-11 by the planning model (a fork beside slice 3's), on `/srv/apps/restaurant_inventory`; the application's commits are not pushed.
 
-**Proof:** `tests/phase3/slice5/run.sh` — sources 35, credentials 25, mappings and the preview 34, the upload and import (with resolution, day
-parts and the JSON shapes) 61, the depletion run with re-run and void 58, the worker's passes 46, health and the queue 23, the browser 32 (headless
-Chromium at 1280 × 800, 375 × 740 and with JavaScript off), the registry, the approvals and the Phase 1 claim check: **317 checks under php -S and 317
+**Proof:** `tests/phase3/slice5/run.sh` — sources 37, credentials 25, mappings and the preview 35, the upload and import (with resolution, day
+parts and the JSON shapes) 61, the depletion run with re-run and void 60, the worker's passes 46, health and the queue 23, the browser 38 (headless
+Chromium at 1280 × 800, 375 × 740 and with JavaScript off), the registry, the approvals and the Phase 1 claim check: **328 checks under php -S and 328
 under a user-level Apache rendering `deploy/apache-restaurant_inventory.conf`** (target ≥ 260). The scratch database is `ri_dev3e` and the port block
 9320–9324 (the application, the fake kernel, the fake MaluDB + MaluMail with the mailbox MCP, the POS fixture server — a fake Square Orders API —,
 the internal vhost), not this spec's `ri_dev5` / 9301–9306, so the proof runs beside the other slices'. The registry this commit carries reads
@@ -245,6 +245,9 @@ rewrites — a business date and a mapping by key — in both vhosts of `deploy/
 - A mail from a known sender with no CSV or XLSX is **handled**: a failed `email` pull says why and the mail is marked seen. A stranger's mail is left
   unread and the admins get one notice a day naming the sender.
 - The run card **omits** the value for someone who cannot see cost (not "Value: —"); the day's tiles go two and one on a phone.
+- **The three lists keep the menu's gates** (`app/features/shell/nav.php`, Phase 2's gate matrix): `source-list` and `mapping-list` are the admin's
+  (`settings.manage`), `depletion-run-list` needs `stock.receive`. A record's own page — a source, its pulls, a mapping, a run — stays `ri.read`,
+  so the links from a day or the queue open (Dana pulls from a source's page), and its crumb links the list only for those the list admits.
 - A source's state reads active / paused / backing off; the card counts its failures.
 - Probe is not a manifest action: a pull of kind `probe` and `source.probe` in the log, nothing else changed.
 - The mailbox MCP client (`malumail_mcp_call()`) lives in `app/features/pos/mailbox.php`, not the kit's `app/mail.php`.

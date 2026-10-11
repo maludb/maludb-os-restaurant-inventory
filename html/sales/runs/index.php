@@ -3,7 +3,7 @@ declare(strict_types=1);
 /** /sales/runs/?status=&from=&to=&page= — screen depletion-run-list: date, status, run no, lines total / depleted / unmapped / voided, modifiers unmapped, ingredients, value (walled), started, by (a person or "worker"). */
 require_once dirname(__DIR__, 3) . '/app/features/pos/handler.php';
 require_login();
-require_right('ri.read');
+require_right('stock.receive');                   // the menu's gate: who runs a day sees the runs; a run's own page stays readable from its day
 $pdo = db();
 $site = (int) current_site_id();
 $f = ['status' => request_string('status'), 'from' => request_string('from'), 'to' => request_string('to')];

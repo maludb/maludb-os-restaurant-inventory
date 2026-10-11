@@ -106,12 +106,27 @@ async function session(signOn, viewport, opts = {}) {
   const tiles = await page.locator('#day-tiles > div').evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); return [Math.round(r.x), Math.round(r.y), Math.round(r.width)]; }));
   ok(tiles.length >= 3 && new Set(tiles.map((t) => t[1])).size >= 2, "the day's tiles stack on a phone (" + tiles.map((t) => t.join('/')).join(' ') + ')');
   await page.screenshot({ path: SHOTS + '/day-375.png', fullPage: true });
-  for (const path of ['/sales/', '/sales/2026-10-05', '/sales/upload', '/sales/sources/', '/sales/sources/' + square, '/sales/sources/' + square + '/pulls', '/sales/runs/', '/sales/runs/' + run, '/sales/mappings/generic']) {
-    await page.goto(BASE + path, { waitUntil: 'networkidle' });
+  for (const path of ['/sales/', '/sales/2026-10-05', '/sales/upload', '/sales/sources/' + square, '/sales/sources/' + square + '/pulls', '/sales/runs/', '/sales/runs/' + run, '/sales/mappings/generic']) {
+    const resp = await page.goto(BASE + path, { waitUntil: 'networkidle' });
     const o = await overflow(page);
-    ok(o.sw <= o.iw, '375: ' + path + ' scrollWidth ' + o.sw + ' ≤ ' + o.iw);
+    ok(resp.status() === 200 && o.sw <= o.iw, '375 (Bea): ' + path + ' scrollWidth ' + o.sw + ' ≤ ' + o.iw);
   }
   ok(errors.length === 0, 'no console errors at 375' + (errors.length ? ': ' + errors.join(' | ') : ''));
+  await ctx.close();
+}
+
+// ---- 375 × 740: the admin's own screens on a phone ----
+{
+  const { ctx, page, errors } = await session(mint(1, DOWNTOWN), { width: 375, height: 740 });
+  console.log('375 x 740 — the admin\'s lists and the source form');
+  for (const path of ['/sales/sources/', '/sales/sources/new', '/sales/sources/' + square + '/credential', '/sales/mappings/', '/sales/mappings/new?copy=generic']) {
+    const resp = await page.goto(BASE + path, { waitUntil: 'networkidle' });
+    const o = await overflow(page);
+    ok(resp.status() === 200 && o.sw <= o.iw, '375 (admin): ' + path + ' scrollWidth ' + o.sw + ' ≤ ' + o.iw);
+  }
+  const small = await smallControls(page, '#mapping-form');
+  ok(small.length === 0, 'every control of the mapping form ≥ 44 px' + (small.length ? ': ' + small.join(', ') : ''));
+  ok(errors.length === 0, 'no console errors (admin, 375)' + (errors.length ? ': ' + errors.join(' | ') : ''));
   await ctx.close();
 }
 await browser.close();

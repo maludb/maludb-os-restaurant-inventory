@@ -3,7 +3,7 @@ declare(strict_types=1);
 /** /sales/mappings/ — screen mapping-list: key, name, built-in or ours, the columns it expects; New mapping copies generic (the admin's). */
 require_once dirname(__DIR__, 3) . '/app/features/pos/handler.php';
 require_login();
-require_right('ri.read');
+require_right('settings.manage');                 // the menu's gate: the file mappings are the admin's; a mapping's own page stays readable (read-only)
 $pdo = db();
 $rows = mapping_list($pdo);
 log_screen_view($pdo, 'mapping-list');

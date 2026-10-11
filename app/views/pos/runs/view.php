@@ -1,5 +1,5 @@
 <?php /** One depletion run (screen depletion-run-view). Data: run, moves, seesCost, mayRun, mayVoid, tz, notice, back */ $date = (string) $run['business_date']; ?>
-<?= view('shared/header.php', ['id' => 'depletion-run-view', 'title' => 'Run ' . (int) $run['run_no'] . ' · ' . format_date($date), 'crumbs' => [['Home', '/'], ['Depletion runs', '/sales/runs/'], [format_date($date) . ' · run ' . (int) $run['run_no'], null]], 'back' => $back,
+<?= view('shared/header.php', ['id' => 'depletion-run-view', 'title' => 'Run ' . (int) $run['run_no'] . ' · ' . format_date($date), 'crumbs' => [['Home', '/'], ['Depletion runs', has_right('stock.receive') ? '/sales/runs/' : null], [format_date($date) . ' · run ' . (int) $run['run_no'], null]], 'back' => $back,
     'action' => hx_link('/sales/' . $date, 'The day', 'btn btn-light btn-touch', 'id="depletion-run-view-day"')]) ?>
 <div class="main-content" id="depletion-run-view-content">
     <?= view('shared/notice.php', ['notice' => $notice]) ?>

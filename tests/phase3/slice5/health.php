@@ -31,13 +31,13 @@ ok((int) $h[$square]['unmapped_plus'] === 1 && (int) $h[$toast]['unmapped_plus']
 ok((int) $h[$square]['unmapped_modifiers'] === 0 && (int) $h[$toast]['pending_runs'] === (int) one('SELECT count(*) FROM ri_depletion_due() WHERE scope_id = 101'), 'no unmapped modifier; pending runs = the days due at the site');
 
 echo "2. The cards and the JSON agree\n";
-$r = req('GET', '/sales/sources/', ['jar' => $bea, 'headers' => ['Accept: application/json']]);
+$r = req('GET', '/sales/sources/', ['jar' => $admin, 'headers' => ['Accept: application/json']]);
 $js = array_column(json_decode($r['body'], true)['data']['sources'] ?? [], null, 'source_id');
 $agree = true;
 foreach ($h as $id => $x) { $agree = $agree && isset($js[$id]) && (int) $js[$id]['health']['unmapped_plus'] === (int) $x['unmapped_plus'] && count((array) $js[$id]['health']['days_missing']) === count($x['days_missing']); }
 ok($r['code'] === 200 && $agree, "the list's JSON carries each source's health as ri_pos_health() says");
 ok(array_key_exists('settings', $js[$square]) && $js[$square]['settings'] === null && array_key_exists('credential', $js[$square]) && $js[$square]['credential'] === null && $js[$square]['has_credential'] === true, 'the list never carries settings or the credential (has_credential only)');
-$r = page($bea, '/sales/sources/');
+$r = page($admin, '/sales/sources/');
 ok(preg_match('#id="source-card-' . $square . '-unmapped"[^>]*>1 unmapped PLU<#', $r['body']) === 1, "Square's card: 1 unmapped PLU");
 ok(preg_match('#id="source-card-' . $toast . '-missing"[^>]*>' . count($h[$toast]['days_missing']) . ' day#', $r['body']) === 1, "the Toast card's missing days count the same");
 

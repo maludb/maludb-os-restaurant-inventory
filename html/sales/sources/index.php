@@ -3,7 +3,7 @@ declare(strict_types=1);
 /** /sales/sources/?status= — screen source-list: the POS sources of this site as cards (connector, intake, schedule, last ok, failures, paused, the days missing this week, the unmapped PLUs). JSON: the cards. */
 require_once dirname(__DIR__, 3) . '/app/features/pos/handler.php';
 require_login();
-require_right('ri.read');
+require_right('settings.manage');                 // the menu's gate (app/features/shell/nav.php): the POS sources are the admin's to manage
 $pdo = db();
 $site = (int) current_site_id();
 $status = request_string('status', 'all');

@@ -4,7 +4,7 @@ $required = ['external_id' => true, 'business_date' => true, 'plu' => true, 'qty
 $labels = ['external_id' => 'Check id', 'business_date' => 'Business date', 'closed_at' => 'Close time', 'plu' => 'PLU', 'item_name' => 'Item name', 'qty' => 'Quantity', 'unit_price' => 'Unit price', 'line_total' => 'Line total',
     'voided' => 'Void flag', 'comp' => 'Comp flag (or discount)', 'modifiers' => 'Modifiers', 'covers' => 'Covers', 'external_line_id' => 'Line id', 'tax' => 'Tax', 'total' => 'Check total'];
 ?>
-<?= view('shared/header.php', ['id' => 'mapping-edit', 'title' => $isNew ? 'New mapping' : 'Mapping · ' . $m['name'], 'crumbs' => [['Home', '/'], ['File mappings', '/sales/mappings/'], [$isNew ? 'New' : $m['key'], null]], 'back' => $back,
+<?= view('shared/header.php', ['id' => 'mapping-edit', 'title' => $isNew ? 'New mapping' : 'Mapping · ' . $m['name'], 'crumbs' => [['Home', '/'], ['File mappings', has_right('settings.manage') ? '/sales/mappings/' : null], [$isNew ? 'New' : $m['key'], null]], 'back' => $back,
     'action' => (!$isNew && $m['is_builtin'] && $mayCopy) ? hx_link('/sales/mappings/new?copy=' . $m['key'], '<i class="feather-copy me-1"></i>Copy to change', 'btn btn-primary btn-touch', 'id="mapping-edit-copy"') : '']) ?>
 <div class="main-content" id="mapping-edit-content">
     <?= view('shared/notice.php', ['notice' => $notice]) ?>
