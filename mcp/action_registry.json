@@ -1,6 +1,6 @@
 {
     "generated_from": "docs/restaurant-inventory-action-manifest.md",
-    "generated_at": "2026-10-11T13:34:47+00:00",
+    "generated_at": "2026-10-11T13:35:00+00:00",
     "screens": {
         "home": {
             "screen": "home",
@@ -3791,8 +3791,52 @@
                     "hint": "a draft"
                 },
                 {
-                    "name": null,
-                    "note": "any header field of receipt_draft"
+                    "required": false,
+                    "name": "supplier",
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "required": false,
+                    "name": "purchase_order",
+                    "repeated": false,
+                    "hint": "its open lines become the draft's lines"
+                },
+                {
+                    "required": false,
+                    "name": "area",
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "required": false,
+                    "name": "received_on",
+                    "repeated": false,
+                    "hint": "today by default"
+                },
+                {
+                    "required": false,
+                    "name": "delivery_note_ref",
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "required": false,
+                    "name": "invoice_ref",
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "required": false,
+                    "name": "notes",
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "required": false,
+                    "name": "lines",
+                    "repeated": false,
+                    "hint": "JSON — ingredient and qty and unit and unit_cost and weight_qty and weight_unit and temperature_c and discrepancy_kind and putaway_area"
                 }
             ],
             "undo": "restore prior",
@@ -3802,7 +3846,8 @@
             "who": "stock.receive",
             "agent": true,
             "record_id": "the receipt",
-            "built": false
+            "built": false,
+            "partial": true
         },
         "receipt_line_add": {
             "action": "receipt_line_add",
@@ -5145,8 +5190,70 @@
                     "hint": "a draft or disputed"
                 },
                 {
-                    "name": null,
-                    "note": "any header field of invoice_create"
+                    "required": false,
+                    "name": "supplier",
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "required": false,
+                    "name": "invoice_no",
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "required": false,
+                    "name": "invoice_date",
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "required": false,
+                    "name": "kind",
+                    "repeated": false,
+                    "hint": "invoice or credit"
+                },
+                {
+                    "required": false,
+                    "name": "receipt",
+                    "repeated": false,
+                    "hint": "the receipt it bills"
+                },
+                {
+                    "required": false,
+                    "name": "purchase_order",
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "required": false,
+                    "name": "tax",
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "required": false,
+                    "name": "received_on",
+                    "repeated": false,
+                    "hint": "today by default"
+                },
+                {
+                    "required": false,
+                    "name": "file",
+                    "repeated": false,
+                    "hint": "multipart — the invoice image"
+                },
+                {
+                    "required": false,
+                    "name": "notes",
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "required": false,
+                    "name": "lines",
+                    "repeated": false,
+                    "hint": "JSON — supplier_item or ingredient and description and qty and unit and unit_price"
                 }
             ],
             "undo": "restore prior",
@@ -5156,7 +5263,8 @@
             "who": "invoices.write",
             "agent": true,
             "record_id": "the invoice",
-            "built": false
+            "built": false,
+            "partial": true
         },
         "invoice_line_set": {
             "action": "invoice_line_set",
