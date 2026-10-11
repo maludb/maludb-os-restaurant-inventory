@@ -1,0 +1,92 @@
+<?php
+/** Slice 6 — starting a count (counts.md "Proof": Start): the form's default moment (the day's sales cut), the whole site and a sheet, the book figure frozen as of the moment, one full count at a time, blind. */
+require __DIR__ . '/lib.php';
+$w = count_world();
+$bea = person(28); $dana = person(30); $ann = person(29);
+$sid = (int) one("SELECT id FROM count_sheets WHERE name = 'Full house' AND scope_id = :s", ['s' => DOWNTOWN]);
+$tz = new DateTimeZone((string) one('SELECT timezone FROM sites WHERE scope_id = :s', ['s' => DOWNTOWN]));
+reset_counts();
+
+echo "1. The form's default moment\n";
+$j = get_json($dana, '/counts/new');
+$def = (string) ($j['json']['data']['as_of_default'] ?? '');
+$at = DateTimeImmutable::createFromFormat('Y-m-d\TH:i', $def, $tz);
+ok(preg_match('/^\d{4}-\d\d-\d\dT04:00$/', $def) === 1, "as of defaults to the day's sales cut, site time ($def)");
+ok($at !== false && $at->getTimestamp() > time() && $at->getTimestamp() <= time() + 86400 + 60, 'it is the next cut: ahead of now by no more than a day (tonight at 04:00)');
+$cli = static fn (string $t): string => trim((string) shell_exec('php ' . escapeshellarg(__DIR__ . '/asof.php') . ' ' . DOWNTOWN . ' ' . escapeshellarg($t) . ' 2>&1'));
+ok($cli('2026-10-12 09:00') === '2026-10-13T04:00' && $cli('2026-10-12 23:30') === '2026-10-13T04:00', 'taken in the morning or evening: the coming cut, tomorrow 04:00');
+ok($cli('2026-10-12 02:00') === '2026-10-12T04:00' && $cli('2026-10-12 03:59:59') === '2026-10-12T04:00' && $cli('2026-10-12 04:00') === '2026-10-13T04:00', 'before 04:00 the business day is still yesterday\'s: its cut is this morning\'s (the day\'s depletion is dated at the cut)');
+$h = page($dana, '/counts/new');
+ok(has($h, 'data-screen="count-add"') && has($h, 'id="count-form"') && has($h, 'id="count-form-field-as_of" value="' . $def . '"') && has($h, 'id="count-form-field-sheet"') && has($h, 'id="count-form-field-kind"') && has($h, 'id="count-form-field-blind"') && has($h, 'id="count-form-field-notes"'), 'the form with its field ids, the as-of defaulted');
+ok(has($h, 'Tonight at 4:00 AM') && has($h, 'A count taken this morning for last night picks yesterday'), 'the help says "tonight at 4:00 AM" and what yesterday\'s cut is for');
+ok(!preg_match('/id="count-form-field-blind"[^>]*disabled/', $h['body']) && preg_match('/id="count-form-field-blind"[^>]*disabled/', page($bea, '/counts/new')['body']) === 1, 'a Chef may untick blind; a Kitchen member sees it disabled at the setting\'s value');
+$h = page($dana, "/counts/new?sheet=$sid");
+ok(has($h, '<option value="' . $sid . '" selected>'), '?sheet= preselects the sheet');
+ok(page($ann, '/counts/new')['code'] === 403, 'Ann (Viewer) cannot start a count: 403');
+
+echo "2. The whole site\n";
+$before = last_activity_id();
+[$c1, $r] = start_count_as($bea);
+$row = ccount($c1);
+ok($r['code'] === 302 && preg_match('#^/counts/' . $c1 . '\?notice=started#', $r['location']) === 1, 'Bea starts a count: it lands on the count');
+ok($row['kind'] === 'full' && $row['status'] === 'open' && $row['blind'] === true && (int) $row['started_by'] === 28 && $row['sheet_id'] === null && preg_match('/^CNT-\d{5}$/', $row['number']) === 1, 'a full, open, blind count with a number, started by Bea, no sheet');
+ok(one("SELECT to_char(as_of AT TIME ZONE 'America/New_York', 'YYYY-MM-DD\"T\"HH24:MI') FROM inventory_counts WHERE id = :i", ['i' => $c1]) === $def, 'as of the default moment');
+ok((int) one('SELECT count(*) FROM inventory_count_lines WHERE count_id = :c', ['c' => $c1]) === 6, 'the whole site: a line for every balance (6), in walk order');
+ok(near(one('SELECT system_qty_base FROM inventory_count_lines WHERE id = :i', ['i' => line_of($c1, $w['egg'])]), 266, 0.0001) && near(one('SELECT system_qty_base FROM inventory_count_lines WHERE id = :i', ['i' => line_of($c1, $w['lime'])]), 300, 0.0001) && near(one('SELECT system_qty_base FROM inventory_count_lines WHERE id = :i', ['i' => line_of($c1, $w['gin'])]), 9000, 0.0001), 'the book figure on the line: eggs 266, limes 300, gin 9 000 ml');
+$a = activity('count.start', $before)[0] ?? [];
+$af = json_decode($a['after'] ?? '{}', true);
+ok(($a['count_id'] ?? 0) == $c1 && (int) $a['scope_id'] === DOWNTOWN && $af['lines'] === 6 && $af['blind'] === true && $af['kind'] === 'full' && $af['sheet_id'] === null && $af['number'] === $row['number'], 'count.start logged with count_id, scope_id, number, kind, sheet_id, as_of, blind, lines');
+[$c2, $r] = start_count_as($dana);
+ok($r['code'] === 422 && says($r, 'A full count is already open at this site') && $c2 === $c1, 'a second full count: "A full count is already open at this site — finish or discard it"');
+[$c3, $r] = start_count_as($dana, ['kind' => 'spot', 'notes' => 'Bar check']);
+ok($r['code'] === 302 && $c3 > $c1 && ccount($c3)['kind'] === 'spot' && ccount($c3)['notes'] === 'Bar check', 'a spot count may open beside it (with its notes)');
+reset_counts();
+
+echo "3. Blind follows the setting\n";
+[$c, ] = start_count_as($dana, ['blind' => 'no']);
+ok(ccount($c)['blind'] === false, 'a Chef unticks blind: the count is not blind');
+reset_counts();
+[$c, ] = start_count_as($bea, ['blind' => 'no']);
+ok(ccount($c)['blind'] === true, 'a Kitchen member cannot (the setting says blind)');
+reset_counts();
+ri_sql('UPDATE ri_settings SET blind_counts = false WHERE id = 1');
+[$c, ] = start_count_as($bea);
+ok(ccount($c)['blind'] === false, 'with the setting off a Kitchen member starts a count that is not blind');
+reset_counts();
+ri_sql('UPDATE ri_settings SET blind_counts = true WHERE id = 1');
+
+echo "4. From a sheet; the book figure frozen as of the moment\n";
+[$c, $r] = start_count_as($bea, ['sheet' => $sid]);
+$row = ccount($c);
+ok($r['code'] === 302 && (int) $row['sheet_id'] === $sid && (int) one('SELECT count(*) FROM inventory_count_lines WHERE count_id = :c', ['c' => $c]) === 6 && one('SELECT count_unit_code FROM inventory_count_lines WHERE id = :i', ['i' => line_of($c, $w['flour'])]) === 'bag50', 'a count from Full house: its six lines with their count units');
+reset_counts();
+// a depletion dated AT the cut is inside the book figure; one dated after it is not (the schema proof's lesson)
+$a0 = (new DateTimeImmutable('now', $tz))->modify('-2 days')->setTime(4, 0);
+$asOf = $a0->format('Y-m-d\TH:i');
+$ts = $a0->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:sP');
+$later = $a0->modify('+1 hour')->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:sP');
+$u = uniqid('s6');
+ri_sql("SELECT ri_post_txn('depletion', :s, :i, :a, -1000, NULL, 'depletion_run', 0, :k1, 'none', NULL, NULL, NULL, 28, 'SMOKE at the cut', CAST(:t AS timestamptz))", ['s' => DOWNTOWN, 'i' => $w['oil'], 'a' => $w['walkin'], 'k1' => $u . 'a', 't' => $ts]);
+ri_sql("SELECT ri_post_txn('depletion', :s, :i, :a, -500, NULL, 'depletion_run', 0, :k1, 'none', NULL, NULL, NULL, 28, 'SMOKE after the cut', CAST(:t AS timestamptz))", ['s' => DOWNTOWN, 'i' => $w['oil'], 'a' => $w['walkin'], 'k1' => $u . 'b', 't' => $later]);
+[$c, $r] = start_count_as($dana, ['sheet' => $sid, 'as_of' => $asOf, 'kind' => 'spot']);
+ok($r['code'] === 302 && ccount($c)['kind'] === 'spot' && one("SELECT to_char(as_of, 'YYYY-MM-DD HH24:MI') FROM inventory_counts WHERE id = :i", ['i' => $c]) === $a0->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i'), 'a count as of an earlier moment (the morning for last night): the moment converted from site time');
+ok(near(one('SELECT system_qty_base FROM inventory_count_lines WHERE id = :i', ['i' => line_of($c, $w['oil'], $w['walkin'])]), -1000, 0.001), 'the oil\'s book figure as of then: the depletion dated AT the cut (−1 000) is inside it; the one an hour after, and the receipt after that, are not');
+reset_counts();
+
+echo "5. Refusals\n";
+$r = post($dana, '/counts/start.php', ['as_of' => (new DateTimeImmutable('now', $tz))->modify('+3 days')->format('Y-m-d\TH:i')]);
+ok($r['code'] === 422 && says($r, 'more than a day ahead'), 'as of more than a day ahead: refused in words');
+$r = post($dana, '/counts/start.php', ['as_of' => 'banana']);
+ok($r['code'] === 422 && says($r, 'date and time'), 'as of that is no moment: refused in words');
+ok(post($dana, '/counts/start.php', ['kind' => 'weekly'])['code'] === 422, 'an unknown kind: refused');
+$bar = (int) one("SELECT id FROM count_sheets WHERE name = 'Bar spot'");
+ri_sql('UPDATE count_sheets SET active = false WHERE id = :i', ['i' => $bar]);
+$r = post($dana, '/counts/start.php', ['sheet' => $bar, 'kind' => 'spot']);
+ok($r['code'] === 422 && says($r, 'archived'), 'an archived sheet: refused in words');
+ri_sql('UPDATE count_sheets SET active = true WHERE id = :i', ['i' => $bar]);
+ri_sql("INSERT INTO count_sheets (scope_id, name, kind) VALUES (:s, 'SMOKE Airport sheet', 'full')", ['s' => AIRPORT]);
+$r = post($dana, '/counts/start.php', ['sheet' => last_id('count_sheets')]);
+ok($r['code'] === 422 && says($r, 'not at this site'), 'a sheet of another site: refused in words');
+ok(post($ann, '/counts/start.php', [])['code'] === 403, 'Ann starting a count: 403');
+ok((int) one("SELECT count(*) FROM inventory_counts WHERE status = 'open'") === 0, 'none of the refused attempts left a count behind');
+finish();

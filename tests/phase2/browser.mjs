@@ -98,9 +98,9 @@ const smallControls = (page, scope) => page.evaluate((s) => [...document.querySe
   await page.screenshot({ path: `${SHOTS}/phone-settings.png` });
   await page.click('#tab-count-list');
   await page.waitForURL(BASE + '/counts/');
-  await page.waitForSelector('#count-list-coming');
-  ok((await page.title()).startsWith('Counts') && (await page.locator('#count-list-coming').innerText()).includes('slice 6'), 'the Count tab opens the placeholder naming slice 6, title "' + (await page.title()) + '"');
-  ok((await overflow(page)).sw === 375, 'no sideways scroll on the placeholder');
+  await page.waitForSelector('#count-list-content');
+  ok((await page.title()).startsWith('Counts') && (await page.locator('#count-list-coming').count()) === 0, 'the Count tab opens the counts list (built by slice 6; it was a placeholder), title "' + (await page.title()) + '"');
+  ok((await overflow(page)).sw === 375, 'no sideways scroll on the counts list');
   await page.goto(BASE + '/me/trail', { waitUntil: 'networkidle' });
   ok((await overflow(page)).sw === 375, 'no sideways scroll on My trail');
   await page.goto(BASE + '/me/notifications', { waitUntil: 'networkidle' });
@@ -186,10 +186,10 @@ const smallControls = (page, scope) => page.evaluate((s) => [...document.querySe
   await page.screenshot({ path: `${SHOTS}/desktop-home.png` });
   await page.click('#nav-count-list .nxl-link');
   await page.waitForURL(BASE + '/counts/');
-  await page.waitForSelector('#count-list-coming');
+  await page.waitForSelector('#count-list-content');
   ok((await page.title()).startsWith('Counts'), 'HTMX navigation: /counts/ pushed, title "' + (await page.title()) + '"');
   ok(await page.evaluate(() => document.querySelector('#nav-count-list .nxl-link').classList.contains('active') && !document.querySelector('#nav-home .nxl-link').classList.contains('active')), 'the sidebar highlights the screen, not Home');
-  ok((await page.locator('#count-list-coming').innerText()).includes('slice 6 builds this screen'), 'the placeholder names slice 6 (Recipes was the example until slice 2 built it)');
+  ok((await page.locator('#count-list-coming').count()) === 0 && (await page.locator('#count-list-new-btn').count()) === 1, 'the screen is the counts list with its Start a count button (slice 6 built it; Recipes was the example until slice 2 built it)');
   await page.screenshot({ path: `${SHOTS}/desktop-placeholder.png` });
   await page.goBack();
   await page.waitForURL(BASE + '/');

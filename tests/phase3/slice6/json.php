@@ -1,0 +1,107 @@
+<?php
+/** Slice 6 — JSON mode under signed action tokens, agents (run token + relay), an evaluation run, the HTMX stamps, the log vocabulary, the registry counts (counts.md "Proof": JSON mode). */
+require __DIR__ . '/lib.php';
+$w = count_world();
+$hp = static fn (int $m, int $site = DOWNTOWN): array => ['Accept: application/json', 'X-Action-Token: ' . person_token($m), 'X-Action-Relay: ' . relay_of(person_token($m)), 'X-Site: ' . $site];
+$jpost = static function (array $h, string $path, array $form): array { $r = req('POST', $path, ['headers' => $h, 'form' => $form]); $r['json'] = json_decode($r['body'], true) ?: []; return $r; };
+$jget = static function (array $h, string $path): array { $r = req('GET', $path, ['headers' => $h]); $r['json'] = json_decode($r['body'], true) ?: []; return $r; };
+$shape = static fn (array $r): bool => $r['code'] === 200 && ($r['json']['ok'] ?? false) === true && isset($r['json']['did'], $r['json']['location']) && array_key_exists('record_id', $r['json']) && array_key_exists('refresh', $r['json']);
+$dana = $hp(30); $bea = $hp(28); $marco = $hp(27);
+reset_counts();
+$oc = (int) one("SELECT id FROM count_sheets WHERE name = 'Oil check'");
+$asOf = (string) ($jget($dana, '/counts/new')['json']['data']['as_of_default'] ?? '');
+
+echo "1. A count's life in JSON\n";
+$r = $jpost($dana, '/counts/start.php', ['sheet' => (string) $oc, 'as_of' => $asOf, 'kind' => 'spot']);
+$c = (int) ($r['json']['record_id'] ?? 0);
+ok($shape($r) && $c > 0 && $r['json']['refresh'] === 'countChanged' && str_contains($r['json']['location'], "/counts/$c") && $r['json']['lines'] === 1 && preg_match('/^Started CNT-\d{5} with 1 line$/', (string) $r['json']['did']) === 1, 'count_start with sheet and as_of: {ok, did, record_id, location, refresh} and the line count');
+$ol = line_of($c, $w['oil']);
+$r = $jpost($bea, '/counts/line.php', ['count_line' => (string) $ol, 'entries' => json_encode([['unit' => 'ml', 'qty' => 9000]])]);
+ok($shape($r) && (int) $r['json']['record_id'] === $ol && near($r['json']['line']['counted_qty_base'] ?? null, 9000, 0.001) && ($r['json']['line']['book_hidden'] ?? false) === true && !array_key_exists('system_qty_base', $r['json']['line']), 'count_line_set with entries JSON [{unit, qty}]: the counted figure, and for the counter on a blind count no book figure');
+$r = $jpost($bea, '/counts/line.php', ['count_line' => (string) $ol, 'entries' => json_encode([['unit' => 'ml', 'qty' => -1]])]);
+ok($r['code'] === 422 && ($r['json']['error']['code'] ?? '') === 'invalid' && isset($r['json']['error']['fields']['entries']), '422 {error: {code: invalid, fields}} naming entries');
+$r = $jpost($bea, '/counts/line.php', ['count_line' => (string) $ol, 'entries' => json_encode([['unit' => 'furlong', 'qty' => 1]])]);
+ok($r['code'] === 422 && str_contains((string) ($r['json']['error']['message'] ?? ''), 'No unit furlong'), '…and the database\'s own sentence for a unit it cannot convert');
+$r = $jpost($bea, '/counts/review.php', ['count' => (string) $c]);
+ok($shape($r) && $r['json']['status'] === 'recount' && $r['json']['over_tolerance'] === 1 && str_contains((string) $r['json']['did'], 'need a second count'), 'count_review: status recount, one line over tolerance, said in words');
+$r = $jpost($bea, '/counts/recount.php', ['count_line' => (string) $ol, 'entries' => json_encode([['unit' => 'ml', 'qty' => 9000]])]);
+ok($r['code'] === 422 && str_contains((string) ($r['json']['error']['message'] ?? ''), 'A recount is by another person'), 'count_recount by the counter: "A recount is by another person" as a 422');
+$r = $jpost($dana, '/counts/recount.php', ['count_line' => (string) $ol, 'entries' => json_encode([['unit_code' => 'ml', 'qty' => 9000]])]);
+ok($shape($r) && near($r['json']['line']['recount_qty_base'] ?? null, 9000, 0.001) && ccount($c)['status'] === 'review', 'count_recount by Dana: the recount figure, and the count is back in review');
+$r = $jpost($dana, '/counts/approve.php', ['count' => (string) $c]);
+ok($shape($r) && $r['json']['refresh'] === 'stockChanged' && count($r['json']['corrections']) === 1 && near($r['json']['corrections'][0]['qty_base'], 9000, 0.001) && isset($r['json']['corrections'][0]['value']), 'count_approve: the corrections it posted, with value for a cost-seer');
+ok(near(on_hand($w['oil'], DOWNTOWN, $w['walkin']), 9000, 0.01), '…and the balance equals the count');
+
+echo "2. The other doors\n";
+$r = $jpost($dana, '/counts/start.php', ['kind' => 'spot']);
+$c2 = (int) ($r['json']['record_id'] ?? 0);
+$r = $jpost($dana, '/counts/line-add.php', ['count' => (string) $c2, 'area' => 'SMOKE Dry', 'ingredient' => 'L-STOCK', 'entries' => json_encode([['unit' => 'ml', 'qty' => 250]])]);
+ok($shape($r) && near($r['json']['line']['counted_qty_base'] ?? null, 250, 0.001) && ($r['json']['line']['area'] ?? '') === 'SMOKE Dry', 'count_line_add by area and ingredient names, with entries JSON');
+$r = $jpost($dana, '/counts/discard.php', ['count' => (string) $c2, 'reason' => 'json test']);
+ok($shape($r) && ccount($c2)['status'] === 'discarded' && $r['json']['location'] === '/counts/?notice=discarded', 'count_discard');
+$jv = $jget($dana, "/counts/$c")['json']['data'] ?? [];
+ok(($jv['count']['number'] ?? '') === ccount($c)['number'] && isset($jv['progress']['lines'], $jv['areas'][0]['name']) && count($jv['lines'] ?? []) === 1, 'the count sheet in JSON: the count, the progress, the areas, the lines');
+$r = $jpost($dana, '/counts/sheets/save.php', ['name' => 'JSON sheet', 'kind' => 'cycle', 'fill' => 'yes']);
+$js = (int) ($r['json']['record_id'] ?? 0);
+ok($shape($r) && $js > 0 && $r['json']['refresh'] === 'countSheetChanged' && $r['json']['lines'] >= 4, 'count_sheet_save with fill');
+$r = $jpost($dana, '/counts/sheets/line.php', ['sheet' => (string) $js, 'area' => 'SMOKE Bar', 'ingredient' => 'L-OIL', 'count_unit' => 'ml']);
+$jl = (int) ($r['json']['record_id'] ?? 0);
+ok($shape($r) && $jl > 0 && one('SELECT count_unit_code FROM count_sheet_lines WHERE id = :i', ['i' => $jl]) === 'ml', 'count_sheet_line_set by names');
+$ids = array_column(q('SELECT id FROM count_sheet_lines WHERE sheet_id = :s AND storage_area_id = :a ORDER BY shelf_order', ['s' => $js, 'a' => $w['bar']]), 'id');
+$r = $jpost($dana, '/counts/sheets/reorder.php', ['sheet' => (string) $js, 'area' => 'SMOKE Bar', 'lines' => implode(',', array_reverse($ids))]);
+ok($shape($r) && array_column(q('SELECT id FROM count_sheet_lines WHERE sheet_id = :s AND storage_area_id = :a ORDER BY shelf_order', ['s' => $js, 'a' => $w['bar']]), 'id') == array_reverse($ids), 'count_sheet_reorder with lines[] as a comma list');
+$r = $jpost($dana, '/counts/sheets/line-remove.php', ['sheet_line' => (string) $jl]);
+ok($shape($r) && (int) one('SELECT count(*) FROM count_sheet_lines WHERE id = :i', ['i' => $jl]) === 0, 'count_sheet_line_remove');
+$r = $jpost($dana, '/counts/containers/save.php', ['ingredient' => 'L-GIN', 'name' => '1.75 L handle', 'full_weight_g' => '2900', 'empty_weight_g' => '1000', 'volume_ml' => '1750']);
+$cc = (int) ($r['json']['record_id'] ?? 0);
+ok($shape($r) && $cc > 0, 'container_save by the ingredient\'s code');
+$r = $jpost($dana, '/counts/containers/save.php', ['container' => (string) $cc, '_partial' => '1', 'pourer_tare_g' => '40']);
+ok($shape($r) && (float) one('SELECT pourer_tare_g FROM containers WHERE id = :i', ['i' => $cc]) === 40.0 && (float) one('SELECT full_weight_g FROM containers WHERE id = :i', ['i' => $cc]) === 2900.0, '_partial=1 on container_save: the one weight changes, the rest is kept');
+$r = $jpost($bea, '/counts/sheets/save.php', ['name' => 'Nope']);
+ok($r['code'] === 403, 'Bea\'s sheet save under her token: 403');
+$r = $jpost($dana, '/counts/sheets/save.php', ['sheet' => (string) $js, 'name' => 'JSON sheet', 'kind' => 'weekly']);
+ok($r['code'] === 422 && isset($r['json']['error']['fields']['kind']), 'a kind that is not one: 422 naming the field');
+
+echo "3. Agents\n";
+agent_facts(40, 7401);
+$r = agent_req('POST', '/counts/start.php', 40, 7401, ['kind' => 'spot', 'sheet' => (string) $oc]);
+$ac = (int) ($r['json']['record_id'] ?? 0);
+ok($shape($r) && $ac > 0 && (int) ccount($ac)['started_by'] === 40, 'the expert (a Chef) starts a spot count');
+$ls = activity('count.start')[count(activity('count.start')) - 1] ?? [];
+ok($ls['source'] === 'agent' && (string) $ls['request_id'] === 'req-run-7401' && (int) $ls['agent_run_id'] === 7401, '…its log row is source agent with the run\'s request id');
+$aol = line_of($ac, $w['oil']);
+$r = agent_req('POST', '/counts/line.php', 40, 7401, ['count_line' => (string) $aol, 'state' => 'skipped']);
+ok($shape($r) && cline($aol)['state'] === 'skipped', 'it enters a line (skip)');
+$r = agent_req('POST', '/counts/approve.php', 40, 7401, ['count' => (string) $ac]);
+ok($r['code'] === 422, 'its count_approve of a count not in review is refused by the schema (the kernel\'s hook pauses it before in production)');
+$r = agent_req('POST', '/counts/discard.php', 40, 7401, ['count' => (string) $ac, 'reason' => 'agent test']);
+ok($shape($r) && ccount($ac)['status'] === 'discarded', 'once the kernel releases it, its count_discard runs');
+kernel_state(function ($s) { $s['facts']['7499'] = ['valid' => true, 'is_agent' => true, 'member_id' => 40, 'run_id' => 7499, 'request_id' => 'req-run-7499', 'trigger' => 'eval', 'scope' => DOWNTOWN, 'endpoints' => [['name' => 'Records MCP']], 'is_eval' => true]; return $s; });
+$n0 = last_id('inventory_counts');
+foreach (['/counts/start.php' => ['kind' => 'spot'], '/counts/line.php' => ['count_line' => (string) $aol, 'state' => 'zero'], '/counts/sheets/save.php' => ['name' => 'Eval sheet'], '/counts/containers/save.php' => ['ingredient' => 'L-GIN', 'name' => 'Eval', 'full_weight_g' => '2', 'empty_weight_g' => '1', 'volume_ml' => '1']] as $path => $form) {
+    $r = agent_req('POST', $path, 40, 7499, $form);
+    ok($r['code'] === 403 && str_contains(json_encode($r['json']), 'evaluation run'), "an evaluation run: $path refused, nothing written");
+}
+ok(last_id('inventory_counts') === $n0 && (int) one("SELECT count(*) FROM count_sheets WHERE name = 'Eval sheet'") === 0, '…and nothing changed');
+
+echo "4. The shell's stamps, the log, the registry\n";
+$r = req('GET', "/counts/$c/review", ['jar' => $dana_jar = person(30), 'headers' => ['HX-Request: true']]);
+ok($r['code'] === 200 && preg_match('/^X-Screen: count-review/mi', $r['headers']) && preg_match('/^X-Entity: inventory_count/mi', $r['headers']) && preg_match('/^X-Record-Id: ' . $c . '\s*$/mi', $r['headers']) && !str_contains($r['body'], '<html'), 'an HTMX request gets the partial with X-Screen / X-Entity / X-Record-Id');
+$shell = page($dana_jar, "/counts/$c/review")['body'];
+ok(str_contains($shell, 'data-screen="count-review"') && str_contains($shell, 'data-entity="inventory_count"') && str_contains($shell, 'data-record-id="' . $c . '"') && str_contains($shell, 'data-scope-id="101"'), 'the full page stamps #page-content: screen, entity, record id, scope');
+foreach (['/counts/', '/counts/new', "/counts/$c", "/counts/$c/review", "/counts/$c/history", '/counts/sheets/', "/counts/sheets/$js", '/counts/containers/'] as $p) { req('GET', $p, ['headers' => array_merge($dana, ['X-Screen-View: 1'])]); }
+$sv = q("SELECT DISTINCT screen FROM activity_log WHERE action = 'screen.view' AND screen LIKE 'count%' OR screen LIKE 'container%'");
+ok(count($sv) >= 8, 'every screen of the slice writes a screen.view row (' . implode(', ', array_column($sv, 'screen')) . ')');
+ok((int) one("SELECT count(*) FROM activity_log WHERE action = 'screen.view' AND screen = 'count-view' AND count_id = :c", ['c' => $c]) > 0 && (int) one("SELECT count(*) FROM activity_log WHERE action = 'screen.view' AND screen = 'count-review' AND count_id = :c", ['c' => $c]) > 0, 'the count screens\' rows carry count_id');
+$events = ['count.start', 'count.line_set', 'count.line_add', 'count.review', 'count.recount', 'count.approve', 'count.discard', 'count_sheet.save', 'count_sheet.line_set', 'count_sheet.line_remove', 'count_sheet.reorder', 'container.save', 'screen.view'];
+$missing = array_filter($events, fn ($a) => (int) one('SELECT count(*) FROM activity_log WHERE action = :a', ['a' => $a]) === 0);
+ok($missing === [], 'every event of the log vocabulary has been written by this suite' . ($missing ? ' — missing: ' . implode(', ', $missing) : ''));
+$noCount = (int) one("SELECT count(*) FROM activity_log WHERE action LIKE 'count.%' AND (count_id IS NULL OR scope_id IS NULL)");
+ok($noCount === 0, 'every count.* row carries count_id and scope_id');
+$reg = json_decode((string) file_get_contents(dirname(__DIR__, 3) . '/mcp/action_registry.json'), true);
+$slice = ['count-sheet-list', 'count-sheet-edit', 'container-list', 'count-list', 'count-add', 'count-view', 'count-review', 'count-history'];
+$act = ['count_sheet_save', 'count_sheet_line_set', 'count_sheet_line_remove', 'count_sheet_reorder', 'container_save', 'count_start', 'count_line_set', 'count_line_add', 'count_review', 'count_recount', 'count_approve', 'count_discard'];
+ok(count(array_filter($slice, fn ($s) => !empty($reg['screens'][$s]['built']))) === 8 && count(array_filter($act, fn ($a) => !empty($reg['actions'][$a]['built']))) === 12, 'the registry reads this slice\'s 8 screens and 12 actions as built');
+ok(($reg['actions']['count_approve']['approval'] ?? null) === 'other' && ($reg['actions']['count_discard']['approval'] ?? null) === 'deletion' && ($reg['actions']['count_line_set']['approval'] ?? null) === null && ($reg['actions']['count_start']['approval'] ?? null) === null, "an agent's count_approve pauses at the kernel's hook (other) and count_discard (deletion); counting itself does not");
+ok(count(array_filter($reg['screens'], fn ($s) => !empty($s['built']))) === 91 && count(array_filter($reg['actions'], fn ($a) => !empty($a['built']))) === 118, 'the registry in all: 91 of 119 screens and 118 of 146 actions built');
+finish();

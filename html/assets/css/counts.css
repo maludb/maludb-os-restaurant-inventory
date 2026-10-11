@@ -1,0 +1,29 @@
+/* slice 6 — counts (counts.md "Mobile rule"): the count sheet at 375 px first, one column; the review table; the sheet editor. Kept apart from the shared
+   app-overrides.css so slices built side by side never edit one file. */
+.count-line .count-qty { min-height: 48px; font-size: 1.2rem; font-weight: 600; }
+.count-line .count-unit { min-height: 44px; margin-top: .25rem; }
+.count-line .form-label { margin-bottom: .15rem; }
+.count-line { border-left: 4px solid transparent; }
+.count-line.state-counted { border-left-color: var(--bs-success, #25b865); }
+.count-line.state-zero { border-left-color: var(--bs-secondary, #6c757d); }
+.count-line.state-skipped { border-left-color: var(--bs-dark, #283c50); opacity: .8; }
+.count-pending-dot { display: none; width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; margin-right: 6px; vertical-align: middle; }
+.count-line.line-pending .count-pending-dot { display: inline-block; }
+.count-line.line-pending { border-left-color: #f59e0b; }
+/* once count-sheet.js has taken the forms over an entry saves as it is typed; without JavaScript the Save button is the way */
+html.count-js .count-line .count-save { display: none; }
+.count-offline { position: fixed; left: 0; right: 0; bottom: 124px; z-index: 1032; background: #f59e0b; color: #1f1300; padding: .6rem 1rem; font-weight: 600; text-align: center; font-size: .9rem; }
+.count-offline[hidden] { display: none; }
+@media (min-width: 992px) { .count-offline { left: 280px; bottom: 70px; } }
+html.minimenu .count-offline { left: 100px; }
+.scan-sticky { position: sticky; top: 80px; z-index: 6; }   /* under the theme's fixed 80 px header */
+@media (max-width: 991.98px) {
+    /* the theme's .main-content is a scroll container where sticky never engages: clip instead, as the ledger's bottom bar does */
+    .nxl-container .nxl-content .main-content:has(.scan-sticky) { overflow: visible; overflow-x: clip; }
+}
+#count-area-pager .btn { flex: 0 0 auto; min-width: 48px; }
+.sheet-handle { cursor: grab; }
+.sheet-line.sortable-chosen { background: var(--bs-light, #f8f9fa); }
+.sheet-line .sheet-unit { width: 9.5rem; max-width: 40vw; }
+.review-table td, .review-table th { white-space: normal; }
+@media (max-width: 767.98px) { .review-table { font-size: .85rem; } }

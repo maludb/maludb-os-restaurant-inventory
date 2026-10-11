@@ -482,6 +482,32 @@ SELECT pg_temp.refused($$SELECT ri_require_reader(102)$$, 'not a site you hold',
 SELECT pg_temp.check((SELECT count(*) FROM ri_share_cogs_summary(101, pg_temp.i('p_now'))) >= 1 AND (SELECT count(*) FROM mcp_access_tokens_mine) = 0 AND (SELECT display_units FROM mcp_notification_prefs) IS NULL, 'the shares answer the read role; the new views answer');
 RESET ROLE;
 
+-- ================================================================ ri_count_variance() walls itself (db/027)
+SET ROLE restaurant_inventory_rw;
+SELECT pg_temp.as_member(1);
+INSERT INTO inventory_counts (scope_id, kind, as_of, blind, started_by) VALUES (101, 'spot', ri_site_moment(101, current_date, true) + interval '2 seconds', true, 28);
+SELECT pg_temp.keep('blindc', max(id)) FROM inventory_counts;
+SELECT ri_count_line_add(pg_temp.i('blindc'), pg_temp.i('walkin'), pg_temp.i('lime'), 28);
+SELECT ri_count_line_set((SELECT max(id) FROM inventory_count_lines WHERE count_id = pg_temp.i('blindc')), 28, '[{"unit_code": "each", "qty": 250}]');
+UPDATE inventory_count_lines SET variance_base = counted_qty_base - system_qty_base, variance_value = (counted_qty_base - system_qty_base) * 0.19 WHERE count_id = pg_temp.i('blindc');
+RESET ROLE;
+SET ROLE restaurant_inventory_records_ro;
+SELECT pg_temp.as_member(28);   -- Bea, Kitchen at Downtown: counts, no approval, no cost
+SELECT pg_temp.check((SELECT system_qty_base IS NULL AND variance_base IS NULL AND variance_value IS NULL AND counted_qty_base = 250 FROM ri_count_variance(pg_temp.i('blindc'))), 'a counter on a blind open count sees what she counted and never the book figure or the variance');
+SELECT pg_temp.as_member(30);   -- Dana, Chef: approves and sees cost
+SELECT pg_temp.check((SELECT system_qty_base IS NOT NULL AND variance_base IS NOT NULL AND variance_value IS NOT NULL FROM ri_count_variance(pg_temp.i('blindc'))), 'a Chef (counts.approve, cost) sees the book figure and the variance at cost');
+SELECT pg_temp.as_member(29);   -- Ann, Viewer
+SELECT pg_temp.check((SELECT system_qty_base IS NULL AND variance_value IS NULL FROM ri_count_variance(pg_temp.i('blindc'))), 'a Viewer sees neither the book figure of a blind open count nor any cost');
+SELECT pg_temp.as_member(26);   -- Priya, Airport only
+SELECT pg_temp.refused($$SELECT * FROM ri_count_variance(pg_temp.i('blindc'))$$, 'not a site you hold', 'a member of another site is refused');
+SELECT pg_temp.as_member(NULL);
+SELECT pg_temp.refused($$SELECT * FROM ri_count_variance(pg_temp.i('blindc'))$$, 'not a site you hold', 'the read role with no member is refused');
+RESET ROLE;
+SET ROLE restaurant_inventory_rw;
+SELECT pg_temp.as_member(NULL);
+SELECT pg_temp.check((SELECT system_qty_base IS NOT NULL AND variance_value IS NOT NULL FROM ri_count_variance(pg_temp.i('blindc'))), 'the application''s own role with no member (the worker) sees the whole count');
+RESET ROLE;
+
 -- ================================================================ the read functions keep db/018's rights (a CREATE OR REPLACE resets them — db/024)
 SELECT pg_temp.check(NOT EXISTS (
     SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace AND n.nspname = 'public'

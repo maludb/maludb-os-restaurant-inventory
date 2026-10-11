@@ -731,6 +731,13 @@ db/018 and the decisions the specs took, §16) — Phase 2 begins.
   slice 1 237, slice 2 215, slice 3 347 and slice 5 328 under both, the Phase 1 check 52, the registry clean.
   **THE HANDOFF POINT:** slices 4, 6, 7, 8, 9 and Phases 4–5 go to Sonnet 5.5 workers one at a time (`docs/build-specs/worker-brief.md`),
   each verified and committed by the planning model.
+- 2026-10-11 — **SLICE 6 COUNTS BUILT AND PROVEN BY A SONNET 5.5 WORKER** (`tests/phase3/slice6/run.sh`: 327 checks under php -S and under Apache — count sheets
+  filled from the shelves and reordered by drag or ▲/▼, bottles and kegs with one default each, a count started as of the day's sales cut (the book figure frozen as of it,
+  a depletion dated at the cut inside it), the count sheet at 375 px one area at a time with a case + loose pair, a weighed bottle, 0 and Skip and **entries that survive a
+  dead signal** (kept in `localStorage`, resent oldest first, a 422 clearing its key and saying why, proven in headless Chromium with the network cut), the blind rule, review
+  with tolerances, recount by another person, approval posting the corrections at the count's moment (skipped lines nothing; `force` on a count owing a recount), history,
+  discard, the variance notice). 91 of 119 screens and 118 of 146 actions built. No migration. Found: `ri_notify()` dedupes across members on its key, so the key carries the
+  recipient; `ri_count_variance()` had no wall, so the screens read the lines view — **db/027** (the planning model, in review) walls the function itself for Phase 4's tool and the morning note (the schema proof 186). Reads open to `ri.read`, the sheet to `stock.count`.
 - 2026-10-11 — **SLICE 4 PURCHASING BUILT AND PROVEN BY A SONNET 5.5 WORKER** (`tests/phase3/slice4/run.sh`: 452 checks under php -S and under Apache — purchase
   orders drafted from the order guide in the unit the supplier reads, sent by email with the supplier's link (no cost in the mail), marked placed, acknowledged and declined
   by phone, received against (partial, `ri_on_order()`), closed short, closed and cancelled with the supplier told; **the supplier's door `/s/{token}`** with no session —

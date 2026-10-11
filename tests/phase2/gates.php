@@ -17,7 +17,7 @@ $matrix = [
     '/recipes/' => $everyone, '/menu/' => $everyone, '/modifiers/' => $chef, '/menu/engineering' => $chef, '/menu/categories' => $chef,
     '/stock/' => $everyone, '/stock/movements' => $everyone, '/stock/value' => $everyone, '/receipts/' => $everyone, '/transfers/' => $everyone, '/adjustments/' => $everyone, '/production/' => $everyone, '/waste/' => $everyone,   // slice 3: the ledger's lists read under ri.read (design §2, ledger.md); its doors that act keep the role's right
     '/receipts/new' => $kitchen, '/transfers/new' => $kitchen, '/adjustments/new' => $chef, '/production/new' => $kitchen, '/waste/new' => $kitchen,
-    '/counts/' => $kitchen, '/counts/sheets/' => $chef, '/counts/containers/' => $chef,
+    '/counts/' => $everyone, '/counts/sheets/' => $everyone, '/counts/containers/' => $everyone, '/counts/new' => $kitchen,   // slice 6: the counts' lists read under ri.read; starting one is stock.count's
     '/purchasing/suggested' => $chef, '/purchasing/' => $everyone, '/purchasing/due' => $everyone, '/invoices/' => $everyone, '/purchasing/alerts' => $everyone,   // slice 4: purchase orders, deliveries due, invoices and alerts READ under ri.read (invoices and alerts tell one who sees no cost so); the doors that write keep their rights
     '/purchasing/new' => $chef, '/invoices/new' => $manager,
     '/sales/' => $everyone, '/sales/sources/' => 'owner', '/sales/upload' => $kitchen, '/sales/runs/' => $everyone, '/sales/mappings/' => 'owner',
@@ -42,14 +42,14 @@ ok(str_contains(page($jars['ann'], '/receipts/new')['body'], 'Your role at SMOKE
 $stubs = trim((string) shell_exec('grep -rl "render_nav_stub(" ' . escapeshellarg(dirname(__DIR__, 2) . '/html') . ' 2>/dev/null | wc -l'));
 $stubsWanted = count(array_filter(json_decode((string) file_get_contents(dirname(__DIR__, 2) . '/mcp/action_registry.json'), true)['screens'] ?? [], static fn (array $s): bool => !empty($s['stub'])));
 ok((int) $stubs === $stubsWanted && $stubsWanted > 0, "every placeholder controller names its slice ($stubs; the registry reads $stubsWanted stubs — 52 before slice 1)");
-$b = page($jars['dana'], '/counts/')['body'];
-ok(str_contains($b, 'is not built yet') && str_contains($b, 'slice 6 builds this screen') && str_contains($b, 'data-screen="count-list"'), 'a placeholder renders inside the shell, names its slice (Counts → slice 6; Recipes was the example until slice 2 built it) and stamps its screen id');
-ok(str_contains(page($jars['owner'], '/admin/agents')['body'], 'slice 9 builds this screen') && str_contains(page($jars['dana'], '/counts/')['body'], 'slice 6 builds') && str_contains(page($jars['dana'], '/projection/')['body'], 'slice 8 builds'), 'the agents page says slice 9, counts slice 6, the forecast slice 8');
-$r = req('POST', '/counts/', ['jar' => $jars['dana'], 'form' => ['csrf_token' => page_csrf($jars['dana'])]]);
+$b = page($jars['dana'], '/periods/')['body'];
+ok(str_contains($b, 'is not built yet') && str_contains($b, 'slice 7 builds this screen') && str_contains($b, 'data-screen="period-list"'), 'a placeholder renders inside the shell, names its slice (Periods → slice 7; Counts was the example until slice 6 built it) and stamps its screen id');
+ok(str_contains(page($jars['owner'], '/admin/agents')['body'], 'slice 9 builds this screen') && str_contains(page($jars['dana'], '/periods/')['body'], 'slice 7 builds') && str_contains(page($jars['dana'], '/projection/')['body'], 'slice 8 builds'), 'the agents page says slice 9, periods slice 7, the forecast slice 8');
+$r = req('POST', '/periods/', ['jar' => $jars['dana'], 'form' => ['csrf_token' => page_csrf($jars['dana'])]]);
 ok($r['code'] === 501, 'a POST to a placeholder: 501 not_built');
-$r = req('GET', '/counts/', ['jar' => $jars['dana']] + $json);
+$r = req('GET', '/periods/', ['jar' => $jars['dana']] + $json);
 ok($r['code'] === 501 && (json_decode($r['body'], true)['error']['code'] ?? '') === 'not_built', 'JSON to a placeholder: 501 not_built');
-ok(req('GET', '/projection/stock', ['jar' => $jars['ann']] + $json)['code'] === 501 && req('GET', '/counts/', ['jar' => $jars['ann']] + $json)['code'] === 403, 'the right is checked before the placeholder answers (a Viewer: Projected stock 501 not_built, Counts 403)');
+ok(req('GET', '/projection/stock', ['jar' => $jars['ann']] + $json)['code'] === 501 && req('GET', '/periods/', ['jar' => $jars['ann']] + $json)['code'] === 403, 'the right is checked before the placeholder answers (a Viewer: Projected stock 501 not_built, Periods 403)');
 $menu = fn (string $j): array => (preg_match_all('/id="nav-((?!group-)[a-z-]+)"/', page($j, '/')['body'], $m) ? $m[1] : []);
 $groups = fn (string $j): array => (preg_match_all('/nxl-caption" id="nav-group-[a-z]+"><label>([^<]+)</', page($j, '/')['body'], $m) ? $m[1] : []);
 ok(count($menu($jars['ann'])) === 18 && $groups($jars['ann']) === ['Kitchen', 'Ingredients', 'Recipes', 'Stock', 'Purchasing', 'Sales', 'Projection', 'Me'], 'Ann sees the 18 ri.read items (home and search among them) and no Count, Usage, Reports or Admin group: ' . implode(', ', $groups($jars['ann'])));
@@ -199,9 +199,9 @@ $r = req('POST', '/me/settings/save.php', ['headers' => ['Accept: application/js
 $d = json_decode($r['body'], true);
 ok($r['code'] === 200 && $d['ok'] === true && $d['did'] === 'Saved your settings', 'preferences_save under the action token answers from emit_action_status (ok, did)');
 $r = req('GET', '/projection/stock', ['headers' => ['Accept: application/json', 'X-Action-Token: ' . person_token(27), 'X-Site: 102']]);
-$r2 = req('GET', '/counts/sheets/?site=102', ['headers' => ['Accept: application/json', 'X-Action-Token: ' . person_token(27)]]);
-ok($r['code'] === 501 && $r2['code'] === 403, "Marco under an action token: Projected stock at his first site is the placeholder (501); Count sheets with site=102 (Kitchen there) is 403");
-ok(req('GET', '/counts/sheets/?site=101', ['headers' => ['Accept: application/json', 'X-Action-Token: ' . person_token(27)]])['code'] === 501, 'and with site=101 (Manager) the placeholder answers 501');
+$r2 = req('GET', '/periods/?site=102', ['headers' => ['Accept: application/json', 'X-Action-Token: ' . person_token(27)]]);
+ok($r['code'] === 501 && $r2['code'] === 403, "Marco under an action token: Projected stock at his first site is the placeholder (501); Periods with site=102 (Kitchen there) is 403");
+ok(req('GET', '/periods/?site=101', ['headers' => ['Accept: application/json', 'X-Action-Token: ' . person_token(27)]])['code'] === 501, 'and with site=101 (Manager) the placeholder answers 501');
 
 echo "8. Cost is the wall\n";
 ok(right_of(28, 'recipes.write') === false && right_of(30, 'recipes.write') === true, 'ri_has_right at Downtown: Dana writes recipes, Bea does not');

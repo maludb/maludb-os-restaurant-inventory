@@ -270,3 +270,59 @@ Ann (Viewer), the expert (an agent Chef), the Purchasing agent.
 
 ## Open questions
 (none)
+
+## Built and proven
+
+Built 2026-10-11 by a Sonnet 5.5 worker from `worker-brief.md`, on `/srv/apps/restaurant_inventory`; reviewed and committed by the planning model; the application's commits are not pushed.
+
+**Proof:** `tests/phase3/slice6/run.sh` — sheets 37, containers 20, start 30, lines 41, review 28, recount 14, approve 25, history and the list 21, who sees what 18, JSON
+mode 39 (the log vocabulary and the registry counts with it), the browser 51 (headless Chromium at 375 × 740 with the network cut and restored, JavaScript off,
+and at 1280 × 800), the registry, the approvals and the Phase 1 claim check: **327 checks under php -S and 327 under a user-level Apache rendering
+`deploy/apache-restaurant_inventory.conf`** (target ≥ 200). The scratch database is `ri_dev_s6` and the port block 9329–9332 (the application, the fake
+kernel, the fake MaluDB + MaluMail, the internal vhost). The registry this commit carries reads 91 of 119 screens and 118 of 146 actions built (8 and 12 of
+them this slice's). Screenshots in `/tmp/ri-shots/slice6`. The world is `count_world()` in `tests/phase3/slice6/lib.php` (slice 3's world plus receipts that
+give every ingredient a balance and a cost).
+
+**Files:** `html/counts/{index,form,view,review,history,start,line,line-add,recount,approve,discard}.php`, `html/counts/sheets/{index,view,save,line,line-remove,
+reorder}.php`, `html/counts/containers/{index,save}.php` (the three placeholders replaced); `app/features/counts/{queries,present,write,handler}.php`; the views under
+`app/views/counts/` (as the spec lists, plus `partials/assets.php`); `html/assets/js/count-sheet.js`; `html/assets/css/counts.css`; `app/partial_targets/counts.php`
+(the two `PARTIAL_UPDATE_TARGETS` entries, in the file each slice adds its own to); `back_link()` and `record_url()` in `app/features/shell/nav.php`; `tests/phase3/slice6/*`
+(`lib.php`, ten PHP proofs, `asof.php`, `browser.mjs`, `servers.sh`, `run.sh`); the Phase 2 suite follows the screens now built (`tests/phase2/gates.php`,
+`browser.mjs`). No migration: the schema needed nothing. `/counts/{id}/review`, `/counts/{id}/history` and `/counts/sheets/{id}` are served by the vhost's and the
+dev router's generic rewrites — proven, no new line.
+
+**What the spec or the schema got wrong (fixed or reported):**
+- **`ri_notify()` dedupes on its key alone, across members**: the spec's `count:<id>:review` told the first member and silently skipped every other. The key carries the
+  recipient (`count:<id>:review:m<member>`), so each of the Chef, the Manager and the owner is told once.
+- **`ri_count_variance()` is SECURITY DEFINER with no wall**: it returns the book figure of a blind open count and the variance value to anyone who calls it. `count_variance()`
+  joins it to `mcp_inventory_count_lines`, so every figure the page or JSON carries is the view's (blind, site, cost); nothing is read from the function but the flags' order.
+- **Fixed by the planning model in review — db/027:** `ri_count_variance()` now walls itself the way `mcp_inventory_count_lines` does (the site held;
+  a blind open count's book figure and variance only to `counts.approve`; the variance at cost only to who sees cost; the read roles refused with
+  no member, the application's own role — the worker — unwalled), because Phase 4's `count_variance` tool and `ri_morning_note()` call it. Six
+  checks in the schema proof (186).
+- **The spec's `ri_count_line_add` SQL in `write.php`** (DECISION 4) is db/018's `ri_count_line_add()`; used as the spec said Phase 1 would reconcile.
+- The spec names `meta[name=csrf]`; the shell's is `csrf-token`. The script reads that.
+- `DB_CHECK_SENTENCES` does not exist in the kit; the mappings (a full count already open, a sheet name taken, an ingredient twice on a sheet or a count, a bottle's name,
+  `empty < full`, "N lines are still pending", "1 line over tolerance awaits a recount") are in one place, `count_sentence()` in `write.php`.
+- A true offline **reload** shows the browser's own error page — there is no service worker, as the spec says. The proof reloads with the pages reachable and the POSTs
+  blocked (`page.route`), which is what a dead signal in the walk-in is; the keys rebuild the pending marks and the typed values.
+
+**Decisions taken here (within the spec):**
+- Who opens what (the brief's rule of 2026-10-11): the list, the review, the history, the sheets and the bottles open to `ri.read` with cost walled; **the count sheet and
+  Start a count are `stock.count`'s**, the sheet editor's and the bottles' writes `ingredients.write`'s, Approve and Discard `counts.approve`'s. A list row leads a reader to the
+  review or the history, a counter to the sheet (`count_url()`). The menu keeps the items each role works with.
+- A **flagged line in a count in recount** is refused by `count_line_set` ("waits for a recount by another person — recount it on the review") so the recount is one door,
+  `count_recount`, which runs the review again; the schema would have taken it as a recount without refreshing the flags.
+- **A recount re-renders the review page** (location `/counts/{id}/review#review-row-{id}`) instead of answering a Pattern C row: the flags, the status, the totals and the
+  action bar all change with it.
+- The Manager told of a variance is the site's, else the business's (`ri_settings.manager_member_id`, design D14); the threshold is as DECISION 3 (1 % of the last closed
+  period's cost of goods sold, else $100) on the absolute total. A recount notice goes to the members holding `stock.count` other than those who counted a line over tolerance.
+- `default_count_as_of()` reads the site's zone from `sites`, not the session: before the cut time the business day is still yesterday's, so its cut is this morning's;
+  at or after it, tonight's (the next 04:00). It takes an optional `$now` for the proof.
+- A count may **start with no lines** (a spot count where everything is found on the shelf; a site with no stock). The loose field defaults to the base unit, or the person's
+  display unit for the class (pound, fluid ounce) from their preferences. The tolerance's 5 % and $10 are shown as the schema's defaults when the ingredient names none (display only).
+- A sheet line's unit is chosen after the line is added (its row saves on change, Pattern C); the add row is the picker and Add. The drag is SortableJS in `count-sheet.js` with
+  `forceFallback` (mouse and touch events); ▲/▼ stay beside it, always, and are the way on a phone.
+- The sheet's `.scan-sticky` sits under the theme's fixed 80 px header (`top: 80px`); the offline banner is fixed above the command bar and tab bar.
+- `counts.css` is a file of its own (as the ledger's `stock.css`); the sheet editor's drag lives in `count-sheet.js`, not a second script.
+- A container's `empty < full` is left to the table's CHECK (mapped to words), not pre-checked in PHP; a first container is the default, a later one is not unless asked.

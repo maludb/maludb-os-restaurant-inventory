@@ -1,6 +1,6 @@
 {
     "generated_from": "docs/restaurant-inventory-action-manifest.md",
-    "generated_at": "2026-10-11T19:02:08+00:00",
+    "generated_at": "2026-10-11T21:16:00+00:00",
     "screens": {
         "home": {
             "screen": "home",
@@ -893,8 +893,8 @@
             "section": "Counts (slice 6)",
             "when": "the count sheets of this site as cards: kind, areas, lines; **New sheet**, **Fill from the shelves**",
             "params": [],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "count-sheet-edit": {
             "screen": "count-sheet-edit",
@@ -902,7 +902,7 @@
             "section": "Counts (slice 6)",
             "when": "the sheet by storage area in walk order: drag lines to shelf order, add an ingredient to an area through the picker, set its count unit, remove",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "container-list": {
@@ -913,8 +913,8 @@
             "params": [
                 "ingredient"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "count-list": {
             "screen": "count-list",
@@ -927,8 +927,8 @@
                 "from",
                 "to"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "count-add": {
             "screen": "count-add",
@@ -939,7 +939,7 @@
                 "sheet",
                 "kind"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "count-view": {
@@ -950,7 +950,7 @@
             "params": [
                 "area"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "count-review": {
@@ -961,7 +961,7 @@
             "params": [
                 "over_only"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "count-history": {
@@ -970,7 +970,7 @@
             "section": "Counts (slice 6)",
             "when": "an approved count: the corrections it posted, the variance by category, who counted what",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "period-list": {
@@ -5901,7 +5901,7 @@
             "who": "ingredients.write",
             "agent": true,
             "record_id": "the sheet",
-            "built": false
+            "built": true
         },
         "count_sheet_line_set": {
             "action": "count_sheet_line_set",
@@ -5952,7 +5952,7 @@
             "who": "ingredients.write",
             "agent": true,
             "record_id": "the sheet line",
-            "built": false
+            "built": true
         },
         "count_sheet_line_remove": {
             "action": "count_sheet_line_remove",
@@ -5973,7 +5973,7 @@
             "who": "ingredients.write",
             "agent": true,
             "record_id": "the sheet line",
-            "built": false
+            "built": true
         },
         "count_sheet_reorder": {
             "action": "count_sheet_reorder",
@@ -6006,7 +6006,7 @@
             "who": "ingredients.write",
             "agent": true,
             "record_id": "the sheet",
-            "built": false
+            "built": true
         },
         "container_save": {
             "action": "container_save",
@@ -6075,7 +6075,7 @@
             "who": "ingredients.write",
             "agent": true,
             "record_id": "the container",
-            "built": false
+            "built": true
         },
         "count_start": {
             "action": "count_start",
@@ -6120,7 +6120,7 @@
             "who": "stock.count",
             "agent": true,
             "record_id": "the count",
-            "built": false
+            "built": true
         },
         "count_line_set": {
             "action": "count_line_set",
@@ -6171,7 +6171,7 @@
             "who": "stock.count",
             "agent": true,
             "record_id": "the count line",
-            "built": false
+            "built": true
         },
         "count_line_add": {
             "action": "count_line_add",
@@ -6210,7 +6210,7 @@
             "who": "stock.count",
             "agent": true,
             "record_id": "the count line",
-            "built": false
+            "built": true
         },
         "count_review": {
             "action": "count_review",
@@ -6231,7 +6231,7 @@
             "who": "stock.count",
             "agent": true,
             "record_id": "the count",
-            "built": false
+            "built": true
         },
         "count_recount": {
             "action": "count_recount",
@@ -6270,7 +6270,7 @@
             "who": "stock.count",
             "agent": true,
             "record_id": "the count line",
-            "built": false
+            "built": true
         },
         "count_approve": {
             "action": "count_approve",
@@ -6297,7 +6297,7 @@
             "who": "counts.approve",
             "agent": true,
             "record_id": "the count",
-            "built": false
+            "built": true
         },
         "count_discard": {
             "action": "count_discard",
@@ -6324,7 +6324,7 @@
             "who": "counts.approve",
             "agent": true,
             "record_id": "the count",
-            "built": false
+            "built": true
         },
         "calendar_set": {
             "action": "calendar_set",

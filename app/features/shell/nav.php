@@ -198,6 +198,9 @@ function back_link(): ?array
             }
         }
     }
+    if (preg_match('#^/counts/sheets/[0-9]+$#', $path)) {
+        return [$back, 'the sheet'];
+    }
     foreach (['ingredients' => 'the ingredient', 'suppliers' => 'the supplier', 'areas' => 'the storage area', 'recipes' => 'the recipe', 'menu' => 'the menu item', 'modifiers' => 'the modifier',
               'receipts' => 'the receipt', 'transfers' => 'the transfer', 'adjustments' => 'the adjustment', 'production' => 'the batch', 'waste' => 'the waste log',
               'purchasing' => 'the purchase order', 'invoices' => 'the invoice', 'sales' => 'the day', 'counts' => 'the count', 'periods' => 'the period', 'usage' => 'the ingredient\'s week',
@@ -258,6 +261,7 @@ function record_url(?string $type, int|string|null $id): ?string
         'depletion_run' => '/sales/runs/' . $id,
         'inventory_count', 'count' => '/counts/' . $id,
         'count_sheet' => '/counts/sheets/' . $id,
+        'container' => '/counts/containers/?edit=' . $id . '#container-form',
         'period' => '/periods/' . $id,
         'forecast_override' => '/projection/',
         'watch' => '/projection/watches#watch-row-' . $id,
@@ -277,7 +281,6 @@ const NAV_SLICES = [
     'adjustment-list' => 'slice 3', 'production-list' => 'slice 3', 'waste-list' => 'slice 3',
     'purchase-order-list' => 'slice 4', 'deliveries-due' => 'slice 4', 'invoice-list' => 'slice 4', 'price-alert-list' => 'slice 4',
     'sales-day-list' => 'slice 5', 'source-list' => 'slice 5', 'sales-upload' => 'slice 5', 'depletion-run-list' => 'slice 5', 'mapping-list' => 'slice 5',
-    'count-list' => 'slice 6', 'count-sheet-list' => 'slice 6', 'container-list' => 'slice 6',
     'usage-report' => 'slice 7', 'period-list' => 'slice 7', 'cogs-report' => 'slice 7', 'calendar-list' => 'slice 7',
     'suggested-order-list' => 'slice 8', 'forecast-list' => 'slice 8', 'projected-stock' => 'slice 8', 'demand-report' => 'slice 8', 'calendar-days' => 'slice 8',
     'special-check' => 'slice 8', 'proposal-list' => 'slice 8', 'watch-list' => 'slice 8',
