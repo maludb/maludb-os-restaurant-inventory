@@ -621,7 +621,9 @@ Spaces and Help Desk to read when they choose.
 - Vhost allow-list (public): `/s/`, `/api/v1/health`, `/mcp/records`, `/mcp/activity`.
 - Kernel files: `mcp/registries/restaurant_inventory.json` (made by the installer), `db/182` (K47).
 - Proof scratch ports: the 93xx block is this application's — 9301–9307 the kit and the shell (9307 the shell's Apache internal vhost),
-  9304–9306 + 9314 slice 2, 9316–9319 slice 3, 9320–9324 slice 5 (9323 its fixture server); later slices take the next blocks of four. Fixtures: `tests/fixtures/pos/` — one trimmed export per POS shape, synthetic.
+  9304–9306 + 9314 slice 2, 9316–9319 slice 3, 9320–9324 slice 5 (9323 its fixture server), 9325–9328 slice 4, 9329–9332 slice 6,
+  9333–9336 slice 7, 9337–9340 slice 8, 9341–9344 slice 9, 9345–9348 Phase 4 (`docs/build-specs/worker-brief.md`).
+- Fixtures: `tests/fixtures/pos/` — one trimmed export per POS shape, synthetic.
 
 ## 15. The owner's answers
 
