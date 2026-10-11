@@ -7,10 +7,10 @@ actual usage, COGS by period).
 
 ## Status
 
-**Planning (Phase 0).** The research was written 2026-10-11 and the design the same day; the design awaits the owner's
-word on its sixteen decisions (§13). No schema and no screens yet.
+**Planning (Phase 0).** The research was written 2026-10-11 and the design the same day; **approved by the owner the same day,
+every recommendation (D1–D16, §15)**. No schema and no screens yet.
 
-Next: the owner's answers → K47 (the catalog row) → the rest of Phase 0 (the schema proven on a scratch database, the
+Next: K47 (the catalog row) → the rest of Phase 0 (the schema proven on a scratch database, the
 kit, the manifest, the agents, the skills, `deploy/`).
 
 ## Documents
@@ -28,5 +28,5 @@ kit, the manifest, the agents, the skills, `deploy/`).
 
 ## Ports and names (proposed)
 
-Catalog key `restaurant_inventory`; DNS label `kitchen` (proposed); ports 8200 (application), 8856 / 8857 (records and activity MCP), scratch 9301–9307;
+Catalog key `restaurant_inventory`; DNS label `kitchen`; ports 8200 (application), 8856 / 8857 (records and activity MCP), scratch 9301–9307;
 database `<tenant>_restaurant_inventory`. 

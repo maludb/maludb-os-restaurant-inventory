@@ -624,9 +624,18 @@ Spaces and Help Desk to read when they choose.
 
 ## 15. The owner's answers
 
-(none yet — the design awaits the owner's word on §13)
+**2026-10-11 — the owner accepted every recommendation, D1–D16 as written**, and asked for the repository to be created:
+`github.com/maludb/maludb-os-restaurant-inventory`, public, created the same day. So: "Restaurant Inventory", key
+`restaurant_inventory`, label `kitchen`; Viewer / Kitchen / Chef / Manager / admin with cost Chef's and above; scoped by
+site, not a default; perpetual balance with a periodic close; measure classes and the ledger's measured-goods deviation;
+three recipe kinds with sub-recipes, effective-dated versions, cost as of a date, weighted average; the file source with
+mapping templates plus Square, one depletion run per site per day; the baseline and Holt-Winters forecast with covers as a
+factor; dynamic par once four weeks of history exist; receiving and typed invoices with the match; counts kept in the
+browser, blind by default; Leanpath's waste; weekly periods with a monthly roll-up; two agents hired on install (the
+Manager named at install through `RI_MANAGER_EMAIL`, the first super-admin until then); the pauses of §5; ports
+8200/8856/8857; the Spaces division of §13.16.
 
 ## 16. State
 
-- 2026-10-11 — the research written (three reports and the synthesis, commit 116ff7b); this design written the same day.
-  Nothing else exists: no GitHub repository, no schema, no screens.
+- 2026-10-11 — the research written (three reports and the synthesis, commit 116ff7b); this design written the same day;
+  **approved by the owner the same day, every recommendation (§15)**; the repository created public and pushed.
