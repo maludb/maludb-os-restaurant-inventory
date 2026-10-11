@@ -1,0 +1,73 @@
+<?php
+/** Proof: costing and the what-if (recipes.md "Proof": Costing, What-if) — the Phase 0 proof's numbers through the screens and the functions. */
+require __DIR__ . '/lib.php';
+$f = recipes_fixture();
+[$jd, ] = sign_on(30); [$jb, ] = sign_on(28); [$ja, ] = sign_on(29); [$jm, ] = sign_on(27, ['scope' => 101]);
+$cc = $f['chicken_cost'];
+$expected = 170 / 0.9 * $cc + 50 * (2000 * $cc / 3600) + 54.0 / 180;
+
+echo "1. The sandwich's cost per portion at Downtown — the page, the panel, the function\n";
+$r = page($jd, '/recipes/' . $f['sandwich']);
+ok($r['code'] === 200 && preg_match('/id="recipe-cost-portion">\$([0-9.]+)/', $r['body'], $m) && near((float) $m[1], $expected, 0.01), 'the page: $' . ($m[1] ?? '?') . ' per portion ≈ ' . round($expected, 4) . ' (chicken at the receipt\'s cost, 50 ml of stock at its batch cost over 3.6 l, one egg at $0.30)');
+$cj = json_decode(req('GET', '/recipes/versions/' . $f['sandwich_v'] . '/cost', ['jar' => $jd, 'headers' => ['Accept: application/json']])['body'], true);
+$sum = array_sum(array_map(static fn (array $l): float => (float) $l['line_cost'], $cj['cost']['lines'] ?? []));
+ok(count($cj['cost']['lines'] ?? []) === 3 && near($sum, (float) $cj['cost']['batch_cost'], 0.001), "the three lines' costs sum to the batch (" . round($sum, 4) . ')');
+ok(has($r, 'from its own recipe'), 'the prep sub-recipe\'s cost says "from its own recipe"');
+ok(preg_match('/Food cost<\/th>.*?<td class="text-end">([0-9.]+) %/s', $r['body'], $fc) && near((float) $fc[1], $expected / 14 * 100, 0.2), 'the food-cost % against PLU 1001\'s $14 (' . ($fc[1] ?? '?') . ' % ≈ 12.7 %)');
+$r = page($jd, '/recipes/versions/' . $f['sandwich_v'] . '/cost');
+ok(preg_match('/editor-cost-portion">\$([0-9.]+)/', $r['body'], $m) && near((float) $m[1], $expected, 0.01), 'the panel says the same');
+$r = req('GET', '/recipes/versions/' . $f['sandwich_v'] . '/cost', ['jar' => $jd, 'headers' => ['Accept: application/json']]);
+$j = json_decode($r['body'], true);
+ok($r['code'] === 200 && near((float) $j['cost']['portion_cost'], $expected, 0.01) && (int) $j['cost']['uncosted'] === 0, 'recipe_cost() as JSON: the same number, nothing uncosted');
+$r = req('GET', '/recipes/versions/' . $f['sandwich_v'] . '/cost', ['jar' => $jb, 'headers' => ['Accept: application/json']]);
+$j = json_decode($r['body'], true);
+ok($r['code'] === 200 && $j['cost'] === null && $j['withheld'] === true, "Bea's recipe_cost() is null — withheld");
+page($jd, '/recipes/');
+ok((int) one('SELECT count(*) FROM recipe_cost_cache WHERE version_id = :v AND scope_id = 101 AND as_of_date = current_date', ['v' => $f['sandwich_v']]) >= 1, 'the cache row for today was written by the cards');
+
+echo "2. An uncosted ingredient, a cost change today, the cache invalidated, as-of yesterday\n";
+pdo()->exec("SELECT set_config('app.member_id', '30', false)");
+$r = post_json($jd, '/recipes/save.php', ['name' => 'SMOKE Lettuce cup', 'kind' => 'menu_item', 'lines' => json_encode([['ingredient' => $f['lettuce'], 'qty' => 80, 'unit' => 'g']])]);
+$cup = (int) $r['json']['record_id']; $cupV = (int) $r['json']['version_id'];
+$r = req('GET', '/recipes/versions/' . $cupV . '/cost', ['jar' => $jd, 'headers' => ['Accept: application/json']]);
+$j = json_decode($r['body'], true);
+ok((int) $j['cost']['uncosted'] === 1 && (float) $j['cost']['portion_cost'] === 0.0, 'lettuce has no cost yet: one line uncosted');
+$r = page($jd, '/recipes/versions/' . $cupV . '/cost');
+ok(has($r, 'id="editor-cost-uncosted"') && has($r, '1 line uncosted'), 'and the panel names it');
+$before = (float) one('SELECT ri_cost_as_of(:i, 101)', ['i' => $f['chicken']]);
+// a receipt today at $3.50/lb: the running average moves, today's cache is invalidated, yesterday still answers the old price
+ri_sql("INSERT INTO goods_receipts (scope_id, supplier_id, storage_area_id, received_on, received_at, created_by) VALUES (101, :s, :a, current_date, now(), 27)", ['s' => $f['sysco'], 'a' => $f['walkin']]);
+$gr = id_of('SELECT max(id) FROM goods_receipts');
+ri_sql("INSERT INTO goods_receipt_lines (goods_receipt_id, line_no, ingredient_id, qty_received, purchase_unit_code, weight_qty, weight_unit_code, unit_cost) VALUES (:g, 1, :c, 1, 'case', 40, 'lb', 3.50)", ['g' => $gr, 'c' => $f['chicken']]);
+ri_sql('SELECT ri_post_receipt(:g, 27)', ['g' => $gr]);
+$after = (float) one('SELECT ri_cost_as_of(:i, 101)', ['i' => $f['chicken']]);
+ok($after > $before, "a receipt at \$3.50/lb moved the chicken's cost today (" . round($before, 6) . ' → ' . round($after, 6) . ')');
+ok((int) one('SELECT count(*) FROM recipe_cost_cache WHERE version_id = :v AND scope_id = 101 AND as_of_date = current_date', ['v' => $f['sandwich_v']]) === 0, "today's cache rows were emptied by the price change");
+$r = page($jd, '/recipes/' . $f['sandwich']);
+ok(preg_match('/id="recipe-cost-portion">\$([0-9.]+)/', $r['body'], $m) && (float) $m[1] > $expected + 0.01, 'the page today shows the new, higher cost');
+$r = page($jd, '/recipes/' . $f['sandwich'] . '?as_of=' . date('Y-m-d', strtotime('-1 day')));
+ok(preg_match('/id="recipe-cost-portion">\$([0-9.]+)/', $r['body'], $m) && near((float) $m[1], $expected, 0.01), '?as_of=yesterday answers the old cost');
+$r = page($jd, '/recipes/' . $f['sandwich'] . '/cost');
+ok($r['code'] === 200 && has($r, 'id="recipe-cost-chart"') && has($r, 'id="recipe-cost-table"') && preg_match('/>v1</', $r['body']), 'the cost history by week shows the chart with the version marked');
+$r = req('GET', '/recipes/' . $f['sandwich'] . '/cost', ['jar' => $jd, 'headers' => ['Accept: application/json']]);
+$j = json_decode($r['body'], true);
+ok($r['code'] === 200 && count($j['data']['rows'] ?? []) === 52 && end($j['data']['rows'])['version_no'] === 1, '52 weeks as JSON, this week on v1');
+
+echo "3. What-if — chicken at \$3.50 a pound; nothing saved; walled\n";
+$beforePh = (int) one('SELECT count(*) FROM price_history'); $beforeCache = (int) one('SELECT count(*) FROM recipe_cost_cache');
+$r = page($jd, '/recipes/' . $f['sandwich'] . '/what-if');
+ok($r['code'] === 200 && has($r, 'id="what-if-form"') && has($r, 'id="what-if-row-' . $f['chicken'] . '"') && has($r, 'id="what-if-row-' . $f['egg'] . '"'), 'the what-if lists the leaf ingredients (chicken through the stock too, eggs)');
+$r = req('POST', '/recipes/' . $f['sandwich'] . '/what-if', ['jar' => $jd, 'headers' => ['HX-Request: true'], 'form' => ['csrf_token' => page_csrf($jd), 'price' => [$f['chicken'] => '3.50'], 'unit' => [$f['chicken'] => 'lb']]]);
+$newCost = (float) one('SELECT ri_cost_as_of(:i, 101)', ['i' => $f['chicken']]);
+$want = (170 / 0.9 + 50 * 2000 / 3600) * 3.50 / 453.59237 + 0.30;
+ok($r['code'] === 200 && preg_match('/id="what-if-new-cost">\$([0-9.]+)/', $r['body'], $m) && near((float) $m[1], $want, 0.01), 'chicken at $3.50/lb: the new plate cost $' . ($m[1] ?? '?') . ' ≈ ' . round($want, 4));
+ok(preg_match('/id="what-if-old-cost">\$([0-9.]+)/', $r['body'], $o) && preg_match('/id="what-if-new-pct">([0-9.]+) %/', $r['body'], $p) && near((float) $p[1], $want / 14 * 100, 0.2), 'beside the old cost and the new food-cost %');
+ok((int) one('SELECT count(*) FROM price_history') === $beforePh && (int) one('SELECT count(*) FROM recipe_cost_cache') === $beforeCache && near((float) one('SELECT ri_cost_as_of(:i, 101)', ['i' => $f['chicken']]), $newCost, 0.000001), 'nothing was saved: no price history row, the cache untouched, the cost unchanged');
+$r = page($jd, '/recipes/' . $f['sandwich'] . '/what-if?ingredient=' . $f['chicken'] . '&price=3.50&unit=lb');
+ok(has($r, 'value="3.50"') && has($r, 'id="what-if-new-cost"'), '?ingredient=&price=&unit= prefills the row and answers');
+ok(page($ja, '/recipes/' . $f['sandwich'] . '/what-if')['code'] === 403 && page($jb, '/recipes/' . $f['sandwich'] . '/what-if')['code'] === 403, 'Ann and Bea: 403 "You may not see cost."');
+ok(str_contains(page($jb, '/recipes/' . $f['sandwich'] . '/what-if')['body'], 'You may not see cost.'), 'in those words');
+ok(page($ja, '/recipes/' . $f['sandwich'] . '/cost')['code'] === 403, 'the cost history is walled whole too');
+$r = req('GET', '/recipes/' . $f['sandwich'] . '/what-if', ['jar' => $jd, 'headers' => ['Accept: application/json']]);
+ok($r['code'] === 200 && isset(json_decode($r['body'], true)['data']['leaves']), 'the what-if answers JSON (the leaves)');
+finish();

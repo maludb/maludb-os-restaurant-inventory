@@ -1,0 +1,6 @@
+<?php /** A per-item override row. Data: p (a modifier_parents row), modifierId */ ?>
+<tr id="per-item-row-<?= (int) $p['menu_item_id'] ?>"><td><code><?= e($p['plu']) ?></code> <?= hx_link('/menu/' . (int) $p['menu_item_id'], e($p['name'])) ?> <span class="fs-11 text-muted">seen <?= (int) $p['seen'] ?>×</span></td>
+    <td><form method="post" action="/modifiers/map.php" hx-post="/modifiers/map.php" hx-target="#flash" class="d-flex gap-1 align-items-center flex-wrap"><?= csrf_field() ?><input type="hidden" name="modifier" value="<?= (int) $modifierId ?>"><input type="hidden" name="menu_item" value="<?= (int) $p['menu_item_id'] ?>">
+        <div style="min-width: 14rem"><?= picker_field(['id' => 'per-item-row-' . (int) $p['menu_item_id'] . '-field-parent-recipe', 'name' => 'parent_recipe', 'source' => 'recipe', 'value' => $p['recipe_id'], 'params' => ['kind' => 3], 'placeholder' => "the modifier's own recipe"]) ?></div>
+        <input type="number" step="0.01" min="0.01" name="parent_qty_factor" value="<?= $p['qty_factor'] !== null ? e(ri_fmt($p['qty_factor'], 2)) : '' ?>" class="form-control btn-touch" style="width: 6rem" placeholder="factor" aria-label="Factor" id="per-item-row-<?= (int) $p['menu_item_id'] ?>-field-parent-qty-factor">
+        <button type="submit" class="btn btn-light-brand btn-touch">Save</button></form></td></tr>

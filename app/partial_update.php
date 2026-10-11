@@ -11,6 +11,16 @@ declare(strict_types=1);
  * `any field of`). Empty until Phase 2: the first entries are slice 1's, e.g. '/ingredients/save.php' => ['ingredients', 'ingredient',
  * 'mcp_ingredients', 'ingredient_id']. */
 const PARTIAL_UPDATE_TARGETS = [];
+/** The targets: the constant above plus each slice's app/partial_targets/<slice>.php (endpoint => [table, id field, view, view id]). */
+function partial_update_targets(): array
+{
+    static $t = null;
+    if ($t === null) {
+        $t = PARTIAL_UPDATE_TARGETS;
+        foreach (glob(__DIR__ . '/partial_targets/*.php') ?: [] as $file) { $t += (array) require $file; }
+    }
+    return $t;
+}
 
 function partial_update_prefill(PDO $pdo): void
 {
@@ -18,7 +28,7 @@ function partial_update_prefill(PDO $pdo): void
         return;
     }
     unset($_POST['_partial']);
-    $target = PARTIAL_UPDATE_TARGETS[(string) parse_url((string) ($_SERVER['SCRIPT_NAME'] ?? ''), PHP_URL_PATH)] ?? null;
+    $target = partial_update_targets()[(string) parse_url((string) ($_SERVER['SCRIPT_NAME'] ?? ''), PHP_URL_PATH)] ?? null;
     if ($target === null) {
         return;
     }

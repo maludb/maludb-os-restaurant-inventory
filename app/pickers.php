@@ -12,6 +12,9 @@ declare(strict_types=1);
  * filters and slices what it returns; `label` names one record for a form's first render and a 422 re-render.
  */
 $sources = [];
+foreach (glob(__DIR__ . '/pickers/*.php') ?: [] as $file) {                 // each slice's own sources (app/pickers/<slice>.php); the first definition of a key wins
+    $sources += (array) require $file;
+}
 $extra = getenv('RI_PICKER_EXTRA');                       // the proofs' own sources (never set in production)
 if ($extra !== false && $extra !== '' && getenv('APP_ENV') !== 'prod' && is_file($extra)) {
     $sources += (array) require $extra;

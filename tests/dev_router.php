@@ -26,6 +26,7 @@ elseif (preg_match('#^/((?:[a-z_-]+/)?[a-z_-]+)/new$#', $path, $m)) { $target = 
 elseif (preg_match('#^/((?:[a-z_-]+/)?[a-z_-]+)/([0-9]+)/edit$#', $path, $m)) { $set(['id' => $m[2]]); $target = '/' . $m[1] . '/form.php'; }
 elseif (preg_match('#^/((?:[a-z_-]+/)?[a-z_-]+)/([0-9]+)$#', $path, $m)) { $set(['id' => $m[2]]); $target = '/' . $m[1] . '/view.php'; }
 elseif (preg_match('#^/((?:[a-z_-]+/)?[a-z_-]+)/([0-9]+)/([a-z_-]+)$#', $path, $m)) { $set(['id' => $m[2]]); $target = '/' . $m[1] . '/' . $m[3] . '.php'; }
+elseif (preg_match('#^/([a-z_-]+)/([0-9]+)/([a-z_-]+)/([0-9]+)$#', $path, $m) && is_file($root . '/' . $m[1] . '/' . $m[3] . '/view.php')) { $set(['parent' => $m[2], 'id' => $m[4]]); $target = '/' . $m[1] . '/' . $m[3] . '/view.php'; }   // a child record: /recipes/12/versions/3
 elseif ($rel === '/') { $target = '/index.php'; }
 elseif (is_file($root . $rel . '.php')) { $target = $rel . '.php'; }
 elseif (is_file($root . $rel . '/index.php')) { $target = $rel . '/index.php'; }

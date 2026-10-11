@@ -1,6 +1,6 @@
 {
     "generated_from": "docs/restaurant-inventory-action-manifest.md",
-    "generated_at": "2026-10-11T15:22:29+00:00",
+    "generated_at": "2026-10-11T16:42:29+00:00",
     "screens": {
         "home": {
             "screen": "home",
@@ -84,8 +84,8 @@
                 "status",
                 "is_prep"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "ingredient-add": {
             "screen": "ingredient-add",
@@ -95,7 +95,7 @@
             "params": [
                 "category"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "ingredient-view": {
@@ -106,7 +106,7 @@
             "params": [
                 "tab"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "ingredient-edit": {
@@ -115,7 +115,7 @@
             "section": "Ingredients, units, categories, suppliers and storage areas (slice 1 — the CRUD pattern)",
             "when": "to change an ingredient's name, category, recipe unit, density, each-weight, yield %, catch weight, shelf life, allergens, tolerances, costing method, status",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "ingredient-units": {
@@ -124,7 +124,7 @@
             "section": "Ingredients, units, categories, suppliers and storage areas (slice 1 — the CRUD pattern)",
             "when": "the ingredient's own units: add a purchase or count unit with its factor shown as \"1 case = 6 × #10 = 18 390 g\", set the default count unit, retire one",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "ingredient-site-settings": {
@@ -133,7 +133,7 @@
             "section": "Ingredients, units, categories, suppliers and storage areas (slice 1 — the CRUD pattern)",
             "when": "the per-site rows: par and its mode (fixed or dynamic), reorder minimum, service level, the preferred supplier item, the default depletion area, a cost override (walled)",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "yield-test-add": {
@@ -142,7 +142,7 @@
             "section": "Ingredients, units, categories, suppliers and storage areas (slice 1 — the CRUD pattern)",
             "when": "to record a yield test: as-purchased and edible-portion quantities with their unit, trim and cook loss, by-products; apply it to the ingredient's yield %",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "unit-list": {
@@ -151,8 +151,8 @@
             "section": "Ingredients, units, categories, suppliers and storage areas (slice 1 — the CRUD pattern)",
             "when": "the global units by measure class with their factors; add one, retire one (`settings.manage`)",
             "params": [],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "category-list": {
             "screen": "category-list",
@@ -160,8 +160,8 @@
             "section": "Ingredients, units, categories, suppliers and storage areas (slice 1 — the CRUD pattern)",
             "when": "the ingredient categories in order with kind, safety-stock %, price-alert %, temperature check; add or rename one",
             "params": [],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "supplier-list": {
             "screen": "supplier-list",
@@ -173,8 +173,8 @@
                 "kind",
                 "status"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "supplier-add": {
             "screen": "supplier-add",
@@ -182,7 +182,7 @@
             "section": "Ingredients, units, categories, suppliers and storage areas (slice 1 — the CRUD pattern)",
             "when": "to add a supplier: name, kind, contact, order method and address, terms, lead time, minimum order value, split cases, match tolerances, account number, rep",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "supplier-view": {
@@ -193,7 +193,7 @@
             "params": [
                 "tab"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "supplier-edit": {
@@ -202,7 +202,7 @@
             "section": "Ingredients, units, categories, suppliers and storage areas (slice 1 — the CRUD pattern)",
             "when": "to change a supplier's details, terms, tolerances, status",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "supplier-schedules": {
@@ -211,7 +211,7 @@
             "section": "Ingredients, units, categories, suppliers and storage areas (slice 1 — the CRUD pattern)",
             "when": "the supplier's order and delivery schedule at this site: \"order Saturday by 13:00, delivered Tuesday\"; add, remove",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "supplier-items": {
@@ -220,7 +220,7 @@
             "section": "Ingredients, units, categories, suppliers and storage areas (slice 1 — the CRUD pattern)",
             "when": "what the supplier sells us: SKU, ingredient, purchase unit, pack, last price, contract price and until, MOQ, catch weight; add, edit, retire",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "order-guide-edit": {
@@ -229,7 +229,7 @@
             "section": "Ingredients, units, categories, suppliers and storage areas (slice 1 — the CRUD pattern)",
             "when": "the order guide at this site in shelf order: drag to reorder, add and remove supplier items, mark preferred",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "area-list": {
@@ -238,8 +238,8 @@
             "section": "Ingredients, units, categories, suppliers and storage areas (slice 1 — the CRUD pattern)",
             "when": "the storage areas of this site in walk order: kind, allows negative, items on hand; drag to reorder; add, archive (`ingredients.write`)",
             "params": [],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "area-add": {
             "screen": "area-add",
@@ -247,7 +247,7 @@
             "section": "Ingredients, units, categories, suppliers and storage areas (slice 1 — the CRUD pattern)",
             "when": "to add a storage area: name, kind, walk order, allows negative",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "area-edit": {
@@ -256,7 +256,7 @@
             "section": "Ingredients, units, categories, suppliers and storage areas (slice 1 — the CRUD pattern)",
             "when": "to change a storage area's name, kind, walk order, allows negative, active",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "recipe-list": {
@@ -270,8 +270,8 @@
                 "category",
                 "status"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "recipe-add": {
             "screen": "recipe-add",
@@ -282,7 +282,7 @@
                 "kind",
                 "output_ingredient"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "recipe-view": {
@@ -296,7 +296,7 @@
                 "site",
                 "tab"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "recipe-edit": {
@@ -305,7 +305,7 @@
             "section": "Recipes, the menu map and costing — THE FIRST EXEMPLAR (slice 2)",
             "when": "to change a recipe's name, kind, category, output ingredient, portion, method, photo, status",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "recipe-version-edit": {
@@ -314,7 +314,7 @@
             "section": "Recipes, the menu map and costing — THE FIRST EXEMPLAR (slice 2)",
             "when": "**the recipe editor** (a draft): the lines table with a row form — pick an ingredient or a recipe through the record picker, quantity in any unit with the conversion shown, line yield %, group, optional —, batch yield and its unit, expected loss, the change note, the live cost per portion (walled); **Activate from a date**; **Discard the draft**",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "recipe-what-if": {
@@ -326,7 +326,7 @@
                 "ingredient",
                 "price"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "recipe-cost-history": {
@@ -338,7 +338,7 @@
                 "site",
                 "weeks"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "menu-item-list": {
@@ -352,8 +352,8 @@
                 "category",
                 "unmapped"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "menu-item-view": {
             "screen": "menu-item-view",
@@ -361,7 +361,7 @@
             "section": "Recipes, the menu map and costing — THE FIRST EXEMPLAR (slice 2)",
             "when": "one menu item: the PLU, the recipe and portions, prices per site, its modifiers and their mapping, sales by week, the plate cost and food-cost % (walled)",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "menu-item-map": {
@@ -370,7 +370,7 @@
             "section": "Recipes, the menu map and costing — THE FIRST EXEMPLAR (slice 2)",
             "when": "to map a PLU to a recipe (the record picker — or make a new recipe from here), set portions, the price, the category; or mark it as not depleting",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "modifier-list": {
@@ -382,8 +382,8 @@
                 "source",
                 "unmapped"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "modifier-map": {
             "screen": "modifier-map",
@@ -391,7 +391,7 @@
             "section": "Recipes, the menu map and costing — THE FIRST EXEMPLAR (slice 2)",
             "when": "to map a modifier: the action, the modifier recipe, the quantity factor; per parent menu item when it differs",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "menu-engineering": {
@@ -403,8 +403,8 @@
                 "category",
                 "site"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "menu-category-list": {
             "screen": "menu-category-list",
@@ -412,8 +412,8 @@
             "section": "Recipes, the menu map and costing — THE FIRST EXEMPLAR (slice 2)",
             "when": "the menu categories in order; add or rename one",
             "params": [],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "stock-levels": {
             "screen": "stock-levels",
@@ -1528,7 +1528,7 @@
             "who": "ingredients.write",
             "agent": true,
             "record_id": "the ingredient",
-            "built": false
+            "built": true
         },
         "ingredient_update": {
             "action": "ingredient_update",
@@ -1645,7 +1645,7 @@
             "who": "ingredients.write",
             "agent": true,
             "record_id": "the ingredient",
-            "built": false,
+            "built": true,
             "partial": true
         },
         "ingredient_archive": {
@@ -1673,7 +1673,7 @@
             "who": "ingredients.write",
             "agent": true,
             "record_id": "the ingredient",
-            "built": false
+            "built": true
         },
         "ingredient_delete": {
             "action": "ingredient_delete",
@@ -1694,7 +1694,7 @@
             "who": "records.delete",
             "agent": true,
             "record_id": "the ingredient",
-            "built": false
+            "built": true
         },
         "unit_set": {
             "action": "unit_set",
@@ -1757,7 +1757,7 @@
             "who": "ingredients.write",
             "agent": true,
             "record_id": "the ingredient unit",
-            "built": false
+            "built": true
         },
         "par_set": {
             "action": "par_set",
@@ -1838,7 +1838,7 @@
             "who": "ingredients.write",
             "agent": true,
             "record_id": "the ingredient",
-            "built": false
+            "built": true
         },
         "cost_override_set": {
             "action": "cost_override_set",
@@ -1883,7 +1883,7 @@
             "who": "prices.write",
             "agent": true,
             "record_id": "the ingredient",
-            "built": false
+            "built": true
         },
         "yield_test_add": {
             "action": "yield_test_add",
@@ -1958,7 +1958,7 @@
             "who": "ingredients.write",
             "agent": true,
             "record_id": "the yield test",
-            "built": false
+            "built": true
         },
         "global_unit_save": {
             "action": "global_unit_save",
@@ -2009,7 +2009,7 @@
             "who": "settings.manage",
             "agent": true,
             "record_id": "the unit",
-            "built": false
+            "built": true
         },
         "category_save": {
             "action": "category_save",
@@ -2084,7 +2084,7 @@
             "who": "ingredients.write",
             "agent": true,
             "record_id": "the category",
-            "built": false
+            "built": true
         },
         "supplier_create": {
             "action": "supplier_create",
@@ -2219,7 +2219,7 @@
             "who": "suppliers.write",
             "agent": true,
             "record_id": "the supplier",
-            "built": false
+            "built": true
         },
         "supplier_update": {
             "action": "supplier_update",
@@ -2360,7 +2360,7 @@
             "who": "suppliers.write",
             "agent": true,
             "record_id": "the supplier",
-            "built": false,
+            "built": true,
             "partial": true
         },
         "supplier_archive": {
@@ -2388,7 +2388,7 @@
             "who": "suppliers.write",
             "agent": true,
             "record_id": "the supplier",
-            "built": false
+            "built": true
         },
         "supplier_delete": {
             "action": "supplier_delete",
@@ -2409,7 +2409,7 @@
             "who": "records.delete",
             "agent": true,
             "record_id": "the supplier",
-            "built": false
+            "built": true
         },
         "supplier_schedule_set": {
             "action": "supplier_schedule_set",
@@ -2460,7 +2460,7 @@
             "who": "suppliers.write",
             "agent": true,
             "record_id": "the schedule",
-            "built": false
+            "built": true
         },
         "supplier_schedule_remove": {
             "action": "supplier_schedule_remove",
@@ -2481,7 +2481,7 @@
             "who": "suppliers.write",
             "agent": true,
             "record_id": "the schedule",
-            "built": false
+            "built": true
         },
         "supplier_item_create": {
             "action": "supplier_item_create",
@@ -2568,7 +2568,7 @@
             "who": "suppliers.write",
             "agent": true,
             "record_id": "the supplier item",
-            "built": false
+            "built": true
         },
         "supplier_item_update": {
             "action": "supplier_item_update",
@@ -2661,7 +2661,7 @@
             "who": "suppliers.write",
             "agent": true,
             "record_id": "the supplier item",
-            "built": false,
+            "built": true,
             "partial": true
         },
         "supplier_item_retire": {
@@ -2689,7 +2689,7 @@
             "who": "suppliers.write",
             "agent": true,
             "record_id": "the supplier item",
-            "built": false
+            "built": true
         },
         "order_guide_set": {
             "action": "order_guide_set",
@@ -2722,7 +2722,7 @@
             "who": "purchasing.draft",
             "agent": true,
             "record_id": "the order guide",
-            "built": false
+            "built": true
         },
         "area_create": {
             "action": "area_create",
@@ -2761,7 +2761,7 @@
             "who": "ingredients.write",
             "agent": true,
             "record_id": "the area",
-            "built": false
+            "built": true
         },
         "area_update": {
             "action": "area_update",
@@ -2812,7 +2812,7 @@
             "who": "ingredients.write",
             "agent": true,
             "record_id": "the area",
-            "built": false,
+            "built": true,
             "partial": true
         },
         "area_archive": {
@@ -2840,7 +2840,7 @@
             "who": "ingredients.write",
             "agent": true,
             "record_id": "the area",
-            "built": false
+            "built": true
         },
         "area_reorder": {
             "action": "area_reorder",
@@ -2861,7 +2861,7 @@
             "who": "ingredients.write",
             "agent": true,
             "record_id": "the site",
-            "built": false
+            "built": true
         },
         "note_add": {
             "action": "note_add",
@@ -2894,7 +2894,7 @@
             "who": "notes.write",
             "agent": true,
             "record_id": "the note",
-            "built": false
+            "built": true
         },
         "note_remove": {
             "action": "note_remove",
@@ -2915,7 +2915,7 @@
             "who": "own",
             "agent": true,
             "record_id": "the note",
-            "built": false
+            "built": true
         },
         "attachment_add": {
             "action": "attachment_add",
@@ -2948,7 +2948,7 @@
             "who": "notes.write",
             "agent": true,
             "record_id": "the attachment",
-            "built": false
+            "built": true
         },
         "attachment_remove": {
             "action": "attachment_remove",
@@ -2969,7 +2969,7 @@
             "who": "own",
             "agent": true,
             "record_id": "the attachment",
-            "built": false
+            "built": true
         },
         "recipe_create": {
             "action": "recipe_create",
@@ -3056,7 +3056,7 @@
             "who": "recipes.write",
             "agent": true,
             "record_id": "the recipe",
-            "built": false
+            "built": true
         },
         "recipe_update": {
             "action": "recipe_update",
@@ -3149,7 +3149,7 @@
             "who": "recipes.write",
             "agent": true,
             "record_id": "the recipe",
-            "built": false,
+            "built": true,
             "partial": true
         },
         "recipe_archive": {
@@ -3177,7 +3177,7 @@
             "who": "recipes.write",
             "agent": true,
             "record_id": "the recipe",
-            "built": false
+            "built": true
         },
         "recipe_delete": {
             "action": "recipe_delete",
@@ -3198,7 +3198,7 @@
             "who": "records.delete",
             "agent": true,
             "record_id": "the recipe",
-            "built": false
+            "built": true
         },
         "recipe_version_draft": {
             "action": "recipe_version_draft",
@@ -3225,7 +3225,7 @@
             "who": "recipes.write",
             "agent": true,
             "record_id": "the version",
-            "built": false
+            "built": true
         },
         "recipe_version_update": {
             "action": "recipe_version_update",
@@ -3270,7 +3270,7 @@
             "who": "recipes.write",
             "agent": true,
             "record_id": "the version",
-            "built": false
+            "built": true
         },
         "recipe_line_set": {
             "action": "recipe_line_set",
@@ -3351,7 +3351,7 @@
             "who": "recipes.write",
             "agent": true,
             "record_id": "the line",
-            "built": false
+            "built": true
         },
         "recipe_line_remove": {
             "action": "recipe_line_remove",
@@ -3372,7 +3372,7 @@
             "who": "recipes.write",
             "agent": true,
             "record_id": "the line",
-            "built": false
+            "built": true
         },
         "recipe_version_activate": {
             "action": "recipe_version_activate",
@@ -3399,7 +3399,7 @@
             "who": "recipes.write",
             "agent": true,
             "record_id": "the version",
-            "built": false
+            "built": true
         },
         "recipe_version_discard": {
             "action": "recipe_version_discard",
@@ -3420,7 +3420,7 @@
             "who": "recipes.write",
             "agent": true,
             "record_id": "the version",
-            "built": false
+            "built": true
         },
         "recipe_version_retire": {
             "action": "recipe_version_retire",
@@ -3447,7 +3447,7 @@
             "who": "recipes.write",
             "agent": true,
             "record_id": "the version",
-            "built": false
+            "built": true
         },
         "menu_item_create": {
             "action": "menu_item_create",
@@ -3504,7 +3504,7 @@
             "who": "recipes.write",
             "agent": true,
             "record_id": "the menu item",
-            "built": false
+            "built": true
         },
         "menu_item_map": {
             "action": "menu_item_map",
@@ -3549,7 +3549,7 @@
             "who": "recipes.write",
             "agent": true,
             "record_id": "the menu item",
-            "built": false
+            "built": true
         },
         "menu_item_price_set": {
             "action": "menu_item_price_set",
@@ -3588,7 +3588,7 @@
             "who": "recipes.write",
             "agent": true,
             "record_id": "the menu item",
-            "built": false
+            "built": true
         },
         "menu_item_archive": {
             "action": "menu_item_archive",
@@ -3615,7 +3615,7 @@
             "who": "recipes.write",
             "agent": true,
             "record_id": "the menu item",
-            "built": false
+            "built": true
         },
         "modifier_map": {
             "action": "modifier_map",
@@ -3672,7 +3672,7 @@
             "who": "recipes.write",
             "agent": true,
             "record_id": "the modifier",
-            "built": false
+            "built": true
         },
         "menu_category_save": {
             "action": "menu_category_save",
@@ -3723,7 +3723,7 @@
             "who": "recipes.write",
             "agent": true,
             "record_id": "the menu category",
-            "built": false
+            "built": true
         },
         "receipt_draft": {
             "action": "receipt_draft",

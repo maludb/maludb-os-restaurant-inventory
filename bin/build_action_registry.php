@@ -251,6 +251,10 @@ function screen_controller(string $url): ?string
         return is_file($form) ? $form : null;
     }
     if (ctype_digit($last)) {
+        if (is_file(WEB_ROOT . $dir . '/view.php')) {
+            return WEB_ROOT . $dir . '/view.php';
+        }
+        $dir = '/' . implode('/', array_filter($parts, static fn (string $p): bool => $p !== '1'));   // /recipes/{recipe}/versions/{version} → /recipes/versions/view.php (the vhost's child-record rewrite)
         return is_file(WEB_ROOT . $dir . '/view.php') ? WEB_ROOT . $dir . '/view.php' : null;
     }
     // /channels/{id}/members → channels/members.php (a page of the record, rewritten by the vhost)

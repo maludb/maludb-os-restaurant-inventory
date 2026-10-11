@@ -1,0 +1,5 @@
+<?php /** The modifiers seen on an item with their mapping and the per-item override. Data: mods, mayWrite */ ?>
+<?php if ($mods === []): ?><div class="p-3 text-muted fs-12">No modifier seen on this item yet.</div><?php else: ?>
+<table class="table table-sm mb-0 fs-12"><thead><tr><th>Modifier</th><th>Action</th><th>Recipe</th><th class="text-end">Factor</th></tr></thead><tbody>
+<?php foreach ($mods as $md): $c = MODIFIER_ACTION_COLOR[$md['action']] ?? 'secondary'; ?><tr id="menu-item-modifier-<?= (int) $md['modifier_id'] ?>"><td><code><?= e($md['code']) ?></code> <?= $mayWrite ? hx_link('/modifiers/' . (int) $md['modifier_id'] . '/map', e($md['name'])) : e($md['name']) ?></td><td><span class="badge bg-soft-<?= $c ?> text-<?= $c ?>"><?= e($md['action']) ?></span></td><td><?= e($md['item_recipe_name'] ?? $md['recipe_name'] ?? '—') ?><?= $md['item_recipe_id'] !== null ? ' <span class="text-muted">(for this item)</span>' : '' ?></td><td class="text-end"><?= e(ri_fmt($md['item_factor'] ?? $md['qty_factor'], 2)) ?></td></tr><?php endforeach; ?>
+</tbody></table><?php endif; ?>

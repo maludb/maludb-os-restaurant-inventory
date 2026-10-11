@@ -9,7 +9,8 @@ ok(page($j, '/recipes/')['code'] === 200 && page($j, '/recipes')['code'] === 200
 ok(page($j, '/stock/movements')['code'] === 200 && page($j, '/menu/engineering')['code'] === 200 && page($j, '/purchasing/suggested')['code'] === 200 && page($j, '/usage/cogs')['code'] === 200, '/stock/movements, /menu/engineering, /purchasing/suggested and /usage/cogs resolve to their own files');
 ok(page($j, '/search')['code'] === 200 && page($j, '/switch-site')['code'] === 200, '/search and /switch-site resolve');
 ok(page($j, '/admin/settings')['code'] === 403 && page($j, '/units/')['code'] === 403, '/admin/settings and /units/ resolve (403 for Dana, by the right)');
-ok(page($j, '/ingredients/new')['code'] === 404 && page($j, '/ingredients/1')['code'] === 404 && page($j, '/ingredients/1/edit')['code'] === 404 && page($j, '/recipes/3/cost')['code'] === 404, '/ingredients/new, /ingredients/1, /ingredients/1/edit and /recipes/3/cost are rewritten to files slice 1 and 2 have not built: 404');
+ok(page($j, '/ingredients/new')['code'] === 200 && page($j, '/ingredients/999999')['code'] === 404 && page($j, '/ingredients/999999/edit')['code'] === 404, '/ingredients/new reaches the form (slice 1); /ingredients/999999 and its /edit are 404 by the record');
+ok(page($j, '/recipes/999999/cost')['code'] === 404 && page($j, '/recipes/999999/versions/1')['code'] === 404, '/recipes/999999/cost and /recipes/999999/versions/1 are rewritten to slice 2\'s cost history and editor: 404 by the record');
 ok(req('GET', '/nosuchscreen', ['jar' => $j])['code'] === 404, 'an unknown path: 404');
 $tok = str_repeat('ab', 24);
 ok(req('GET', "/s/$tok")['code'] === 404 && req('GET', "/s/$tok/acknowledge")['code'] === 404, "the supplier's door /s/{token} (and its actions) is rewritten to s.php (slice 4) and answers 404 (no handler yet)");

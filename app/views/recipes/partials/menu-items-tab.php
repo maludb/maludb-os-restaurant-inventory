@@ -1,0 +1,5 @@
+<?php /** The menu items mapped to a recipe. Data: items, seesCost */ ?>
+<?php if ($items === []): ?><div class="p-3 text-muted fs-12">No menu item maps to this recipe.</div><?php else: ?>
+<table class="table table-sm mb-0 fs-12"><thead><tr><th>PLU</th><th>Item</th><th class="text-end">Price</th><?php if ($seesCost): ?><th class="text-end">Plate cost</th><th class="text-end">Food cost</th><?php endif; ?></tr></thead><tbody>
+<?php foreach ($items as $m): ?><tr id="recipe-menu-item-<?= (int) $m['menu_item_id'] ?>"><td><?= e($m['plu']) ?></td><td><?= hx_link('/menu/' . (int) $m['menu_item_id'], e($m['name'])) ?><?= (float) $m['portions'] !== 1.0 ? ' <span class="text-muted">× ' . e(ri_fmt($m['portions'], 2)) . '</span>' : '' ?></td><td class="text-end"><?= $m['price'] !== null ? e(ri_money($m['price'])) : '—' ?></td><?php if ($seesCost): ?><td class="text-end"><?= $m['plate_cost'] !== null ? e(ri_money($m['plate_cost'])) : '—' ?></td><td class="text-end"><?= $m['food_cost_pct'] !== null ? e(ri_fmt($m['food_cost_pct'], 1)) . ' %' : '—' ?></td><?php endif; ?></tr><?php endforeach; ?>
+</tbody></table><?php endif; ?>

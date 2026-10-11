@@ -50,6 +50,7 @@ html.app-header-dark .nxl-navigation .m-header .logo-lg, .nxl-navigation .m-head
    The shell's own rules arrive with Phase 2 (docs/build-specs/sso-shell.md).
    ========================================================================== */
 .btn-touch, .form-select.btn-touch, .form-control.btn-touch { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
+.btn.btn-touch { min-width: 44px; }
 .form-select.btn-touch, .form-control.btn-touch { display: block; }
 label.btn-touch { display: flex; }
 .min-w-0 { min-width: 0; }
@@ -96,3 +97,14 @@ html.app-skin-dark #record-picker .record-picker-search { background: #0f172a; }
 #record-picker .record-picker-row { min-height: 44px; padding-top: .625rem; padding-bottom: .625rem; }
 #record-picker .record-picker-row.active .record-picker-detail, #record-picker .record-picker-row.active .badge { color: inherit !important; }
 #record-picker .record-picker-detail { color: var(--bs-secondary-color); }
+
+/* slice 2 — the recipe editor */
+.editor-line-fields > * { min-height: 44px; }
+.editor-handle { cursor: grab; white-space: nowrap; }
+.recipe-card-photo { object-fit: cover; }
+@media (max-width: 767.98px) {
+    .editor-line-fields { flex-direction: column; }
+    .editor-line-fields > *, .editor-line-fields .input-group, .editor-line-fields select, .editor-line-fields input { width: 100% !important; }
+    .editor-add-form .d-flex > * { width: 100% !important; }
+    .editor-side { position: sticky; bottom: 0; z-index: 5; }
+}

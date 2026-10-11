@@ -33,6 +33,8 @@ fi
 if [ -f "$LIVEENV" ] && [ -n "$(lv DB_PASSWORD)" ] && [ -n "$(lv MCP_RECORDS_DB_PASSWORD)" ] && [ -n "$(lv MCP_ACTIVITY_DB_PASSWORD)" ]; then
   PW_RW=$(lv DB_PASSWORD); PW_REC=$(lv MCP_RECORDS_DB_PASSWORD); PW_ACT=$(lv MCP_ACTIVITY_DB_PASSWORD)
 else
+  PWFILE=${RI_SCRATCH_PW_FILE:-/tmp/ri-scratch-roles.pw}            # one scratch password for every scratch run on this host: two proofs in flight never invalidate each other's environment
+  if [ -s "$PWFILE" ]; then PW=$(cat "$PWFILE"); else (umask 077; echo "$PW" > "$PWFILE"); fi
   PW_RW=$PW; PW_REC=$PW; PW_ACT=$PW
   for r in restaurant_inventory_rw restaurant_inventory_records_ro restaurant_inventory_activity_ro; do $PSQL -c "ALTER ROLE $r WITH LOGIN PASSWORD '$PW'"; done
 fi

@@ -293,3 +293,56 @@ chicken $3.10/lb, eggs $54/case, flour $25/bag at Downtown; the POS source "SMOK
 
 ## Open questions
 (none)
+
+## Built and proven
+
+Built 2026-10-11 by the planning model (a fork beside slice 1), on `/srv/apps/restaurant_inventory`; the application's commits are not pushed.
+
+**Proof:** `tests/phase3/slice2/run.sh` — recipes 82, costing 25, menu 40, visibility 30, the browser 35 (headless Chromium at 1280 × 800, 375 × 740
+and with JavaScript off), the registry, the approvals and the Phase 1 claim check: **215 checks under php -S (scratch `ri_dev3b`, :9304–9306) and 215 under
+a user-level Apache rendering `deploy/apache-restaurant_inventory.conf` (scratch `ri_dev3c`, the internal vhost on :9314 — :9307 is phase 2's).**
+`tests/phase2/run.sh`, `tests/phase0/run.sh` (124), `tests/phase1/check_specs.sh` (52) and `php bin/build_action_registry.php --check` are green; the
+registry reads 40 screens and 50 actions built (14 + 17 of them this slice's). Screenshots in `/tmp/ri-shots-s2`.
+
+**Files:** `app/features/recipes/{queries,write,handler,present}.php`; `app/recipes_units.php` (the unit sentences; defers to slice 1's helpers when
+present); `app/pickers/recipes.php` (sources `recipe` with `kind`/`exclude`, `menu_item`, `modifier`) loaded by a glob in `app/pickers.php`;
+`app/partial_targets/recipes.php` loaded by `partial_update_targets()` in `app/partial_update.php`; `html/recipes/*` with `html/recipes/versions/*`
+(the editor `versions/view.php`, the cost panel, draft/save/line/line-remove/reorder/activate/discard/retire), `html/menu/*` with `menu/categories/*`,
+`html/modifiers/*`; the views under `app/views/recipes`, `app/views/menu`, `app/views/modifiers`; the slice's CSS at the end of
+`html/assets/css/app-overrides.css`; `db/021_slice2_menu_items_view.sql`; `tests/phase3/slice2/*`; `tests/setup_dev.sh` (one scratch password per host,
+`RI_SCRATCH_PW_FILE`, so two proofs in flight never invalidate each other's roles).
+
+**Decisions taken while building (reported, not questions):**
+- **The editor's URL.** The manifest's `/recipes/{recipe}/versions/{version}` had no route: the vhost's rewrites know `/x/{id}` and `/x/{id}/page`
+  only. The editor lives at `/recipes/versions/{version}` (what every link and `location` says) and a new generic rewrite — *a child record of a
+  record*, `/x/{id}/y/{id2}` → `x/y/view.php?parent=&id=` — in both vhosts of `deploy/apache-restaurant_inventory.conf`, in `tests/dev_router.php`
+  and in `bin/build_action_registry.php`'s controller mapping makes the manifest's shape reach the same editor (proven) and the registry count it built.
+- **Version edits are refused by the trigger, not by PHP.** `recipe_version_update`, `recipe_line_set`, `recipe_line_remove` and the reorder send the
+  write and let `recipe_versions_immutable` / `recipe_lines_draft_only` speak (422 through `ri_guard()`); `version_or_404($pdo, $id, draft: true)`
+  only chooses the 404 wording.
+- **The CHECKs' sentences live in PHP once:** "A prep recipe names the ingredient it makes." and "Only a prep recipe makes an ingredient." are said
+  by `recipe_from_request()` as field errors, because a CHECK's name is not a sentence a cook can read.
+- **`ri_resolve_menu_item()` reads an id first, then a PLU** (the manifest's `menu_item` parameter is either); a recipe by id, then code, then an
+  exact name.
+- **`map_menu_item()` touches `pos_sales.imported_at`** for the item's unmapped sales so slice 5's depletion picks them up on its next pass (the spec's
+  "the unmapped band shrinks").
+- **The modifier map is one handler for both levels:** `modifier_map` with `menu_item` sets a per-item override in `menu_item_modifiers`; without, the
+  modifier's own recipe; a non-modifier recipe is refused in words before the database is asked.
+- **The what-if posts to the page it is on** (`/recipes/{recipe}/what-if`, GET renders, POST answers the result partial) — no separate action, nothing
+  saved, `ri_recipe_what_if()` (db/018) does the sum.
+- **The add row's fragments name their target** (`hx-target="this"` on the unit select and the conversion sentence, and on a row's unit select): inside
+  a form that carries `hx-target`, a fragment inherits the form's target — the first browser run swapped the options into the add row itself.
+- The reorder posts once, from Sortable's `onEnd` (the tbody's `hx-trigger="end"` would have posted a second, malformed body).
+
+**What the spec or the schema got wrong:**
+- `mcp_menu_items` lacked `no_depletion` (db/018 added the column and not the view) — `db/021_slice2_menu_items_view.sql` replaces the view with the
+  column appended last.
+- The manifest's editor URL (above).
+- The spec's browser proof asked for the picker "`exclude` honoured — the recipe itself absent": the picker sends `exclude` as a fixed param and the
+  source honours it; the first assertion matched another recipe whose name contained the same words — the check now asserts by id.
+- A row's remove button was 43 px wide: `.btn.btn-touch { min-width: 44px }` added (every button of the application gains it).
+- `tests/phase2`'s placeholder checks named Recipes and Modifiers; moved to Counts (slice 6), Count sheets and Projected stock (slice 8), and the
+  vhost's `/recipes/3/cost` expectation (404 "not built") now reads 404 by the record for `/recipes/999999/cost` and `/recipes/999999/versions/1`.
+- Two proofs on one host collide on more than ports: `tests/setup_dev.sh` reset the three scratch roles' passwords on every run (fixed, above), and
+  `tests/phase2/servers.sh stop` kills any `php -S` on 9301–9303 — a second phase 2 run takes the first one's servers down mid-run (left to the
+  lead; slice 1 and slice 2 agreed a window by message).

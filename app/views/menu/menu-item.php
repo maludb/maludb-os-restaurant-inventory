@@ -1,0 +1,31 @@
+<?php /** One menu item (screen menu-item-view). Data: full, siteId, sites, seesCost, mayWrite, back, notice */ $m = $full['menu_item']; $id = (int) $m['menu_item_id']; $here = here_url(); ?>
+<?= view('shared/header.php', ['id' => 'menu-item-view', 'title' => $m['plu'] . ' · ' . $m['name'], 'crumbs' => [['Home', '/'], ['Menu items', '/menu/'], [$m['name'], null]], 'back' => $back, 'action' => $mayWrite ? hx_link(with_back('/menu/' . $id . '/map', $here), '<i class="feather-link me-1"></i>Map', 'btn btn-primary btn-touch', 'id="menu-item-view-map"') : '']) ?>
+<div class="main-content" id="menu-item-view-content">
+    <?= view('shared/notice.php', ['notice' => $notice]) ?>
+    <div class="card mb-3" id="menu-item-view-header"><div class="card-body">
+        <div class="chip-row mb-1"><span class="badge bg-soft-light text-dark border"><?= e($m['source_name'] ?? 'typed') ?></span><?php if ($m['category']): ?><span class="badge bg-soft-light text-dark border"><?= e($m['category']) ?></span><?php endif; ?><?php if ($m['no_depletion']): ?><span class="badge bg-soft-secondary text-secondary" id="menu-item-view-no-depletion">sells nothing from stock</span><?php endif; ?><?php if (!$m['active']): ?><span class="badge bg-soft-dark text-dark">archived</span><?php endif; ?></div>
+        <div class="fs-12" id="menu-item-view-recipe"><?php if ($m['recipe_id'] !== null): ?>Recipe: <?= hx_link('/recipes/' . (int) $m['recipe_id'], e($m['recipe_name'])) ?><?= (float) $m['portions'] !== 1.0 ? ' × ' . e(ri_fmt($m['portions'], 2)) . ' portions' : '' ?><?php if ($m['mapped_by_name']): ?> <span class="text-muted">— mapped by <?= e($m['mapped_by_name']) ?> on <?= e(format_date(substr((string) $m['mapped_at'], 0, 10))) ?></span><?php endif; ?><?php elseif (!$m['no_depletion']): ?><span class="text-warning fw-semibold">Unmapped — its sales deplete nothing.</span><?php endif; ?></div>
+        <div class="fs-12 mt-1" id="menu-item-view-price">Price at this site: <strong><?= $m['price'] !== null ? e(ri_money($m['price'])) : '—' ?></strong></div>
+        <?php if ($mayWrite): ?><div class="d-flex flex-wrap gap-2 mt-2">
+            <form method="post" action="/menu/price.php" hx-post="/menu/price.php" hx-target="#flash" class="d-flex gap-1" id="price-form"><?= csrf_field() ?><input type="hidden" name="menu_item" value="<?= $id ?>"><div class="input-group" style="width: 11rem"><span class="input-group-text">$</span><input type="number" step="0.01" min="0" name="price" class="form-control btn-touch" placeholder="price" id="price-form-field-price" required></div><select name="site" class="form-select btn-touch" style="width: 11rem" id="price-form-field-site" aria-label="Site"><?php foreach ($sites as $s): ?><option value="<?= (int) $s['scope_id'] ?>" <?= (int) $s['scope_id'] === $siteId ? 'selected' : '' ?>><?= e($s['name']) ?></option><?php endforeach; ?><option value="">every site</option></select><button type="submit" class="btn btn-light-brand btn-touch" id="price-form-btn">Set price</button></form>
+            <form method="post" action="/menu/archive.php" hx-post="/menu/archive.php" hx-target="#flash" hx-confirm="<?= $m['active'] ? 'Archive' : 'Restore' ?> <?= e($m['name']) ?>?" id="menu-archive-form"><?= csrf_field() ?><input type="hidden" name="menu_item" value="<?= $id ?>"><input type="hidden" name="archived" value="<?= $m['active'] ? 'yes' : 'no' ?>"><button type="submit" class="btn btn-light btn-touch" id="menu-item-view-archive"><?= $m['active'] ? 'Archive' : 'Restore' ?></button></form>
+        </div><?php endif; ?>
+    </div></div>
+    <div class="row g-3">
+        <div class="col-lg-6">
+            <div class="card mb-3" id="menu-item-prices"><div class="card-header"><h5 class="card-title mb-0">Prices</h5></div><div class="card-body p-0"><table class="table table-sm mb-0 fs-12"><tbody>
+                <tr><td>Default (every site)</td><td class="text-end"><?= $m['sale_price'] !== null ? e(ri_money($m['sale_price'])) : '—' ?></td></tr>
+                <?php foreach ($full['prices'] as $p): ?><tr id="menu-item-price-<?= (int) $p['scope_id'] ?>-<?= e($p['effective_from']) ?>"><td><?= e($p['site']) ?> from <?= e(format_date($p['effective_from'])) ?></td><td class="text-end"><?= e(ri_money($p['price'])) ?></td></tr><?php endforeach; ?>
+            </tbody></table></div></div>
+            <div class="card mb-3" id="menu-item-cost"><div class="card-header"><h5 class="card-title mb-0">Cost</h5></div><div class="card-body fs-12">
+                <?php if (!$seesCost): ?><span class="text-muted" title="cost withheld">Cost withheld.</span><?php elseif ($full['cost'] === null): ?><span class="text-muted">No recipe in force, so no cost.</span><?php else: ?>
+                    <div>Plate cost today: <strong id="menu-item-cost-plate"><?= e(ri_money($full['cost']['plate_cost'], '$', 4)) ?></strong><?php if ($full['cost']['food_cost_pct'] !== null): ?> · food cost <strong id="menu-item-cost-pct"><?= e(ri_fmt($full['cost']['food_cost_pct'], 1)) ?> %</strong><?php endif; ?></div>
+                    <ul class="mb-0 mt-1 text-muted"><?php foreach ($full['cost']['lines'] as $l): ?><li><?= e($l['ingredient_name'] ?? $l['sub_recipe_name']) ?> — <?= e($l['qty_display']) ?></li><?php endforeach; ?></ul>
+                <?php endif; ?></div></div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card mb-3" id="menu-item-modifiers"><div class="card-header"><h5 class="card-title mb-0">Modifiers</h5></div><div class="card-body p-0"><?= view('menu/partials/modifiers-tab.php', ['mods' => $full['modifiers'], 'mayWrite' => $mayWrite]) ?></div></div>
+            <div class="card mb-3" id="menu-item-sales"><div class="card-header"><h5 class="card-title mb-0">Sales by week</h5></div><div class="card-body p-0"><?php if ($full['sales_by_week'] === []): ?><div class="p-3 text-muted fs-12">No sales yet — the POS import is slice 5.</div><?php else: ?><table class="table table-sm mb-0 fs-12"><tbody><?php foreach ($full['sales_by_week'] as $w): ?><tr><td>Week of <?= e(format_date($w['week'])) ?></td><td class="text-end"><?= e(ri_fmt($w['qty'], 0)) ?> sold</td><td class="text-end"><?= e(ri_money($w['net'])) ?></td></tr><?php endforeach; ?></tbody></table><?php endif; ?></div></div>
+        </div>
+    </div>
+</div>

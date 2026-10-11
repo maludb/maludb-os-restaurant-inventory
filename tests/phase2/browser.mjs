@@ -184,12 +184,12 @@ const smallControls = (page, scope) => page.evaluate((s) => [...document.querySe
   ok(bar.x >= nav.width - 1 && bar.y + bar.height >= 780, `the command bar sits at the bottom, right of the sidebar (x ${Math.round(bar.x)}, sidebar ${Math.round(nav.width)})`);
   ok((await page.locator('#header-role-badge').innerText()).includes('Super-admin') && (await page.locator('#site-switcher').count()) === 1, 'the badge reads Super-admin; the switcher is there (two sites)');
   await page.screenshot({ path: `${SHOTS}/desktop-home.png` });
-  await page.click('#nav-recipe-list .nxl-link');
-  await page.waitForURL(BASE + '/recipes/');
-  await page.waitForSelector('#recipe-list-coming');
-  ok((await page.title()).startsWith('Recipes'), 'HTMX navigation: /recipes/ pushed, title "' + (await page.title()) + '"');
-  ok(await page.evaluate(() => document.querySelector('#nav-recipe-list .nxl-link').classList.contains('active') && !document.querySelector('#nav-home .nxl-link').classList.contains('active')), 'the sidebar highlights the screen, not Home');
-  ok((await page.locator('#recipe-list-coming').innerText()).includes('slice 2 builds this screen'), 'the placeholder names slice 2');
+  await page.click('#nav-count-list .nxl-link');
+  await page.waitForURL(BASE + '/counts/');
+  await page.waitForSelector('#count-list-coming');
+  ok((await page.title()).startsWith('Counts'), 'HTMX navigation: /counts/ pushed, title "' + (await page.title()) + '"');
+  ok(await page.evaluate(() => document.querySelector('#nav-count-list .nxl-link').classList.contains('active') && !document.querySelector('#nav-home .nxl-link').classList.contains('active')), 'the sidebar highlights the screen, not Home');
+  ok((await page.locator('#count-list-coming').innerText()).includes('slice 6 builds this screen'), 'the placeholder names slice 6 (Recipes was the example until slice 2 built it)');
   await page.screenshot({ path: `${SHOTS}/desktop-placeholder.png` });
   await page.goBack();
   await page.waitForURL(BASE + '/');
@@ -238,7 +238,7 @@ const smallControls = (page, scope) => page.evaluate((s) => [...document.querySe
   await page.fill('#assistant-input', 'open the ingredients');
   await page.click('#assistant-send');
   await page.waitForURL(BASE + '/ingredients/');
-  await page.waitForSelector('#ingredient-list-coming');
+  await page.waitForSelector('#ingredient-list-filters');   // slice 1 built the list
   ok(page.url() === BASE + '/ingredients/', 'a navigate answer from the command bar opened /ingredients/');
   kernelState((s) => { delete s.chat; return s; });
   const kpid = Number(fs.readFileSync(STATE_DIR + '/kernel.pid', 'utf8').trim());
