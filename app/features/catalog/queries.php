@@ -520,7 +520,7 @@ function record_view(string $type): ?array
         'ingredient' => ['mcp_ingredients', 'ingredient_id'], 'supplier' => ['mcp_suppliers', 'supplier_id'], 'supplier_item' => ['mcp_supplier_items', 'supplier_item_id'], 'storage_area', 'area' => ['mcp_storage_areas', 'storage_area_id'],
         'recipe' => ['mcp_recipes', 'recipe_id'], 'menu_item' => ['mcp_menu_items', 'menu_item_id'], 'goods_receipt', 'receipt' => ['mcp_goods_receipts', 'goods_receipt_id'], 'transfer' => ['mcp_inventory_transfers', 'transfer_id'],
         'adjustment' => ['mcp_inventory_adjustments', 'adjustment_id'], 'production_batch', 'batch' => ['mcp_production_batches', 'production_batch_id'], 'waste_log', 'waste' => ['mcp_waste_logs', 'waste_log_id'],
-        'purchase_order' => ['mcp_purchase_orders', 'purchase_order_id'], 'invoice' => ['mcp_supplier_invoices', 'invoice_id'], 'inventory_count', 'count' => ['mcp_inventory_counts', 'count_id'], 'source' => ['mcp_sources', 'source_id'],
+        'purchase_order' => ['mcp_purchase_orders', 'purchase_order_id'], 'invoice', 'supplier_invoice' => ['mcp_supplier_invoices', 'invoice_id'], 'inventory_count', 'count' => ['mcp_inventory_counts', 'count_id'], 'source' => ['mcp_sources', 'source_id'],
         default => null,
     };
 }

@@ -1,0 +1,167 @@
+<?php
+/** Proof: supplier invoices and the three-way match — entering against a receipt, the match, settling (price history, the correction, the credit), the walls (purchasing.md "Proof: Invoices and the match"). */
+require __DIR__ . '/lib.php';
+$w = purchasing_world();
+$dana = person(30); $marco = person(27); $bea = person(28); $ann = person(29);
+$PNG = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==');
+
+echo "1. Marco enters INV-5501 against the receipt\n";
+$g1 = stock_in($dana, $w['dry'], [['supplier_item' => $w['si_flour'], 'qty' => 2, 'unit' => 'bag50', 'unit_cost' => 30]], $w['sysco']);
+$rl1 = (int) one('SELECT id FROM goods_receipt_lines WHERE goods_receipt_id = :g', ['g' => $g1]);
+$recAt = one('SELECT received_at FROM goods_receipts WHERE id = :g', ['g' => $g1]);
+$a = page($marco, '/invoices/new?receipt=' . $g1);
+ok($a['code'] === 200 && has($a, 'id="invoice-form"') && has($a, 'id="invoice-add-receipt-note"') && has($a, 'value="' . $g1 . '" selected') && has($a, 'data-screen="invoice-add"'), 'Enter an invoice from a receipt: the form, the receipt chosen, the note about its lines');
+ok(has($a, 'id="invoice-form-field-supplier"') && has($a, 'value="' . $w['sysco'] . '"'), '…and the supplier prefilled from the receipt');
+$r = post($marco, '/invoices/save.php', ['supplier' => $w['sysco'], 'invoice_no' => 'INV-5501', 'invoice_date' => site_day(0), 'receipt' => $g1, 'tax' => '0', 'prefill' => 'yes']);
+$inv = last_id('supplier_invoices');
+$i = q('SELECT * FROM supplier_invoices WHERE id = :i', ['i' => $inv])[0];
+$ls = q('SELECT * FROM supplier_invoice_lines WHERE invoice_id = :i ORDER BY line_no', ['i' => $inv]);
+ok($r['code'] === 302 && $r['location'] === "/invoices/$inv/edit?notice=created" && $i['status'] === 'draft' && $i['kind'] === 'invoice' && (int) $i['goods_receipt_id'] === $g1 && (int) $i['created_by'] === 27 && preg_match('/^INV-\d{5}$/', $i['number']), 'created as a draft, ours numbered INV-nnnnn, theirs INV-5501, billing the receipt');
+ok(count($ls) === 1 && (int) $ls[0]['receipt_line_id'] === $rl1 && $ls[0]['unit_code'] === 'bag50' && near($ls[0]['qty'], 2) && near($ls[0]['unit_price'], 30) && (int) $ls[0]['supplier_item_id'] === $w['si_flour'] && near($i['total'], 60), 'the receipt\'s line is the invoice\'s line, at the price received ($30 a bag, 2 bags, $60.00 by the trigger)');
+$e = page($marco, "/invoices/$inv/edit");
+ok($e['code'] === 200 && has($e, 'id="invoice-lines-table"') && has($e, 'id="invoice-line-form"') && has($e, 'data-screen="invoice-edit"') && has($e, 'data-narrow-receipt-lines'), 'the edit page: header form, the lines, the line form with its receipt-line select');
+$r = post($marco, '/invoices/line.php', ['invoice_line' => $ls[0]['id'], 'unit_price' => '33']);
+$l1 = q('SELECT * FROM supplier_invoice_lines WHERE id = :i', ['i' => $ls[0]['id']])[0];
+ok($r['code'] === 302 && near($l1['unit_price'], 33) && near($l1['line_total'], 66) && $l1['unit_code'] === 'bag50' && near(q('SELECT total FROM supplier_invoices WHERE id = :i', ['i' => $inv])[0]['total'], 66) && $l1['match_state'] === 'unmatched', 'corrected to $33 against the paper: the line total $66.00 and the invoice total follow; the unit and receipt line stayed');
+
+echo "2. Match — the price differs\n";
+$n0 = last_note_id();
+$r = post($marco, '/invoices/match.php', ['invoice' => $inv]);
+$i = q('SELECT * FROM supplier_invoices WHERE id = :i', ['i' => $inv])[0];
+$l1 = q('SELECT * FROM supplier_invoice_lines WHERE id = :i', ['i' => $ls[0]['id']])[0];
+ok($r['code'] === 302 && $r['location'] === "/invoices/$inv?notice=disputed" && $i['status'] === 'disputed' && $l1['match_state'] === 'price_diff' && near($l1['diff_value'], 6.00, 0.001) && near($l1['diff_qty'], 0, 0.01), 'Match: disputed, the line price_diff with diff_value $6.00 and no quantity difference');
+ok(count(notes_for(27, 'invoice_dispute', $n0)) === 1, 'the invoice\'s creator is told: invoice_dispute');
+$v = page($marco, "/invoices/$inv");
+ok(has($v, 'id="invoice-line-match-' . $l1['id'] . '"') && has($v, 'price differs') && has($v, '+$6.00') && has($v, 'came 2 bag50 @ $30.0000') && has($v, 'id="invoice-status-chip"') && has($v, 'data-entity="supplier_invoice"'), 'the invoice page: the match chip in words, the difference in money, what came and at what price');
+ok(has($v, 'id="invoice-settle-btn"') && has($v, 'Settle INV-5501: the invoice becomes the truth — 1 price difference writes cost history, 0 quantity corrections?') && has($v, 'id="invoice-match-btn"') && has($v, 'id="invoice-void-btn"') && has($v, 'id="invoice-edit-btn"'), 'Match, Settle (with its confirm sentence counting the differences), Void and Edit are offered');
+ok(has(page($marco, '/invoices/'), 'id="invoice-row-' . $inv . '"') && has(page($marco, '/invoices/?status=disputed'), 'id="invoice-row-' . $inv . '"') && !has(page($marco, '/invoices/?status=settled'), 'id="invoice-row-' . $inv . '"'), 'the list shows it, and filters by status');
+
+echo "3. Settle — the invoice becomes the truth\n";
+$nAlert0 = (int) one('SELECT count(*) FROM price_alerts');
+$r = post($marco, '/purchasing/alerts/threshold.php', ['pct' => '10']);      // the default; db/026 reads the move from the quoted prices — $30 → $33 a bag is exactly 10 %
+$r = post($marco, '/invoices/settle.php', ['invoice' => $inv, 'note' => 'Sam agreed the new price']);
+$i = q('SELECT * FROM supplier_invoices WHERE id = :i', ['i' => $inv])[0];
+ok($r['code'] === 302 && $i['status'] === 'settled' && (int) $i['settled_by'] === 27 && $i['settled_at'] !== null && q('SELECT match_state, settle_note FROM supplier_invoice_lines WHERE id = :i', ['i' => $ls[0]['id']])[0] === ['match_state' => 'settled', 'settle_note' => 'Sam agreed the new price'], 'settled by Marco, the line settled with the note');
+$ph = q("SELECT * FROM price_history WHERE reference_kind = 'invoice' AND reference_id = :i", ['i' => $inv])[0] ?? [];
+ok(($ph['source_kind'] ?? '') === 'invoice' && $ph['changed_at'] === $recAt && $ph['per_unit_code'] === 'bag50' && near($ph['per_unit_price'], 33), 'price history: source invoice, dated the RECEIPT\'s moment, 33 per bag50');
+ok(near(one('SELECT last_price FROM supplier_items WHERE id = :s', ['s' => $w['si_flour']]), 33), 'the supplier item\'s last price is now 33');
+$al = q('SELECT * FROM price_alerts WHERE price_history_id = :h', ['h' => $ph['id'] ?? 0])[0] ?? [];
+ok($al !== [] && near($al['pct'], 10, 0.001) && (int) one('SELECT count(*) FROM price_alerts') === $nAlert0 + 1, 'a price alert row is raised for the 10 % move at the default 10 % threshold: exactly 10.00 % from the quoted prices (db/026)');
+$r = post($marco, '/invoices/match.php', ['invoice' => $inv]);
+ok($r['code'] === 422 && says($r, 'is settled'), 'Match on a settled invoice → 422 in the function\'s words');
+$r = post($marco, '/invoices/void.php', ['invoice' => $inv]);
+ok($r['code'] === 422 && says($r, 'settled — enter a credit note instead'), 'Void on a settled invoice → 422: enter a credit note');
+$r = post($marco, '/invoices/line.php', ['invoice_line' => $ls[0]['id'], 'unit_price' => '1']);
+ok($r['code'] === 422 && says($r, 'only a draft or a disputed'), 'a settled invoice\'s line does not change');
+ok(page($marco, "/invoices/$inv/edit")['code'] === 422, '…nor does its edit page open');
+$r = post($marco, '/invoices/settle.php', ['invoice' => $inv]);
+ok($r['code'] === 422, 'settling twice → 422');
+$v = page($marco, "/invoices/$inv");
+ok(!has($v, 'id="invoice-actions"') && has($v, 'id="invoice-settled"'), 'a settled invoice offers no action and says who settled it');
+
+echo "4. A quantity difference, then a credit\n";
+$g2 = stock_in($dana, $w['dry'], [['supplier_item' => $w['si_flour'], 'qty' => 2, 'unit' => 'bag50', 'unit_cost' => 30]], $w['sysco']);
+$bal0 = (float) on_hand($w['flour']);
+post($marco, '/invoices/save.php', ['supplier' => $w['sysco'], 'invoice_no' => 'INV-5502', 'invoice_date' => site_day(0), 'receipt' => $g2, 'tax' => '6.60', 'prefill' => 'yes']);
+$inv2 = last_id('supplier_invoices');
+$l2 = q('SELECT * FROM supplier_invoice_lines WHERE invoice_id = :i', ['i' => $inv2])[0];
+ok(near(q('SELECT total FROM supplier_invoices WHERE id = :i', ['i' => $inv2])[0]['total'], 66.60), 'tax $6.60 on $60.00 of lines: the total is $66.60 (total = subtotal + tax, the trigger)');
+post($marco, '/invoices/line.php', ['invoice_line' => $l2['id'], 'qty' => '3']);
+post($marco, '/invoices/match.php', ['invoice' => $inv2]);
+$l2 = q('SELECT * FROM supplier_invoice_lines WHERE id = :i', ['i' => $l2['id']])[0];
+ok($l2['match_state'] === 'qty_diff' && near($l2['diff_qty'], 22679.6185, 0.01) && near($l2['diff_value'], 0), 'three bags invoiced, two received: qty_diff by one bag (22 679.62 g), price ok');
+$v = page($marco, "/invoices/$inv2");
+ok(has($v, 'quantity differs') && has($v, '+1 bag50') && has($v, '0 price differences write cost history, 1 quantity correction?'), 'the page shows +1 bag50 and the confirm counts one quantity correction');
+$r = post($marco, '/invoices/settle.php', ['invoice' => $inv2]);
+$tx = q("SELECT * FROM inventory_transactions WHERE reference_kind = 'invoice' AND reference_id = :i", ['i' => $inv2]);
+ok($r['code'] === 302 && count($tx) === 1 && $tx[0]['txn_type'] === 'adjustment' && near($tx[0]['qty_base'], 22679.6185, 0.01) && near($tx[0]['unit_cost_per_base'], 30 / 22679.6185, 0.000001), 'Settle: an adjustment of +1 bag at the invoice\'s cost');
+$rc = q('SELECT code FROM reason_codes WHERE id = :r', ['r' => $tx[0]['reason_code_id']])[0]['code'] ?? '';
+ok($rc === 'data_entry' && $tx[0]['business_date'] === q('SELECT received_on FROM goods_receipts WHERE id = :g', ['g' => $g2])[0]['received_on'], '…reason data_entry, dated the receipt\'s day');
+ok(near(on_hand($w['flour']) - $bal0, 22679.6185, 0.01), 'the shelf has the extra bag');
+$r = post($marco, '/invoices/save.php', ['supplier' => $w['sysco'], 'invoice_no' => 'CR-5502', 'kind' => 'credit', 'invoice_date' => site_day(0), 'receipt' => $g2, 'prefill' => 'yes', 'notes' => 'Credits INV-5502, one bag short']);
+$cr = last_id('supplier_invoices');
+$lc = q('SELECT * FROM supplier_invoice_lines WHERE invoice_id = :i', ['i' => $cr])[0];
+post($marco, '/invoices/line.php', ['invoice_line' => $lc['id'], 'qty' => '1']);
+post($marco, '/invoices/match.php', ['invoice' => $cr]);
+post($marco, '/invoices/settle.php', ['invoice' => $cr]);
+$tx2 = q("SELECT * FROM inventory_transactions WHERE reference_kind = 'invoice' AND reference_id = :i", ['i' => $cr]);
+ok($r['code'] === 302 && q('SELECT kind, status FROM supplier_invoices WHERE id = :i', ['i' => $cr])[0] === ['kind' => 'credit', 'status' => 'settled'] && count($tx2) === 1 && (float) $tx2[0]['qty_base'] < 0, 'a credit note settles the opposite way: a negative adjustment (the bag comes back out)');
+$pv = page($marco, "/invoices/$inv2");
+ok(has($pv, 'id="invoice-pair"') && has($pv, 'CR-5502') && has(page($marco, "/invoices/$cr"), 'id="invoice-pair"') && has(page($marco, "/invoices/$cr"), 'INV-5502'), 'the credit note and the invoice it names link to each other');
+ok(has(page($marco, '/invoices/?kind=credit'), 'id="invoice-row-' . $cr . '"') && !has(page($marco, '/invoices/?kind=credit'), 'id="invoice-row-' . $inv2 . '"'), 'the list filters by kind');
+
+echo "5. Unordered, duplicates, voids\n";
+$r = post($marco, '/invoices/save.php', ['supplier' => $w['sysco'], 'invoice_no' => 'INV-5503', 'invoice_date' => site_day(0)]);
+$inv3 = last_id('supplier_invoices');
+ok($r['code'] === 302 && count(q('SELECT 1 FROM supplier_invoice_lines WHERE invoice_id = :i', ['i' => $inv3])) === 0, 'an invoice with no receipt and no lines is a header (no lines prefilled)');
+$r = post($marco, '/invoices/line.php', ['invoice' => $inv3, 'description' => 'Delivery fee', 'qty' => '1', 'unit' => 'each', 'unit_price' => '15']);
+$lf = q('SELECT * FROM supplier_invoice_lines WHERE invoice_id = :i', ['i' => $inv3])[0] ?? [];
+ok($r['code'] === 302 && ($lf['description'] ?? '') === 'Delivery fee' && $lf['ingredient_id'] === null && near($lf['line_total'], 15), 'a line with a description only (no item, no ingredient)');
+post($marco, '/invoices/match.php', ['invoice' => $inv3]);
+ok(q('SELECT match_state FROM supplier_invoice_lines WHERE invoice_id = :i', ['i' => $inv3])[0]['match_state'] === 'unordered' && one('SELECT status FROM supplier_invoices WHERE id = :i', ['i' => $inv3]) === 'disputed', 'matched: the line has no receipt line and no supplier item → unordered, the invoice disputed');
+$r = post($marco, '/invoices/save.php', ['supplier' => $w['sysco'], 'invoice_no' => 'INV-5501', 'invoice_date' => site_day(0)]);
+ok($r['code'] === 422 && says($r, 'SMOKE Sysco already has an invoice INV-5501'), 'a duplicate invoice number → "Sysco already has an invoice INV-5501"');
+$r = post($marco, '/invoices/save.php', ['supplier' => $w['sysco'], 'invoice_no' => 'INV-5501', 'kind' => 'credit', 'invoice_date' => site_day(0)]);
+ok($r['code'] === 302, 'the same number as a credit note is another document');
+$r = post($marco, '/invoices/save.php', ['invoice' => $inv3, 'invoice_no' => 'INV-5501']);
+ok($r['code'] === 422 && says($r, 'already has an invoice'), 'renaming one onto an existing number is refused too');
+$r = post($marco, '/invoices/save.php', ['invoice' => $inv3, 'notes' => 'Left on the dock']);
+ok($r['code'] === 302 && one('SELECT notes FROM supplier_invoices WHERE id = :i', ['i' => $inv3]) === 'Left on the dock', 'a draft\'s header changes (invoice_update)');
+$r = post($marco, '/invoices/void.php', ['invoice' => $inv3, 'reason' => 'entered twice']);
+$v3 = q('SELECT status, notes FROM supplier_invoices WHERE id = :i', ['i' => $inv3])[0];
+ok($r['code'] === 302 && $r['location'] === '/invoices/?notice=voided' && $v3['status'] === 'void' && str_contains((string) $v3['notes'], 'entered twice'), 'Void: the invoice is void, the reason kept in its notes');
+ok(post($marco, '/invoices/void.php', ['invoice' => $inv3])['code'] === 422 && post($marco, '/invoices/match.php', ['invoice' => $inv3])['code'] === 422, 'a void invoice is not voided or matched again');
+$gd = last_id('goods_receipts') + 0;
+post($dana, '/receipts/save.php', ['area' => $w['dry'], 'supplier' => $w['sysco']]);
+$draftReceipt = last_id('goods_receipts');
+$r = post($marco, '/invoices/save.php', ['supplier' => $w['sysco'], 'invoice_no' => 'INV-5504', 'invoice_date' => site_day(0), 'receipt' => $draftReceipt]);
+ok($r['code'] === 422 && says($r, 'bills a posted receipt'), 'an invoice cannot bill a draft receipt');
+$r = post($marco, '/invoices/save.php', ['supplier' => $w['produce'], 'invoice_no' => 'INV-5505', 'invoice_date' => site_day(0), 'receipt' => $g1]);
+ok($r['code'] === 422 && says($r, 'not this invoice'), "or another supplier's receipt");
+$r = post($marco, '/invoices/save.php', ['supplier' => $w['sysco'], 'invoice_no' => 'INV-5506', 'invoice_date' => site_day(0), 'purchase_order' => (int) one("SELECT id FROM purchase_orders WHERE status = 'draft' ORDER BY id LIMIT 1")]);
+ok($r['code'] === 422 && says($r, 'one that was sent'), 'nor a draft purchase order');
+$r = post($marco, '/invoices/save.php', ['supplier' => $w['sysco'], 'invoice_no' => '', 'invoice_date' => '']);
+ok($r['code'] === 422, 'no number and no date → 422');
+$r = post($marco, '/invoices/line.php', ['invoice' => $inv, 'ingredient' => $w['flour'], 'qty' => '1', 'unit' => 'xyz', 'unit_price' => '1']);
+ok($r['code'] === 422, 'a unit the ingredient cannot convert → 422 (and a settled invoice would say so first)');
+$open = last_id('supplier_invoices');
+post($marco, '/invoices/save.php', ['supplier' => $w['sysco'], 'invoice_no' => 'INV-5507', 'invoice_date' => site_day(0)]);
+$inv7 = last_id('supplier_invoices');
+$r = post($marco, '/invoices/line.php', ['invoice' => $inv7, 'ingredient' => $w['flour'], 'qty' => '1', 'unit' => 'xyz', 'unit_price' => '1']);
+ok($r['code'] === 422, 'on a draft: an unconvertible unit → the database\'s refusal on the unit');
+$r = post($marco, '/invoices/line.php', ['invoice' => $inv7, 'ingredient' => $w['egg'], 'qty' => '1', 'unit' => 'case', 'unit_price' => '54', 'receipt_line' => $rl1]);
+ok($r['code'] === 422 && says($r, 'another ingredient'), 'a receipt line of another ingredient → 422');
+$r = post($marco, '/invoices/line.php', ['invoice' => $inv7, 'supplier_item' => $w['si_lime'], 'qty' => '1', 'unit_price' => '38']);
+ok($r['code'] === 422 && says($r, "Produce Co's"), "a supplier item of another supplier on the invoice → 422");
+
+echo "6. The paper\n";
+$tmp = tempnam(sys_get_temp_dir(), 'inv') . '.png'; file_put_contents($tmp, $PNG);
+$r = post_file($marco, '/invoices/save.php', ['supplier' => $w['sysco'], 'invoice_no' => 'INV-5508', 'invoice_date' => site_day(0)], 'file', $tmp, 'image/png');
+$inv8 = last_id('supplier_invoices');
+$att = (int) one('SELECT attachment_id FROM supplier_invoices WHERE id = :i', ['i' => $inv8]);
+ok($r['code'] === 302 && $att > 0 && one('SELECT record_type FROM attachments WHERE id = :a', ['a' => $att]) === 'supplier_invoice', 'a file with the invoice is stored as an attachment on it');
+$v = page($marco, "/invoices/$inv8");
+ok(has($v, 'id="invoice-file"') && has($v, '/files/' . $att) && has($v, 'target="_blank"') && page($marco, '/files/' . $att)['code'] === 200, 'the invoice page links it, opening in a new tab; the gated door serves it');
+$txt = tempnam(sys_get_temp_dir(), 'inv') . '.exe'; file_put_contents($txt, 'MZ');
+$r = post_file($marco, '/invoices/save.php', ['supplier' => $w['sysco'], 'invoice_no' => 'INV-5509', 'invoice_date' => site_day(0)], 'file', $txt, 'application/octet-stream');
+ok($r['code'] === 422, 'a file that is not a photo or a PDF is refused');
+
+echo "7. Who may\n";
+foreach (['save.php' => ['supplier' => $w['sysco'], 'invoice_no' => 'X1', 'invoice_date' => site_day(0)], 'match.php' => ['invoice' => $inv7], 'settle.php' => ['invoice' => $inv7], 'void.php' => ['invoice' => $inv7], 'line.php' => ['invoice' => $inv7, 'qty' => 1, 'unit_price' => 1, 'description' => 'x', 'unit' => 'each']] as $f => $form) {
+    $r = post($dana, "/invoices/$f", $form);
+    ok($r['code'] === 403 && says($r, 'does not let you'), "Dana (Chef, no invoices.write) on $f → 403 in words");
+}
+ok(post($bea, '/invoices/match.php', ['invoice' => $inv7])['code'] === 403 && page($dana, '/invoices/new')['code'] === 403 && page($dana, "/invoices/$inv7/edit")['code'] === 403, 'Bea may not match; Dana may not open the entry or edit pages');
+$dl = page($dana, '/invoices/');
+ok($dl['code'] === 200 && has($dl, 'id="invoice-row-' . $inv . '"') && !has($dl, 'id="invoice-list-new-btn"'), 'Dana (sees cost) reads the list and has no Enter button');
+$dv = page($dana, "/invoices/$inv");
+ok($dv['code'] === 200 && !has($dv, 'id="invoice-actions"') && has($dv, 'id="invoice-lines-table"'), '…and reads an invoice, with no actions');
+
+echo "8. Log\n";
+foreach (['invoice.create', 'invoice.update', 'invoice.line_set', 'invoice.match', 'invoice.settle', 'invoice.void'] as $a) {
+    $row = activity($a, 0)[0] ?? null;
+    ok($row !== null && (int) $row['scope_id'] === 101 && $row['source'] === 'web', "$a is logged with the site");
+}
+$st = json_decode((string) q("SELECT after FROM activity_log WHERE action = 'invoice.settle' AND entity_id = :i", ['i' => $inv])[0]['after'], true);
+ok(($st['status'] ?? '') === 'settled' && (int) ($st['price_differences'] ?? 0) === 1 && ($st['note'] ?? '') === 'Sam agreed the new price', 'invoice.settle logs the counts and the note');
+finish();

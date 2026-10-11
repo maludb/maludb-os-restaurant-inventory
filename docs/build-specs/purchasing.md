@@ -213,3 +213,75 @@ Purchasing agent; `INV_WORKER_NOW`-style clock moves are not needed (dates are r
 
 ## Open questions
 None.
+
+## Built and proven
+
+Built 2026-10-11 by a Sonnet 5.5 worker from this spec, in the working tree beside the planning model's commits (nothing committed or pushed by the worker). All 11 screens and
+21 actions of this spec are built (the registry reads 83 of 119 screens and 106 of 146 actions built in all); the two worker passes `price_alerts` and `link_expiry` are real.
+
+**Proof:** `tests/phase3/slice4/run.sh` runs on the scratch database `ri_dev_s4`, with this slice's port block: the app on :9325, the fake kernel :9326, the fake MaluDB +
+MaluMail :9327 and the internal vhost :9328. **452 checks pass under php -S and 452 under a user-level Apache rendering `deploy/apache-restaurant_inventory.conf`.**
+
+| File | Checks | What it proves |
+|---|---|---|
+| `orders.php` | 50 | drafting from the guide, the lines in the unit the supplier reads, the header, the refusals in words, who may draft, the log |
+| `send.php` | 48 | send by email (the mail carries the link and no cost), mark placed, the refusals, a MaluMail failure, the supplier message, the registry's approval categories |
+| `door.php` | 47 | `/s/{token}`: no session, no cost, the three answers, the signed form token, rotation and expiry, a cancelled order's read-only door |
+| `receiving.php` | 45 | the supplier's answers by phone, receiving against (partial, `ri_on_order()`), deliveries due and overdue, close short, close, cancel (with the cancellation email) |
+| `invoices.php` | 65 | entering against a receipt, the match, settle (price history on the receipt's date, last price, the alert, the quantity correction, a credit), unordered, duplicates, void, the paper, who may |
+| `alerts.php` | 32 | the list in units and percent, Seen, the default and a category's threshold, the wall |
+| `walls.php` | 37 | cost, the internal note, the site, `kitchen_sees_cost`, the arithmetic row |
+| `worker.php` | 17 | `price_alerts` (the Manager is told once with the count) and `link_expiry` |
+| `json.php` | 52 | every handler under a signed action token, `_partial`, 422 fields, the Purchasing agent and the expert, an evaluation run, the HTMX stamps, the log vocabulary, the registry counts |
+| `browser.mjs` | 56 | headless Chromium at 375 × 740 and 1280 × 800 and with JavaScript off: drafting and sending on a phone, the supplier's rep answering on theirs, the "Why this much" fold, the receipt-line select narrowing, the threshold forms, all eleven screens at both widths, the tables in full |
+| registry, approvals, claim check | 3 | |
+
+Screenshots are in `/tmp/ri-shots/slice4`. The PHP proofs are order-dependent by design (they share one scratch database; `orders` first).
+
+**Files:** `app/features/purchasing/{queries,present,handler,mail,door,worker}.php`; `app/views/{purchasing,invoices,door,emails}/`; `html/purchasing/*` (including `alerts/seen.php`,
+`alerts/threshold.php`), `html/invoices/*` (including `options.php`), `html/s.php`; `html/assets/js/purchasing-forms.js`; `app/partial_targets/purchasing.php`; `db/025_slice4_invoice_match_exact.sql`;
+`tests/phase3/slice4/*`. Changed beside them: `app/bootstrap.php` (the door defines `RI_PUBLIC_DOOR`: no session, no cookie), `app/features/stock/queries.php` (`po_for()` gained the names the
+PO screens print), `app/features/catalog/queries.php` (`record_view()` knows `supplier_invoice`, the attachments' record type), `html/assets/js/stock-forms.js` (the price field may be `unit_price`),
+`bin/worker.php` (the two passes), `bin/build_action_registry.php` (a public door's `/s/{token}` is its one file `s.php`), `tests/phase2/gates.php` (the matrix, below).
+
+**Found and fixed:**
+- **db/025 — the match compared the invoice with a six-decimal figure (schema).** `ri_invoice_match()` set the invoice's price per base unit against the receipt's STORED `cost_per_base`, which keeps six
+  decimals. Flour at $30 a 50-lb bag is $0.001323 a gram: three significant figures. Two lines at exactly the same price differed by cents (a quantity-difference invoice showed a −$0.02 price
+  difference) and the spec's own example ($33 against $30, two bags) read $5.99 not $6.00. The match now prefers the receipt line's own `unit_cost` divided by its unit's factor (the weight unit for a catch-weight
+  line) and falls back to `cost_per_base` only for a line received at the running cost. The tolerances, states and dispute are db/010's. The invoice screen shows the price the line came in at in the
+  invoice's unit from the receipt's own `unit_cost` for the same reason.
+- **The 10 % alert read 9.98 % — fixed by the planning model in review (db/026).** `price_history` keeps old and new per base to six decimals, so
+  $30 → $33 a bag read 9.98 %, under the default 10 % threshold. The worker set the proof's threshold to 9; the planning model judged it a defect
+  (a 10 % rise must trip a 10 % alert) and **db/026** reads the move from the quoted per-unit prices when both rows share a unit. The proof now
+  keeps the default 10 % and requires exactly 10.00 %.
+- **The vhost's canonical `/x/{id}/edit` goes to `form.php`**, and a file named `edit.php` would win in Apache's earlier "page of a record" rule but not in the dev router. The spec's `edit.php` files are therefore
+  `form.php` (new and edit, as the receipts' are) rendering `purchasing/form.php` or `purchasing/edit.php`.
+- **The activity log's `source` has no `door`** (db/002's list is web, assistant, mcp, cron, agent, desk, webhook, portal, api, application, system). The door's rows are source `portal` (the kit's
+  `__public_door`), `actor_member_id` NULL, with `after.source = 'door'`; `purchase_order_events.source` is `door` as the spec says.
+- **A public door needs no session**, and the kit started one (and redirected a stale cookie to the launcher). `RI_PUBLIC_DOOR` before `app/bootstrap.php` skips the session block; the proof sends a garbage `BDSID` cookie.
+- **The registry builder** could not map `/s/{token}` to `s.php` (`supplier-door` read as unbuilt); one rule added.
+- **Phase 2's gate matrix** held the placeholders' menu rights; under the 2026-10-11 rule it now says that deliveries due, invoices and price alerts READ under `ri.read` and their writing doors keep
+  their rights (`/purchasing/new`, `/invoices/new`). A refusal-in-words check moved from Dana on `/invoices/` to Dana on `/invoices/new`.
+
+**Decisions taken here (within the spec):**
+- **Who may open a screen.** `purchase-order-list`/`-view`, `deliveries-due`, `invoice-list`, `invoice-view` and `price-alert-list` open to every reader at the site (`ri.read`), cost walled per field. An
+  invoice or an alert is wholly cost: a Viewer or a Kitchen member without cost opens the list and is told so (no rows; JSON `cost_withheld`), and an invoice by its id is 404 (the view is empty). The menu keeps
+  its rights. Writes and forms: `purchasing.draft` (drafting, the supplier's answers by phone, Seen), `purchasing.send` (send, place, close, cancel, link, message), `invoices.write`, `prices.write` (thresholds).
+- **`purchase_order_send` only sends email.** `via` defaults to the supplier's order method; a supplier that takes phone or portal orders is refused "mark it placed instead". A supplier with neither order email
+  nor email is refused "has no order email — set one on the supplier or mark it placed". The general email stands in when there is no order email.
+- **The raw link is shown once**, in the sender's session (never stored, never logged — the log and the JSON carry the last four). Send, place and rotate set it; the PO page shows it once and a failed email
+  says to copy it.
+- **Cancel:** a draft and a sent order with nothing received are cancelled; the supplier is emailed when it was sent by email; a failure to send is a notice. Partial or received → "receive it or close it short".
+- **Notifications** (`po_ack`, `po_decline`, `po_date`) go to the creator and the sender, once each when they are the same person; `invoice_dispute` to the invoice's creator.
+- **The worker's `price_alerts` pass** tells the site's Manager (the site's, else the business's) once per site per pass with the count, its `record_id` the newest alert it covers; a pass that finds nothing newer says
+  nothing. **`link_expiry`** rotates out a live link past its expiry or 30 days after its order closed or was cancelled.
+- **Lines and the guide:** `purchase_order_update` also accepts `lines` (JSON) and the ticked guide rows (`guide[]`, `guide_qty[id]`) and adds them; a supplier-item given as a SKU is looked up among the PO's supplier's items.
+  An ingredient with no supplier item takes its first purchase unit when none is given.
+- **Invoices:** `invoice_create` with a receipt and no lines prefills them from the receipt (`prefill=no` starts empty); a catch-weight line is billed at its declared weight and weight unit; the PO of the receipt is
+  filled when none is named; the tax's change recomputes the total (`ri_invoice_totals()`). A changed line goes back to "not matched yet". `invoice_void` keeps the reason in the notes and the log.
+- **`/invoices/options?supplier=`** (not in the spec's file list) answers the two selects of the header form when the supplier is chosen; with JavaScript off the selects are filled when the supplier is known (a prefill, or on the edit page).
+- **The door's three POSTs** go to `/s/<token>/acknowledge|decline|date` (the vhost's existing rewrite), answer 303 back to the page, 403 without the signed token, 409 on a closed order, 422 with the sentence; a view is any request
+  that presents the token (`ri_supplier_link_resolve()` counts them); no rate limit beyond the token's 192 bits.
+- **The shared `po_for()`** (the receipt reads it too) lives in `app/features/stock/queries.php` and was extended, not duplicated.
+
+**Not done:** nothing of the spec. Out of scope as stated: the suggested order (slice 8), the home's cards (slice 9).

@@ -25,7 +25,7 @@
             var cw = form.querySelector('.stock-cw'); if (cw) { cw.classList.toggle('d-none', !d.catch_weight); }
             var tp = form.querySelector('.stock-temp'); if (tp) { tp.classList.toggle('d-none', !d.temperature); }
             var weigh = form.querySelector('.stock-weigh'); if (weigh) { weigh.classList.toggle('d-none', d.measure_class !== 'weight'); }
-            var cost = form.querySelector('input[name="unit_cost"]'); if (cost && d.unit_cost && !cost.value) { cost.value = d.unit_cost; }
+            var cost = form.querySelector('input[name="unit_cost"], input[name="unit_price"]'); if (cost && d.unit_cost && !cost.value) { cost.value = d.unit_cost; }
         });
     }
     function init(root) {

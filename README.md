@@ -7,7 +7,7 @@ actual usage, COGS by period).
 
 ## Status
 
-**Phase 2 the shell and slices 1 (the catalog), 2 (recipes, the first exemplar), 3 (the ledger) and 5 (the POS, the second exemplar) built and proven (2026-10-11); slices 4 and 6–9 with Sonnet 5.5 workers.** The action manifest (119 screens, 146 actions), the MCP tool surface,
+**Phase 2 the shell and slices 1 (the catalog), 2 (recipes, the first exemplar), 3 (the ledger), 4 (purchasing and the supplier's door, by a Sonnet 5.5 worker, 452 checks) and 5 (the POS, the second exemplar) built and proven (2026-10-11); slices 6–9 with Sonnet 5.5 workers.** The action manifest (119 screens, 146 actions), the MCP tool surface,
 three build specs and ten slice specs, every manifest row claimed once (`tests/phase1/check_specs.sh`); db/018 carries the schema
 items the documents found. **Phase 0 complete the same day.** The design was approved by the owner the same day it was written, every recommendation
 (D1–D16, §15). The kernel's catalog row (K47) is applied. The kit is proven without a kernel (123 checks), the schema by

@@ -14,7 +14,7 @@ declare(strict_types=1);
  * clock a pass selects by; honoured only when APP_ENV is not prod. Exits 1 when a pass failed.
  *
  * PHASE 0: every pass but `key_usage_prune` is a STUB that changes nothing and answers 0 — the slice whose data it touches fills it in
- * (design §10): `price_alerts`, `link_expiry` slice 4's; `pos_pulls`, `email_intake`, `depletion_runs` slice 5's (BUILT); `forecast_pass`,
+ * (design §10): `price_alerts`, `link_expiry` slice 4's (BUILT); `pos_pulls`, `email_intake`, `depletion_runs` slice 5's (BUILT); `forecast_pass`,
  * `suggested_orders`, `watches` slice 8's; `notify_outbox`, `dispatches`, `morning_note_inputs` slice 9's. Each stub names its slice.
  * REAL from the kit: `key_usage_prune` (ri_prune_key_usage, db/005).
  */
@@ -83,10 +83,10 @@ function worker_pass_pos_pulls(PDO $pdo, int $limit, DateTimeImmutable $now): ar
 function worker_pass_email_intake(PDO $pdo, int $limit, DateTimeImmutable $now): array { require_once APP_ROOT . '/app/features/pos/worker.php'; return pos_pass_email_intake($pdo, $limit, $now); }
 /** SLICE 5 (built) — one depletion run per site per business date with new sales (ri_depletion_due() → ri_depletion_run()); a failure leaves the day due and notifies the Manager once a day. */
 function worker_pass_depletion_runs(PDO $pdo, int $limit, DateTimeImmutable $now): array { require_once APP_ROOT . '/app/features/pos/worker.php'; return pos_pass_depletion($pdo, $limit, $now); }
-/** SLICE 4 — price alerts: an invoice line whose price moved past the threshold (per category or ingredient) raises one. */
-function worker_pass_price_alerts(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['raised' => 0, 'stub' => 'slice 4']; }
-/** SLICE 4 — the supplier's secure link dies 30 days after its purchase order closes. */
-function worker_pass_link_expiry(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['expired' => 0, 'stub' => 'slice 4']; }
+/** SLICE 4 (built) — the rows are raised by the price-history trigger; this pass tells each site's Manager of the alerts raised since the last telling (one notification per site with the count, deduped by the newest alert). */
+function worker_pass_price_alerts(PDO $pdo, int $limit, DateTimeImmutable $now): array { require_once APP_ROOT . '/app/features/purchasing/worker.php'; return purchasing_pass_price_alerts($pdo, $limit, $now); }
+/** SLICE 4 (built) — a supplier's secure link dies when its expiry passes or 30 days after its purchase order closed or was cancelled: the live link row is rotated out. */
+function worker_pass_link_expiry(PDO $pdo, int $limit, DateTimeImmutable $now): array { require_once APP_ROOT . '/app/features/purchasing/worker.php'; return purchasing_pass_link_expiry($pdo, $limit, $now); }
 /** SLICE 8 — the forecast pass nightly per site (after the sales cut): the baseline and Holt-Winters per menu item, exploded to ingredient demand; accuracy scored against yesterday. */
 function worker_pass_forecast_pass(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['sites' => 0, 'stub' => 'slice 8']; }
 /** SLICE 8 — suggested orders ahead of each supplier's cut-off: one drafted PO per supplier with every step on the line; never sent. */

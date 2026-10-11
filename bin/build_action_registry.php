@@ -258,6 +258,9 @@ function screen_controller(string $url): ?string
         if (is_file(WEB_ROOT . $dir . '/view.php')) {
             return WEB_ROOT . $dir . '/view.php';
         }
+        if (count($parts) === 1 && is_file(WEB_ROOT . '/' . $parts[0] . '.php')) {
+            return WEB_ROOT . '/' . $parts[0] . '.php';         // a public door the vhost rewrites to one file: /s/{token} → s.php (the supplier's door)
+        }
         $dir = '/' . implode('/', array_filter($parts, static fn (string $p): bool => $p !== '1'));   // /recipes/{recipe}/versions/{version} → /recipes/versions/view.php (the vhost's child-record rewrite)
         return is_file(WEB_ROOT . $dir . '/view.php') ? WEB_ROOT . $dir . '/view.php' : null;
     }

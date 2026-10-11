@@ -107,7 +107,7 @@ if (PHP_SAPI !== 'cli' && wants_json()) {
     });
 }
 
-if (PHP_SAPI !== 'cli') {
+if (PHP_SAPI !== 'cli' && !defined('RI_PUBLIC_DOOR')) {      // the supplier's door (html/s.php) defines RI_PUBLIC_DOOR first: no session, no cookie, no sign-in — its token is the authority
     $isHttps = (($_SERVER['HTTPS'] ?? '') !== '' && $_SERVER['HTTPS'] !== 'off')
         || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
 

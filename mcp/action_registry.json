@@ -1,6 +1,6 @@
 {
     "generated_from": "docs/restaurant-inventory-action-manifest.md",
-    "generated_at": "2026-10-11T18:14:23+00:00",
+    "generated_at": "2026-10-11T19:02:08+00:00",
     "screens": {
         "home": {
             "screen": "home",
@@ -651,8 +651,8 @@
                 "from",
                 "to"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "purchase-order-add": {
             "screen": "purchase-order-add",
@@ -662,7 +662,7 @@
             "params": [
                 "supplier"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "purchase-order-view": {
@@ -673,7 +673,7 @@
             "params": [
                 "tab"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "purchase-order-edit": {
@@ -682,7 +682,7 @@
             "section": "Purchasing, the supplier's door, invoices and the match (slice 4)",
             "when": "a draft's header and lines: add a supplier item through the picker, quantities, costs (walled)",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "deliveries-due": {
@@ -693,8 +693,8 @@
             "params": [
                 "on"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "invoice-list": {
             "screen": "invoice-list",
@@ -707,8 +707,8 @@
                 "from",
                 "to"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "invoice-add": {
             "screen": "invoice-add",
@@ -720,7 +720,7 @@
                 "purchase_order",
                 "supplier"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "invoice-view": {
@@ -729,7 +729,7 @@
             "section": "Purchasing, the supplier's door, invoices and the match (slice 4)",
             "when": "one invoice: the lines with quantity, unit and price, each matched to a receipt line with its state (ok, quantity differs, price differs, both, unordered); **Match**, **Settle**, **Dispute**, **Void**; the credit note it pairs with",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "invoice-edit": {
@@ -738,7 +738,7 @@
             "section": "Purchasing, the supplier's door, invoices and the match (slice 4)",
             "when": "a draft's header and lines",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "price-alert-list": {
@@ -750,8 +750,8 @@
                 "seen",
                 "from"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "source-list": {
             "screen": "source-list",
@@ -1273,7 +1273,7 @@
             "section": "The supplier's door (no session; not actions)",
             "when": "their purchase order: the lines in their units, the delivery address and date, our notes; **Acknowledge** (with their reference and the delivery date), **Decline a line** (with a reason), **Set the delivery date** — three POSTs to `/s/{token}` handled by `html/s.php` (`source = door`, `member_id NULL`), each writing a `purchase_order_events` row through `ri_po_supplier_event()` and notifying the PO's creator; the token is the authority (`ri_supplier_link_resolve()`), 60 days after minting it dies; no cost target of ours, no other supplier's name",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         }
     },
@@ -4735,7 +4735,7 @@
             "who": "purchasing.draft",
             "agent": true,
             "record_id": "the purchase order",
-            "built": false
+            "built": true
         },
         "purchase_order_update": {
             "action": "purchase_order_update",
@@ -4780,7 +4780,7 @@
             "who": "purchasing.draft",
             "agent": true,
             "record_id": "the purchase order",
-            "built": false
+            "built": true
         },
         "purchase_order_line_set": {
             "action": "purchase_order_line_set",
@@ -4843,7 +4843,7 @@
             "who": "purchasing.draft",
             "agent": true,
             "record_id": "the line",
-            "built": false
+            "built": true
         },
         "purchase_order_line_remove": {
             "action": "purchase_order_line_remove",
@@ -4864,7 +4864,7 @@
             "who": "purchasing.draft",
             "agent": true,
             "record_id": "the line",
-            "built": false
+            "built": true
         },
         "purchase_order_send": {
             "action": "purchase_order_send",
@@ -4897,7 +4897,7 @@
             "who": "purchasing.send",
             "agent": true,
             "record_id": "the purchase order",
-            "built": false
+            "built": true
         },
         "purchase_order_place": {
             "action": "purchase_order_place",
@@ -4930,7 +4930,7 @@
             "who": "purchasing.send",
             "agent": true,
             "record_id": "the purchase order",
-            "built": false
+            "built": true
         },
         "purchase_order_acknowledge": {
             "action": "purchase_order_acknowledge",
@@ -4963,7 +4963,7 @@
             "who": "purchasing.draft",
             "agent": true,
             "record_id": "the purchase order",
-            "built": false
+            "built": true
         },
         "purchase_order_line_decline": {
             "action": "purchase_order_line_decline",
@@ -4990,7 +4990,7 @@
             "who": "purchasing.draft",
             "agent": true,
             "record_id": "the line",
-            "built": false
+            "built": true
         },
         "purchase_order_close": {
             "action": "purchase_order_close",
@@ -5017,7 +5017,7 @@
             "who": "purchasing.send",
             "agent": true,
             "record_id": "the purchase order",
-            "built": false
+            "built": true
         },
         "purchase_order_cancel": {
             "action": "purchase_order_cancel",
@@ -5044,7 +5044,7 @@
             "who": "purchasing.send",
             "agent": true,
             "record_id": "the purchase order",
-            "built": false
+            "built": true
         },
         "supplier_link_rotate": {
             "action": "supplier_link_rotate",
@@ -5065,7 +5065,7 @@
             "who": "purchasing.send",
             "agent": true,
             "record_id": "the purchase order",
-            "built": false
+            "built": true
         },
         "supplier_message": {
             "action": "supplier_message",
@@ -5104,7 +5104,7 @@
             "who": "purchasing.send",
             "agent": true,
             "record_id": "the supplier",
-            "built": false
+            "built": true
         },
         "invoice_create": {
             "action": "invoice_create",
@@ -5185,7 +5185,7 @@
             "who": "invoices.write",
             "agent": true,
             "record_id": "the invoice",
-            "built": false
+            "built": true
         },
         "invoice_update": {
             "action": "invoice_update",
@@ -5272,7 +5272,7 @@
             "who": "invoices.write",
             "agent": true,
             "record_id": "the invoice",
-            "built": false,
+            "built": true,
             "partial": true
         },
         "invoice_line_set": {
@@ -5342,7 +5342,7 @@
             "who": "invoices.write",
             "agent": true,
             "record_id": "the invoice line",
-            "built": false
+            "built": true
         },
         "invoice_line_remove": {
             "action": "invoice_line_remove",
@@ -5363,7 +5363,7 @@
             "who": "invoices.write",
             "agent": true,
             "record_id": "the invoice line",
-            "built": false
+            "built": true
         },
         "invoice_match": {
             "action": "invoice_match",
@@ -5384,7 +5384,7 @@
             "who": "invoices.write",
             "agent": true,
             "record_id": "the invoice",
-            "built": false
+            "built": true
         },
         "invoice_match_settle": {
             "action": "invoice_match_settle",
@@ -5411,7 +5411,7 @@
             "who": "invoices.write",
             "agent": true,
             "record_id": "the invoice",
-            "built": false
+            "built": true
         },
         "invoice_void": {
             "action": "invoice_void",
@@ -5438,7 +5438,7 @@
             "who": "invoices.write",
             "agent": true,
             "record_id": "the invoice",
-            "built": false
+            "built": true
         },
         "price_alert_seen": {
             "action": "price_alert_seen",
@@ -5459,7 +5459,7 @@
             "who": "purchasing.draft",
             "agent": true,
             "record_id": "the alert",
-            "built": false
+            "built": true
         },
         "price_alert_threshold_set": {
             "action": "price_alert_threshold_set",
@@ -5492,7 +5492,7 @@
             "who": "prices.write",
             "agent": true,
             "record_id": "the category",
-            "built": false
+            "built": true
         },
         "source_create": {
             "action": "source_create",

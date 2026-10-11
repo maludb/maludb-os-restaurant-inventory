@@ -1,0 +1,136 @@
+<?php
+/** Slice 4 — JSON mode under signed action tokens, agents (run token + relay), an evaluation run, the HTMX stamps, the log vocabulary, the registry counts (purchasing.md "Proof": JSON mode). */
+require __DIR__ . '/lib.php';
+$w = purchasing_world();
+$hp = static fn (int $m, int $site = DOWNTOWN): array => ['Accept: application/json', 'X-Action-Token: ' . person_token($m), 'X-Action-Relay: ' . relay_of(person_token($m)), 'X-Site: ' . $site];
+$jpost = static function (array $h, string $path, array $form): array { $r = req('POST', $path, ['headers' => $h, 'form' => $form]); $r['json'] = json_decode($r['body'], true) ?: []; return $r; };
+$jget = static function (array $h, string $path): array { $r = req('GET', $path, ['headers' => $h]); $r['json'] = json_decode($r['body'], true) ?: []; return $r; };
+$shape = static fn (array $r): bool => $r['code'] === 200 && ($r['json']['ok'] ?? false) === true && isset($r['json']['did'], $r['json']['location']) && array_key_exists('record_id', $r['json']) && array_key_exists('refresh', $r['json']);
+$dana = $hp(30); $marco = $hp(27); $bea = $hp(28);
+
+echo "1. A purchase order's life in JSON\n";
+$r = $jpost($dana, '/purchasing/save.php', ['supplier' => 'SMOKE Sysco', 'area' => 'SMOKE Dry', 'notes' => 'JSON order', 'lines' => json_encode([['supplier_item' => 'SY-FL50', 'qty' => 3, 'unit_cost' => 30], ['supplier_item' => 'SY-EGG15', 'qty' => 1, 'unit_cost' => 54]])]);
+$po = (int) ($r['json']['record_id'] ?? 0);
+ok($shape($r) && $po > 0 && $r['json']['refresh'] === 'purchaseOrderChanged' && str_contains($r['json']['location'], "/purchasing/$po/edit") && $r['json']['origin'] === 'manual' && $r['json']['status'] === 'draft' && $r['json']['total'] === '144.00', 'purchase_order_draft: {ok, did, record_id, location, refresh}, the number, origin, status, the total');
+ok(preg_match('/^Started PO-\d{5} to SMOKE Sysco with 2 lines$/', (string) $r['json']['did']) === 1, '…its did says what happened in words');
+$r = $jpost($dana, '/purchasing/save.php', ['purchase_order' => (string) $po, '_partial' => '1', 'internal_notes' => 'check price']);
+$row = po_row($po);
+ok($shape($r) && $row['internal_notes'] === 'check price' && $row['notes'] === 'JSON order' && (int) $row['storage_area_id'] === $w['dry'] && $row['expected_on'] !== null, '_partial=1 on purchase_order_update: the internal note set, the rest of the header kept');
+$r = $jpost($dana, '/purchasing/line.php', ['purchase_order' => 'PO-' . substr('00000' . $po, -5), 'supplier_item' => 'SY-CHK', 'qty' => '10']);
+$lc = (int) ($r['json']['line_id'] ?? 0);
+ok($shape($r) && $lc > 0 && $r['json']['unit'] === 'lb' && $r['json']['qty_base'] === '4535.9237' && $r['json']['unit_cost'] === '3.1000' && $r['json']['total'] === '175.00', 'purchase_order_line_set (the PO by its number, the item by its SKU): the unit, the base quantity, the cost and the new total');
+$r = $jpost($dana, '/purchasing/line.php', ['purchase_order' => (string) $po, 'supplier_item' => 'SY-FL50', 'qty' => '0']);
+ok($r['code'] === 422 && ($r['json']['error']['code'] ?? '') === 'invalid' && isset($r['json']['error']['fields']['qty']), '422 {error: {code: invalid, fields}} naming the field (qty)');
+$r = $jpost($dana, '/purchasing/line.php', ['purchase_order' => (string) $po, 'supplier_item' => (string) $w['si_lime'], 'qty' => '1']);
+ok($r['code'] === 422 && isset($r['json']['error']['fields']['supplier_item']) && str_contains(json_encode($r['json']['error']['fields']), 'Produce Co'), '…and the refusal of another supplier\'s item carries its sentence on its field');
+$r = $jpost($dana, '/purchasing/line-remove.php', ['line' => (string) $lc]);
+ok($shape($r) && count(po_lines_of($po)) === 2, 'purchase_order_line_remove');
+$r = $jpost($dana, '/purchasing/send.php', ['purchase_order' => (string) $po]);
+ok($r['code'] === 403, 'purchase_order_send under Dana\'s token: 403 (she drafts, a Manager sends)');
+$r = $jpost($marco, '/purchasing/send.php', ['purchase_order' => (string) $po]);
+ok($shape($r) && $r['json']['mail'] === 'sent' && strlen($r['json']['link_last4']) === 4 && $r['json']['status'] === 'sent' && $r['json']['via'] === 'email' && !str_contains($r['body'], '/s/'), 'purchase_order_send: mail sent, the link\'s last four, never the link');
+$r = $jpost($dana, '/purchasing/acknowledge.php', ['purchase_order' => (string) $po, 'expected_on' => site_day(4), 'supplier_order_ref' => 'J-1']);
+ok($shape($r) && $r['json']['status'] === 'acknowledged' && $r['json']['supplier_order_ref'] === 'J-1', 'purchase_order_acknowledge');
+$lEgg = (int) po_lines_of($po)[1]['id'];
+$r = $jpost($dana, '/purchasing/line-decline.php', ['line' => (string) $lEgg, 'reason' => 'out of stock']);
+ok($shape($r) && (int) $r['json']['record_id'] === $lEgg, 'purchase_order_line_decline');
+$r = $jpost($marco, '/purchasing/link.php', ['purchase_order' => (string) $po]);
+ok($shape($r) && strlen($r['json']['link_last4']) === 4, 'supplier_link_rotate: the new link\'s last four');
+$r = $jpost($marco, '/purchasing/message.php', ['supplier' => 'SMOKE Sysco', 'purchase_order' => (string) $po, 'body' => 'JSON message']);
+ok($shape($r) && $r['json']['mail'] === 'sent' && $r['json']['purchase_order_id'] === $po, 'supplier_message');
+$r = $jpost($marco, '/purchasing/close.php', ['purchase_order' => (string) $po, 'short' => 'yes']);
+ok($shape($r) && $r['json']['status'] === 'closed_short' && $r['json']['closed_short_lines'] >= 1, 'purchase_order_close');
+$d2 = $jpost($dana, '/purchasing/save.php', ['supplier' => 'SMOKE Sysco', 'lines' => json_encode([['supplier_item' => 'SY-EGG15', 'qty' => 1]])])['json']['record_id'] ?? 0;
+$r = $jpost($marco, '/purchasing/place.php', ['purchase_order' => (string) $d2, 'via' => 'portal', 'supplier_order_ref' => 'WEB-1']);
+ok($shape($r) && $r['json']['via'] === 'portal' && strlen($r['json']['link_last4']) === 4, 'purchase_order_place');
+$r = $jpost($marco, '/purchasing/cancel.php', ['purchase_order' => (string) $d2, 'reason' => 'json test']);
+ok($shape($r) && $r['json']['status'] === 'cancelled', 'purchase_order_cancel');
+$r = $jpost($marco, '/purchasing/send.php', ['purchase_order' => (string) $d2]);
+ok($r['code'] === 422 && ($r['json']['error']['code'] ?? '') === 'invalid', 'a refusal of the function is 422 {error} in JSON too');
+
+echo "2. Invoices and alerts in JSON\n";
+$g = stock_in(person(30), $w['dry'], [['supplier_item' => $w['si_flour'], 'qty' => 2, 'unit' => 'bag50', 'unit_cost' => 30], ['supplier_item' => $w['si_egg'], 'qty' => 1, 'unit' => 'case', 'unit_cost' => 54]], $w['sysco']);
+$r = $jpost($marco, '/invoices/save.php', ['supplier' => 'SMOKE Sysco', 'invoice_no' => 'J-INV-1', 'invoice_date' => site_day(0), 'receipt' => (string) $g, 'tax' => '2.50']);
+$inv = (int) ($r['json']['record_id'] ?? 0);
+ok($shape($r) && $inv > 0 && $r['json']['refresh'] === 'invoiceChanged' && $r['json']['status'] === 'draft' && $r['json']['total'] === '116.50', 'invoice_create from a receipt (its lines prefilled): the id, the status, the total with tax');
+$r = $jpost($marco, '/invoices/save.php', ['invoice' => (string) $inv, '_partial' => '1', 'notes' => 'JSON']);
+$row = q('SELECT notes, tax, invoice_no FROM supplier_invoices WHERE id = :i', ['i' => $inv])[0];
+ok($shape($r) && $row['notes'] === 'JSON' && near($row['tax'], 2.5) && $row['invoice_no'] === 'J-INV-1', '_partial=1 on invoice_update keeps the rest');
+$il = q('SELECT id FROM supplier_invoice_lines WHERE invoice_id = :i ORDER BY line_no', ['i' => $inv]);
+$r = $jpost($marco, '/invoices/line.php', ['invoice_line' => (string) $il[0]['id'], 'unit_price' => '33']);
+ok($shape($r) && $r['json']['total'] === '122.50', 'invoice_line_set (the flour at $33): the total follows');
+$r = $jpost($marco, '/invoices/line-remove.php', ['invoice_line' => (string) $il[1]['id']]);
+ok($shape($r), 'invoice_line_remove');
+$r = $jpost($marco, '/invoices/line.php', ['invoice' => (string) $inv, 'supplier_item' => 'SY-EGG15', 'qty' => '1', 'unit' => 'case', 'unit_price' => '54']);
+$r = $jpost($marco, '/invoices/match.php', ['invoice' => (string) $inv]);
+$states = array_column($r['json']['lines'] ?? [], 'match_state');
+ok($shape($r) && $r['json']['status'] === 'disputed' && in_array('price_diff', $states, true) && in_array('ok', $states, true) && isset($r['json']['lines'][0]['diff_value']), 'invoice_match: the status and the state of each line');
+$r = $jpost($marco, '/invoices/settle.php', ['invoice' => (string) $inv, 'note' => 'json']);
+ok($shape($r) && $r['json']['status'] === 'settled' && count($r['json']['price_history_ids']) === 1 && $r['json']['price_differences'] === 1 && is_array($r['json']['adjustment_transaction_ids']), 'invoice_match_settle: the price-history ids and the adjustment ids');
+$v = $jpost($marco, '/invoices/save.php', ['supplier' => 'SMOKE Sysco', 'invoice_no' => 'J-INV-2', 'invoice_date' => site_day(0)]);
+$r = $jpost($marco, '/invoices/void.php', ['invoice' => (string) $v['json']['record_id'], 'reason' => 'json']);
+ok($shape($r) && $r['json']['status'] === 'void', 'invoice_void');
+$r = $jpost($marco, '/invoices/save.php', ['supplier' => 'SMOKE Sysco', 'invoice_no' => 'J-INV-1', 'invoice_date' => site_day(0)]);
+ok($r['code'] === 422 && isset($r['json']['error']['fields']['invoice_no']), 'a duplicate invoice number: 422 on invoice_no');
+$r = $jpost($dana, '/invoices/save.php', ['supplier' => 'SMOKE Sysco', 'invoice_no' => 'J-INV-3', 'invoice_date' => site_day(0)]);
+ok($r['code'] === 403, 'invoice_create under Dana: 403');
+$r = $jpost($dana, '/purchasing/alerts/seen.php', []);
+ok($shape($r) && is_int($r['json']['marked']), 'price_alert_seen: how many were marked');
+$r = $jpost($marco, '/purchasing/alerts/threshold.php', ['pct' => '10']);
+ok($shape($r) && $r['json']['pct'] === '10.00', 'price_alert_threshold_set');
+
+echo "3. Screens in JSON\n";
+$j = $jget($bea, '/purchasing/')['json']['data'] ?? [];
+ok(is_array($j['purchase_orders'] ?? null) && count($j['purchase_orders']) > 0 && $j['may']['cost'] === false && !array_key_exists('total', $j['purchase_orders'][0]) && ($j['purchase_orders'][0]['cost_withheld'] ?? false) === true, 'the PO list in JSON: rows, may.cost, no total for Bea');
+$j = $jget($marco, "/purchasing/$po")['json']['data'] ?? [];
+ok(($j['purchase_order']['status'] ?? '') === 'closed_short' && count($j['events']) >= 3 && $j['may']['send'] === true && isset($j['receipts'], $j['invoices']), 'the PO view in JSON: the order, its events, receipts, invoices, what the caller may do');
+$j = $jget($marco, '/purchasing/due?on=' . site_day(30))['json']['data'] ?? [];
+ok(isset($j['deliveries']) && $j['on'] === site_day(30), 'deliveries due in JSON');
+$j = $jget($marco, '/purchasing/alerts')['json']['data'] ?? [];
+ok(isset($j['alerts'], $j['thresholds']['default']) && $j['may']['threshold'] === true, 'price alerts in JSON, with the thresholds');
+$j = $jget($marco, "/invoices/$inv")['json']['data'] ?? [];
+ok(($j['invoice']['status'] ?? '') === 'settled' && count($j['invoice']['lines']) === 2 && isset($j['invoice']['lines'][0]['match_state']), 'the invoice in JSON with the match state of each line');
+$j = $jget($marco, '/invoices/')['json']['data'] ?? [];
+ok(count($j['invoices'] ?? []) >= 2 && $j['may']['write'] === true, 'the invoice list in JSON');
+$j = $jget($dana, '/purchasing/new?supplier=' . $w['sysco'])['json']['data'] ?? [];
+ok(isset($j['areas']) && $j['next_delivery_on'] !== null, 'the new-PO form in JSON: areas and the supplier\'s next delivery');
+$j = $jget($dana, "/purchasing/$d2/edit")['code'];
+ok($j === 422, 'a cancelled order has no edit page (422)');
+
+echo "4. Agents\n";
+agent_facts(42, 7421);
+$r = agent_req('POST', '/purchasing/save.php', 42, 7421, ['supplier' => (string) $w['sysco'], 'lines' => json_encode([['supplier_item' => 'SY-FL50', 'qty' => 2]])]);
+$ap = (int) ($r['json']['record_id'] ?? 0);
+ok($shape($r) && $ap > 0 && $r['json']['origin'] === 'agent' && po_row($ap)['origin'] === 'agent' && (int) po_row($ap)['created_by'] === 42, 'the Purchasing agent\'s purchase_order_draft (allowed): a draft with origin agent');
+ok(one("SELECT source FROM activity_log WHERE action = 'purchase_order.draft' AND purchase_order_id = :p", ['p' => $ap]) === 'agent' && (string) one("SELECT request_id FROM activity_log WHERE action = 'purchase_order.draft' AND purchase_order_id = :p", ['p' => $ap]) === 'req-run-7421', 'its log row is source agent with the run\'s request id');
+agent_facts(40, 7401);
+$r = agent_req('POST', '/purchasing/save.php', 40, 7401, ['supplier' => (string) $w['sysco'], 'lines' => json_encode([['supplier_item' => 'SY-EGG15', 'qty' => 1]])]);
+ok($shape($r) && $r['json']['origin'] === 'agent', 'the expert (a Chef) drafts too');
+$r = agent_req('POST', '/purchasing/send.php', 40, 7401, ['purchase_order' => (string) $r['json']['record_id']]);
+ok($r['code'] === 403, '…and its purchase_order_send is refused by the right (the kernel\'s money_out hook pauses it before in production)');
+$r = agent_req('POST', '/purchasing/send.php', 42, 7421, ['purchase_order' => (string) $ap]);
+ok($shape($r) && po_row($ap)['status'] === 'sent', 'the Purchasing agent (a Manager) once the kernel releases it: the handler sends');
+kernel_state(function ($s) { $s['facts']['7499'] = ['valid' => true, 'is_agent' => true, 'member_id' => 42, 'run_id' => 7499, 'request_id' => 'req-run-7499', 'trigger' => 'eval', 'scope' => DOWNTOWN, 'endpoints' => [['name' => 'Records MCP']], 'is_eval' => true]; return $s; });
+foreach (['/purchasing/save.php' => ['supplier' => (string) $w['sysco']], '/purchasing/send.php' => ['purchase_order' => (string) $ap], '/purchasing/cancel.php' => ['purchase_order' => (string) $ap], '/invoices/save.php' => ['supplier' => (string) $w['sysco'], 'invoice_no' => 'EV', 'invoice_date' => site_day(0)], '/purchasing/alerts/threshold.php' => ['pct' => '1']] as $path => $form) {
+    $r = agent_req('POST', $path, 42, 7499, $form);
+    ok($r['code'] === 403 && str_contains(json_encode($r['json']), 'evaluation run'), "an evaluation run: $path refused, nothing written");
+}
+ok(po_row($ap)['status'] === 'sent' && near(one('SELECT price_alert_pct FROM ri_settings WHERE id = 1'), 10), '…and nothing changed');
+
+echo "5. The shell's stamps, the log, the registry\n";
+$r = req('GET', "/purchasing/$po", ['jar' => person(27), 'headers' => ['HX-Request: true']]);
+ok($r['code'] === 200 && preg_match('/^X-Screen: purchase-order-view/mi', $r['headers']) && preg_match('/^X-Entity: purchase_order/mi', $r['headers']) && preg_match('/^X-Record-Id: ' . $po . '\s*$/mi', $r['headers']) && !str_contains($r['body'], '<html'), 'an HTMX request gets the partial with X-Screen / X-Entity / X-Record-Id');
+$shell = page(person(27), "/purchasing/$po")['body'];
+ok(str_contains($shell, 'data-screen="purchase-order-view"') && str_contains($shell, 'data-entity="purchase_order"') && str_contains($shell, 'data-record-id="' . $po . '"') && str_contains($shell, 'data-scope-id="101"'), 'the full page stamps #page-content: screen, entity, record id, scope');
+$events = ['purchase_order.draft', 'purchase_order.update', 'purchase_order.line_set', 'purchase_order.line_remove', 'purchase_order.send', 'purchase_order.place', 'purchase_order.acknowledge', 'purchase_order.line_decline', 'purchase_order.close', 'purchase_order.cancel',
+    'purchase_order.link_rotate', 'purchase_order.supplier_view', 'purchase_order.supplier_ack', 'purchase_order.supplier_decline', 'purchase_order.supplier_date', 'supplier.message', 'invoice.create', 'invoice.update', 'invoice.line_set', 'invoice.line_remove', 'invoice.match',
+    'invoice.settle', 'invoice.void', 'price_alert.seen', 'price_alert.threshold_set', 'screen.view'];
+$missing = array_filter($events, fn ($a) => (int) one('SELECT count(*) FROM activity_log WHERE action = :a', ['a' => $a]) === 0);
+ok($missing === [], 'every event of the log vocabulary has been written by this suite' . ($missing ? ' — missing: ' . implode(', ', $missing) : ''));
+$reg = json_decode((string) file_get_contents(dirname(__DIR__, 3) . '/mcp/action_registry.json'), true);
+$slice = ['purchase-order-list', 'purchase-order-add', 'purchase-order-view', 'purchase-order-edit', 'deliveries-due', 'invoice-list', 'invoice-add', 'invoice-view', 'invoice-edit', 'price-alert-list', 'supplier-door'];
+$act = ['purchase_order_draft', 'purchase_order_update', 'purchase_order_line_set', 'purchase_order_line_remove', 'purchase_order_send', 'purchase_order_place', 'purchase_order_acknowledge', 'purchase_order_line_decline', 'purchase_order_close', 'purchase_order_cancel', 'supplier_link_rotate',
+    'supplier_message', 'invoice_create', 'invoice_update', 'invoice_line_set', 'invoice_line_remove', 'invoice_match', 'invoice_match_settle', 'invoice_void', 'price_alert_seen', 'price_alert_threshold_set'];
+ok(count(array_filter($slice, fn ($s) => !empty($reg['screens'][$s]['built']))) === 11 && count(array_filter($act, fn ($a) => !empty($reg['actions'][$a]['built']))) === 21, 'the registry reads this slice\'s 11 screens and 21 actions as built');
+ok(count(array_filter($reg['screens'], fn ($s) => !empty($s['built']))) === 83 && count(array_filter($reg['actions'], fn ($a) => !empty($a['built']))) === 106, 'the registry in all: 83 of 119 screens and 106 of 146 actions built');
+finish();

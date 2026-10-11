@@ -731,3 +731,12 @@ db/018 and the decisions the specs took, §16) — Phase 2 begins.
   slice 1 237, slice 2 215, slice 3 347 and slice 5 328 under both, the Phase 1 check 52, the registry clean.
   **THE HANDOFF POINT:** slices 4, 6, 7, 8, 9 and Phases 4–5 go to Sonnet 5.5 workers one at a time (`docs/build-specs/worker-brief.md`),
   each verified and committed by the planning model.
+- 2026-10-11 — **SLICE 4 PURCHASING BUILT AND PROVEN BY A SONNET 5.5 WORKER** (`tests/phase3/slice4/run.sh`: 452 checks under php -S and under Apache — purchase
+  orders drafted from the order guide in the unit the supplier reads, sent by email with the supplier's link (no cost in the mail), marked placed, acknowledged and declined
+  by phone, received against (partial, `ri_on_order()`), closed short, closed and cancelled with the supplier told; **the supplier's door `/s/{token}`** with no session —
+  the order without a cost, the three answers behind a signed form token, a link that rotates and dies; deliveries due; invoices entered from a receipt and matched
+  three ways, settled into price history on the receipt's date, a quantity correction, a credit; price alerts and their thresholds; the worker's `price_alerts` and
+  `link_expiry`). 83 of 119 screens and 106 of 146 actions built. Found and fixed in **db/025**: the match compared an invoice's price with the receipt's six-decimal
+  cost per gram, so equal prices differed by cents and $6.00 read $5.99 (it now divides the receipt line's own unit price). Also: a public door needs no session
+  (`RI_PUBLIC_DOOR`); the activity log has no source `door` (the door's rows are `portal`); the canonical `/edit` goes to `form.php`; deliveries due, invoices and
+  alerts read under `ri.read` (invoices and alerts tell one who sees no cost so). The 10 % alert read 9.98 % at six decimals per gram — **db/026** (the planning model, in review) reads the move from the quoted per-unit prices, so a 10 % rise trips the default 10 % alert.

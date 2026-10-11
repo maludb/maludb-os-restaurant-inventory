@@ -161,7 +161,7 @@ INSERT INTO goods_receipt_lines (goods_receipt_id, line_no, ingredient_id, qty_r
 SELECT ri_post_receipt(pg_temp.i('gr2'), 27);
 SELECT pg_temp.check(pg_temp.near((SELECT avg_cost_per_base FROM ingredient_site_costs WHERE ingredient_id = pg_temp.i('flour') AND scope_id = 101), 110.0 / 90718.474, 0.000001), 'the moving average: (2 × $25 + 2 × $30) over 4 bags');
 SELECT pg_temp.check((SELECT last_price FROM supplier_items WHERE id = pg_temp.i('si_flour')) = 30.00, 'the supplier item''s last price follows the receipt');
-SELECT pg_temp.check((SELECT count(*) FROM price_alerts WHERE ingredient_id = pg_temp.i('flour') AND pct BETWEEN 19.5 AND 20.5) = 1, 'flour up 20 % raised a price alert (dry goods threshold 10 %)');
+SELECT pg_temp.check((SELECT count(*) FROM price_alerts WHERE ingredient_id = pg_temp.i('flour') AND pct = 20.00) = 1, 'flour up 20 % ($25 → $30 a bag) raised an alert of exactly 20 % — the quoted prices, not the six-decimal cost per gram (db/026)');
 SELECT pg_temp.check((SELECT unit_cost_per_base > 0 FROM inventory_transactions WHERE reference_id = pg_temp.i('gr2') AND ingredient_id = pg_temp.i('lime')), 'a zero-cost line lands at the running cost, never at zero');
 SELECT pg_temp.check(ri_on_hand(pg_temp.i('lime'), 101) = 400, '400 limes on hand after two cases');
 

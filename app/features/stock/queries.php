@@ -207,13 +207,15 @@ function po_options_for_supplier(PDO $pdo, ?int $supplier, int $scope): array
     return array_map(static fn (array $r): array => stock_ints($r, ['purchase_order_id']), $st->fetchAll());
 }
 
-/** A PO (any status) the caller may see. */
+/** A PO (any status) the caller may see, with the names slice 4's screens print (supplier and how it is ordered from, the area, who made and sent it). */
 function po_for(PDO $pdo, int $id): ?array
 {
-    $st = $pdo->prepare('SELECT p.*, s.name AS supplier FROM mcp_purchase_orders p JOIN mcp_suppliers s ON s.supplier_id = p.supplier_id WHERE p.purchase_order_id = :id');
+    $st = $pdo->prepare('SELECT p.*, s.name AS supplier, s.order_method, s.order_email, s.email AS supplier_email, a.name AS area, cm.display_name AS created_by_name, sm.display_name AS sent_by_name
+        FROM mcp_purchase_orders p JOIN mcp_suppliers s ON s.supplier_id = p.supplier_id LEFT JOIN mcp_storage_areas a ON a.storage_area_id = p.storage_area_id
+        LEFT JOIN mcp_members cm ON cm.member_id = p.created_by LEFT JOIN mcp_members sm ON sm.member_id = p.sent_by WHERE p.purchase_order_id = :id');
     $st->execute(['id' => $id]);
     $r = $st->fetch();
-    return $r === false ? null : stock_ints($r, ['purchase_order_id', 'scope_id', 'supplier_id', 'storage_area_id']);
+    return $r === false ? null : stock_ints($r, ['purchase_order_id', 'scope_id', 'supplier_id', 'storage_area_id', 'sent_by', 'created_by']);
 }
 
 /** The open lines of a PO with the quantity still to come, in base and in the purchase unit. */
