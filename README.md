@@ -7,14 +7,14 @@ actual usage, COGS by period).
 
 ## Status
 
-**Phase 1 written (2026-10-11), for the owner's approval.** The action manifest (119 screens, 146 actions), the MCP tool surface,
+**Phase 1 approved by the owner (2026-10-11); Phase 2 the shell in build.** The action manifest (119 screens, 146 actions), the MCP tool surface,
 three build specs and ten slice specs, every manifest row claimed once (`tests/phase1/check_specs.sh`); db/018 carries the schema
 items the documents found. **Phase 0 complete the same day.** The design was approved by the owner the same day it was written, every recommendation
 (D1–D16, §15). The kernel's catalog row (K47) is applied. The kit is proven without a kernel (123 checks), the schema by
 164 checks on a scratch database (`tests/phase0/schema.sh`), the manifest, the two agents, twelve skills and `deploy/` are
 written, and the installer's `plan` reads the repository clean. No screens yet.
 
-Next: the owner's approval of Phase 1 → Phase 2, the shell.
+Next: Phase 2 the shell, then the slices in the design's order.
 
 ## Documents
 

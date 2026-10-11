@@ -635,6 +635,9 @@ browser, blind by default; Leanpath's waste; weekly periods with a monthly roll-
 Manager named at install through `RI_MANAGER_EMAIL`, the first super-admin until then); the pauses of §5; ports
 8200/8856/8857; the Spaces division of §13.16.
 
+**2026-10-11 — Phase 1 approved by the owner as written** (the manifest, the tool surface, the three build specs, the ten slice specs,
+db/018 and the decisions the specs took, §16) — Phase 2 begins.
+
 ## 16. State
 
 - 2026-10-11 — the research written (three reports and the synthesis, commit 116ff7b); this design written the same day;
@@ -678,5 +681,4 @@ Manager named at install through `RI_MANAGER_EMAIL`, the first super-admin until
   is `bin/forecast.py` (pure Python) shelled from the worker's pass; a no-depletion PLU is a flag, never a lineless recipe;
   `recipe_create` makes the recipe and its first draft in one POST; the morning note to `#kitchen` in Spaces stays Extended
   (the text goes in the notification); a count after the day's count is as of a moment after the sales cut (its corrections
-  are dated at the cut — the proof's second lesson on counts); `watch.fire` is logged by the worker's pass. NEXT: the owner's
-  approval of Phase 1 → Phase 2 the shell.
+  are dated at the cut — the proof's second lesson on counts); `watch.fire` is logged by the worker's pass. **Phase 1 APPROVED by the owner the same day**; NEXT Phase 2 the shell (`docs/build-specs/sso-shell.md`).
