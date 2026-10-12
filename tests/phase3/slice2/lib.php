@@ -1,4 +1,5 @@
 <?php
+date_default_timezone_set('America/New_York'); putenv('PGTZ=America/New_York');   // the proofs read the Downtown site's day, as the app's connection now does (app/db.php db_use_site_zone)
 /**
  * Helpers for the Phase 2 proofs (docs/build-specs/sso-shell.md). Run them through tests/phase2/run.sh, which builds the scratch database,
  * starts the application (:9301), a fake kernel (:9302) and a fake MaluDB (:9303) and puts the scratch environment in the process environment.

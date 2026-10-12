@@ -521,6 +521,45 @@ SELECT pg_temp.check(NOT EXISTS (
        AND (NOT p.prosecdef OR NOT has_function_privilege('restaurant_inventory_records_ro', p.oid, 'EXECUTE'))),
     'every read function is SECURITY DEFINER and callable by the records role (a rewrite in a later migration keeps db/018''s rights)');
 
+-- ================================================================ slice 8 (db/028): a closed day through the run, the all-ingredient projection, the walled suggested order
+SET ROLE restaurant_inventory_rw;
+SELECT pg_temp.as_member(1);
+INSERT INTO forecast_runs (scope_id, method, items, is_current) VALUES (101, 'holt_winters', 1, false);
+UPDATE forecast_runs SET is_current = false WHERE scope_id = 101;
+INSERT INTO forecast_runs (scope_id, method, items, is_current) VALUES (101, 'holt_winters', 1, true);
+SELECT pg_temp.keep('frun', max(id)) FROM forecast_runs;
+INSERT INTO item_forecasts (run_id, menu_item_id, on_date, qty) VALUES (pg_temp.i('frun'), pg_temp.i('mi_sand'), current_date + 13, 33);
+SELECT pg_temp.check((SELECT qty = 33 AND source = 'run' FROM ri_item_forecast(101, pg_temp.i('mi_sand'), current_date + 13)), 'a run''s row answers for its day (source run)');
+INSERT INTO calendar_days (scope_id, on_date, closed, holiday) VALUES (101, current_date + 13, true, 'SMOKE closed after the run');
+SELECT pg_temp.check((SELECT qty = 0 AND source = 'closed' FROM ri_item_forecast(101, pg_temp.i('mi_sand'), current_date + 13)), 'a day closed AFTER the run still forecasts zero (db/028: the run''s row no longer wins over a closure)');
+SELECT pg_temp.check((SELECT count(*) = 14 AND bool_and(p.demand_base = r.demand_base AND p.receipts_base = r.receipts_base AND p.projected_base = r.projected_base)
+                        FROM ri_projected_stock_all(101, 14, ARRAY[pg_temp.i('egg')]) p JOIN ri_projected_stock(101, pg_temp.i('egg'), 14) r ON r.on_date = p.on_date),
+    'ri_projected_stock_all equals ri_projected_stock for the eggs, day for day');
+SELECT pg_temp.check((SELECT count(DISTINCT ingredient_id) >= 3 FROM ri_projected_stock_all(101, 14)), 'ri_projected_stock_all answers every ingredient with a balance, a par, a demand or a receipt due');
+-- the periodic-review rule's OWN branch (>= 7 days of depletion): db/014 failed here on round(double precision, integer)
+SELECT ri_post_txn('depletion', 101, pg_temp.i('egg'), pg_temp.i('walkin'), -(10 + k), 0.30, 'depletion_run', 0, 'p8-dyn-' || k, 'none', NULL, NULL, NULL, 1, NULL, now() - (k || ' days')::interval, current_date - k) FROM generate_series(1, 9) k;
+SELECT pg_temp.check((SELECT par_mode = 'dynamic' AND safety_base > 0 AND need_base = round(demand_base + safety_base, 4) FROM ri_suggested_order(101, pg_temp.i('sysco')) WHERE ingredient_id = pg_temp.i('egg')),
+    'a dynamic ingredient with nine days of depletion gets demand + z × σ × √P of safety stock (the rule''s own branch runs; it did not before db/028)');
+RESET ROLE;
+SET ROLE restaurant_inventory_records_ro;
+SELECT pg_temp.as_member(29);   -- Ann, Viewer: the lines, never a cost
+SELECT pg_temp.check((SELECT count(*) > 0 AND bool_and(unit_cost IS NULL) AND bool_and(raw_base IS NOT NULL) FROM ri_suggested_order(101, pg_temp.i('sysco'))), 'a Viewer reads the suggested order''s arithmetic and never a cost (db/028)');
+SELECT pg_temp.as_member(30);   -- Dana, Chef
+SELECT pg_temp.check((SELECT bool_and(unit_cost IS NOT NULL) FROM ri_suggested_order(101, pg_temp.i('sysco'))), 'a Chef reads the unit cost');
+SELECT pg_temp.as_member(26);   -- Priya, Airport only
+SELECT pg_temp.refused($$SELECT * FROM ri_suggested_order(101, pg_temp.i('sysco'))$$, 'not a site you hold', 'a member of another site is refused the suggested order');
+SELECT pg_temp.as_member(NULL);
+SELECT pg_temp.refused($$SELECT * FROM ri_suggested_order(101, pg_temp.i('sysco'))$$, 'not a site you hold', 'the read role with no member is refused the suggested order');
+SELECT pg_temp.refused($$SELECT ri_suggested_order_draft(101, pg_temp.i('sysco'), 42)$$, 'permission denied', 'a read role cannot draft a purchase order (the writing definers are not executable by PUBLIC)');
+RESET ROLE;
+SET ROLE restaurant_inventory_rw;
+SELECT pg_temp.as_member(NULL);
+SELECT pg_temp.check((SELECT bool_and(unit_cost IS NOT NULL) FROM ri_suggested_order(101, pg_temp.i('sysco'))), 'the application''s own role with no member (the worker) sees the cost');
+RESET ROLE;
+SELECT pg_temp.check(NOT EXISTS (SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace AND n.nspname = 'public'
+     WHERE p.proname IN ('ri_projected_stock_all', 'ri_item_forecast', 'ri_suggested_order') AND (NOT p.prosecdef OR NOT has_function_privilege('restaurant_inventory_records_ro', p.oid, 'EXECUTE'))),
+    'the slice 8 read functions are SECURITY DEFINER and callable by the records role');
+
 -- ================================================================ the count
 \o
 SELECT CASE WHEN ok THEN 'ok   ' ELSE 'FAIL ' END || label FROM proof ORDER BY n;

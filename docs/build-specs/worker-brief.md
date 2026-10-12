@@ -62,6 +62,12 @@ checklist, and run the installer's `plan` only through the planning model.
   credentials, mappings, settings, sequences, agents, tokens) and **every form and write** opens only to the right that writes it. The menu
   (`app/features/shell/nav.php`) shows the items a role works with; a URL a role may read still opens when the menu hides it, and a
   breadcrumb links to a list whenever that list opens for the person.
+- **The database's day is the restaurant's day (2026-10-12).** `app/db.php` `db_use_site_zone()` sets the session's `TimeZone` to the current
+  site's zone, so every `current_date` in the schema (a business date's default, projected stock's first day, deliveries due today) is the
+  site's local date — from 20:00 in New York, UTC is already tomorrow. A request settles it from its site; a worker loop calls it per site
+  (and each pass starts in UTC); **Phase 4's records and activity servers must do the same per call** (`set_config('TimeZone', <the site's
+  zone>, true)` beside `app.member_id`). PHP's clock follows with it (`date_default_timezone_set()` in the same function), so `date('Y-m-d')` is the site's day too. Proofs read the
+  Downtown site's day: the four proof libraries set PHP's zone and `PGTZ` to New York; a proof comparing a stored timestamp as text says `AT TIME ZONE 'UTC'`.
 - A write handler: `ri_handler_begin()` → load the record (a hidden record is the same 404 as a missing one) → the right at the site →
   field readers (`req_val`, `ri_text`, `ri_int`, `ri_choice`, `ri_ref`, `ri_yes`, `request_list`, …) collecting `$errors` →
   `ri_refuse_fields($errors)` → `ri_guard($pdo, fn)` (a transaction + `log_activity()`; it turns the schema's refusals into 422/404/403 with the

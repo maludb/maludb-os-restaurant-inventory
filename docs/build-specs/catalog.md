@@ -357,3 +357,8 @@ stub flags; the `/ingredients` vhost rules and the command bar's navigate follow
 - The ingredient-units page is a write screen (`ingredients.write`, as the manifest has it); a Viewer reads an ingredient's units on the
   ingredient page and its JSON, not at `/ingredients/{id}/units`.
 - No schema defect: db/007–019 carried every rule the handlers needed; no `db/020` from this slice.
+
+**Known flaky check (recorded 2026-10-12):** `tests/phase3/slice1/browser.mjs` "the save keeps the new order (3)" — the order guide's drag
+then save — failed once in slice 4's run and once in slice 8's review, each time passing on the next run. A drag's save racing the check;
+owed a hardening pass (wait for the reorder POST's response before reading the saved order), not a product defect.
+

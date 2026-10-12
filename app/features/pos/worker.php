@@ -138,6 +138,7 @@ function pos_pass_depletion(PDO $pdo, int $limit, DateTimeImmutable $now): array
     $st->execute(['l' => $limit]);
     $out = ['ran' => 0, 'failed' => 0];
     foreach ($st->fetchAll() as $d) {
+        db_use_site_zone($pdo, (int) $d['scope_id']);                 // the site's day for current_date
         $r = pos_run_day($pdo, (int) $d['scope_id'], (string) $d['business_date'], null);
         isset($r['error']) ? $out['failed']++ : $out['ran']++;
     }

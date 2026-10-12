@@ -1,6 +1,6 @@
 {
     "generated_from": "docs/restaurant-inventory-action-manifest.md",
-    "generated_at": "2026-10-11T22:34:16+00:00",
+    "generated_at": "2026-10-12T00:01:03+00:00",
     "screens": {
         "home": {
             "screen": "home",
@@ -1047,8 +1047,8 @@
                 "horizon",
                 "sort"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "forecast-item": {
             "screen": "forecast-item",
@@ -1056,7 +1056,7 @@
             "section": "Projection, ordering, the Purchasing agent's data and the worker — THE THIRD EXEMPLAR (slice 8)",
             "when": "one item: the chart of the forecast against the actuals by day with the band, the same weekdays, the overrides, the covers factor; **Override**",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "calendar-days": {
@@ -1067,8 +1067,8 @@
             "params": [
                 "month"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "demand-report": {
             "screen": "demand-report",
@@ -1079,8 +1079,8 @@
                 "category",
                 "ingredient"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "projected-stock": {
             "screen": "projected-stock",
@@ -1092,8 +1092,8 @@
                 "days",
                 "stockouts_only"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "projected-ingredient": {
             "screen": "projected-ingredient",
@@ -1101,7 +1101,7 @@
             "section": "Projection, ordering, the Purchasing agent's data and the worker — THE THIRD EXEMPLAR (slice 8)",
             "when": "one ingredient's projection: the chart, the open PO lines due, the suggested order that covers it",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "suggested-order-list": {
@@ -1113,8 +1113,8 @@
                 "supplier",
                 "due_hours"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "special-check": {
             "screen": "special-check",
@@ -1122,8 +1122,8 @@
             "section": "Projection, ordering, the Purchasing agent's data and the worker — THE THIRD EXEMPLAR (slice 8)",
             "when": "can we run the special: a recipe, a date and the portions — what it needs per ingredient against the projected stock that day, the shortfalls and the supplier that can bring them by then",
             "params": [],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "proposal-list": {
             "screen": "proposal-list",
@@ -1135,8 +1135,8 @@
                 "kind",
                 "status"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "watch-list": {
             "screen": "watch-list",
@@ -1144,8 +1144,8 @@
             "section": "Projection, ordering, the Purchasing agent's data and the worker — THE THIRD EXEMPLAR (slice 8)",
             "when": "the watches at this site: mine (and everyone's for an admin): ingredient, kind, threshold, text me, last fired; **New watch**",
             "params": [],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "report-list": {
             "screen": "report-list",
@@ -6528,7 +6528,7 @@
             "who": "forecast.adjust",
             "agent": true,
             "record_id": "the forecast run",
-            "built": false
+            "built": true
         },
         "forecast_override_set": {
             "action": "forecast_override_set",
@@ -6579,7 +6579,7 @@
             "who": "forecast.adjust",
             "agent": true,
             "record_id": "the override",
-            "built": false
+            "built": true
         },
         "forecast_override_propose": {
             "action": "forecast_override_propose",
@@ -6630,7 +6630,7 @@
             "who": "purchasing.draft",
             "agent": true,
             "record_id": "the override",
-            "built": false
+            "built": true
         },
         "forecast_override_decide": {
             "action": "forecast_override_decide",
@@ -6657,7 +6657,7 @@
             "who": "forecast.adjust",
             "agent": true,
             "record_id": "the override",
-            "built": false
+            "built": true
         },
         "forecast_override_remove": {
             "action": "forecast_override_remove",
@@ -6678,7 +6678,7 @@
             "who": "forecast.adjust",
             "agent": true,
             "record_id": "the override",
-            "built": false
+            "built": true
         },
         "calendar_day_set": {
             "action": "calendar_day_set",
@@ -6723,7 +6723,7 @@
             "who": "forecast.adjust",
             "agent": true,
             "record_id": "the day",
-            "built": false
+            "built": true
         },
         "covers_sync": {
             "action": "covers_sync",
@@ -6750,7 +6750,7 @@
             "who": "forecast.adjust",
             "agent": true,
             "record_id": "the site",
-            "built": false
+            "built": true
         },
         "suggested_order_run": {
             "action": "suggested_order_run",
@@ -6783,7 +6783,7 @@
             "who": "purchasing.draft",
             "agent": true,
             "record_id": "the purchase order",
-            "built": false
+            "built": true
         },
         "watch_set": {
             "action": "watch_set",
@@ -6840,7 +6840,7 @@
             "who": "ri.read",
             "agent": true,
             "record_id": "the watch",
-            "built": false
+            "built": true
         },
         "watch_clear": {
             "action": "watch_clear",
@@ -6861,7 +6861,7 @@
             "who": "own",
             "agent": true,
             "record_id": "the watch",
-            "built": false
+            "built": true
         },
         "buyer_propose": {
             "action": "buyer_propose",
@@ -6918,7 +6918,7 @@
             "who": "purchasing.draft",
             "agent": true,
             "record_id": "the proposal",
-            "built": false
+            "built": true
         },
         "buyer_proposal_decide": {
             "action": "buyer_proposal_decide",
@@ -6945,7 +6945,7 @@
             "who": "purchasing.draft",
             "agent": true,
             "record_id": "the proposal",
-            "built": false
+            "built": true
         },
         "morning_note_send": {
             "action": "morning_note_send",
@@ -6966,7 +6966,7 @@
             "who": "purchasing.draft",
             "agent": true,
             "record_id": "the site",
-            "built": false
+            "built": true
         },
         "report_run": {
             "action": "report_run",

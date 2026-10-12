@@ -1,0 +1,95 @@
+<?php
+/** Slice 8 — watches (projection.md "Proof": Watches; §4): a stock-out watch on the eggs with the agent and text me — the state taken at once, no fire now; a receipt covers it, a reversal fires it ONCE (the notification, the text, the dispatch, the event, the log); not again; cost thresholds in the recipe unit; clear. */
+require __DIR__ . '/lib.php';
+$w = projection_world();
+reset_projection();
+$a0 = last_activity_id();
+$marco = person(27); $ann = person(29); $dana = person(30); $owner = person(1);
+$egg = $w['egg'];
+set_on_hand($egg, $w['walkin'], 140);
+
+echo "1. A stock-out watch\n";
+$n0 = nid();
+$r = jpost(27, '/projection/watches/save.php', ['ingredient' => $egg, 'kind' => 'stockout_projected', 'agent' => 42, 'text_me' => 'yes', 'note' => 'SMOKE tell the Buyer']);
+$wid = (int) ($r['json']['record_id'] ?? 0);
+$row = q('SELECT * FROM watches WHERE id = :i', ['i' => $wid])[0] ?? [];
+ok($r['code'] === 200 && $wid > 0 && $r['json']['location'] === '/projection/watches?notice=saved#watch-row-' . $wid && str_contains($r['json']['did'], 'Watching'), 'watch_set: "Watching SMOKE Eggs: stock-out projected", landing on the list');
+ok((int) $row['member_id'] === 27 && (int) $row['agent_member_id'] === 42 && $row['text_me'] === true && $row['kind'] === 'stockout_projected' && $row['threshold'] === null && $row['active'] === true, 'the watch is Marco\'s, names the Buyer, texts him; no threshold for this kind');
+ok($row['last_state'] === true && (int) $row['fire_count'] === 0 && $row['fired_at'] === null && count(notes(27, 'watch', $n0)) === 0, 'the state is taken at once (the eggs are already projected to run out): last_state true, nothing fired now');
+$lg = activity('watch.set', $a0); $la = json_decode($lg[0]['after'], true);
+ok(count($lg) === 1 && (int) $lg[0]['ingredient_id'] === $egg && $la['kind'] === 'stockout_projected' && $la['agent_member_id'] === 42 && $la['text_me'] === true && (int) $lg[0]['scope_id'] === 101, 'watch.set is logged with the ingredient and the site');
+$h = page($marco, '/projection/watches');
+ok($h['code'] === 200 && has($h, 'data-screen="watch-list"') && has($h, 'id="watch-table"') && has($h, 'id="watch-row-' . $wid . '"') && has($h, 'id="watch-form"') && has($h, 'id="watch-form-field-kind"') && has($h, 'id="watch-form-field-ingredient"') && has($h, 'id="watch-clear-' . $wid . '"'), 'the list: a row per watch, the form, Clear');
+
+echo "2. It fires once per change\n";
+set_on_hand($egg, $w['walkin'], 10000);
+$rep = worker('watches');
+$st = q('SELECT * FROM watches WHERE id = :i', ['i' => $wid])[0];
+ok(($rep['ran']['watches']['fired'] ?? -1) === 0 && $st['last_state'] === false && (int) $st['fire_count'] === 0 && count(notes(27, 'watch', $n0)) === 0, 'the eggs covered by a receipt: the state goes false and nothing fires');
+set_on_hand($egg, $w['walkin'], 140);
+$n1 = nid();
+$rep = worker('watches');
+$st = q('SELECT * FROM watches WHERE id = :i', ['i' => $wid])[0];
+$nn = notes(27, 'watch', $n1);
+ok(($rep['ran']['watches']['fired'] ?? -1) === 1 && $st['last_state'] === true && (int) $st['fire_count'] === 1 && $st['fired_at'] !== null, 'the receipt reversed: the pass fires once (fire_count 1)');
+ok(count($nn) === 1 && str_contains($nn[0]['title'], 'stockout projected') && (int) $nn[0]['record_id'] === $egg && $nn[0]['record_type'] === 'ingredient' && (int) $nn[0]['scope_id'] === 101, 'a notification to the watcher naming the ingredient');
+ok((int) one("SELECT count(*) FROM notification_outbox WHERE member_id = 27 AND kind = 'watch' AND channel = 'text' AND id > 0 AND created_at > now() - interval '1 minute'") >= 1, 'and a text in the outbox (text me)');
+$dp = q("SELECT * FROM agent_dispatches WHERE watch_id = :w", ['w' => $wid]);
+ok(count($dp) === 1 && (int) $dp[0]['agent_member_id'] === 42 && $dp[0]['kind'] === 'watch' && $dp[0]['via'] === 'chat' && $dp[0]['status'] === 'sent' && (int) $dp[0]['acting_member_id'] === 27 && (int) $dp[0]['record_id'] === $egg, 'an agent_dispatches row for the Buyer (one chat turn for slice 9\'s pass to send), acting as Marco');
+ok((int) one('SELECT count(*) FROM watch_events WHERE watch_id = :w', ['w' => $wid]) === 1, 'one watch event');
+$lg = activity('watch.fire', $a0);
+ok(count($lg) === 1 && $lg[0]['source'] === 'cron' && (int) $lg[0]['ingredient_id'] === $egg && (int) $lg[0]['scope_id'] === 101, 'watch.fire is logged by the worker, source cron');
+$rep = worker('watches');
+ok(($rep['ran']['watches']['fired'] ?? -1) === 0 && count(notes(27, 'watch', $n1)) === 1 && (int) one('SELECT fire_count FROM watches WHERE id = :i', ['i' => $wid]) === 1, 'not again the next minute');
+$jw = jget(27, '/projection/watches')['json']['data']['watches'] ?? [];
+ok(($jw[0]['fire_count'] ?? 0) === 1 && ($jw[0]['agent'] ?? '') !== '' && $jw[0]['text_me'] === true, 'the list says it fired once');
+
+echo "3. The cost watches\n";
+$r = jpost(27, '/projection/watches/save.php', ['ingredient' => $w['oil'], 'kind' => 'cost_above', 'threshold' => '0.40']);
+$cw = (int) $r['json']['record_id'];
+$stored = (float) one('SELECT threshold FROM watches WHERE id = :i', ['i' => $cw]);
+$perFloz = (float) one("SELECT ri_to_base(:i, 1, 'floz')", ['i' => $w['oil']]);
+ok($r['code'] === 200 && near($stored, 0.40 / $perFloz, 0.00006), 'cost_above: $0.40 per fluid ounce is stored per millilitre (' . $stored . ' = 0.40 / ' . round($perFloz, 4) . ')');
+$jw = array_column(jget(27, '/projection/watches')['json']['data']['watches'], null, 'watch_id');
+ok(near($jw[$cw]['threshold_recipe_unit'], 0.40, 0.003) && $jw[$cw]['recipe_unit'] === 'floz', 'and read back in the recipe unit (about $0.40 / floz)');
+$cost = (float) one('SELECT ri_cost_as_of(:i, 101)', ['i' => $w['oil']]);
+ok(q('SELECT last_state FROM watches WHERE id = :i', ['i' => $cw])[0]['last_state'] === ($cost > $stored), 'its state is the cost against the threshold (oil costs ' . round($cost, 5) . ' a ml: ' . ($cost > $stored ? 'above' : 'below') . ')');
+$r = jpost(27, '/projection/watches/save.php', ['ingredient' => $w['oil'], 'kind' => 'cost_moved']);
+ok($r['code'] === 422 && isset($r['json']['error']['fields']['threshold']), 'cost_moved without a percentage is refused in words');
+$r = jpost(27, '/projection/watches/save.php', ['ingredient' => $w['flour'], 'kind' => 'cost_moved', 'threshold' => '5']);
+$mv = (int) $r['json']['record_id'];
+ok($r['code'] === 200 && near(one('SELECT threshold FROM watches WHERE id = :i', ['i' => $mv]), 5, 0.0001), 'cost_moved takes a percentage');
+$r = jpost(27, '/projection/watches/save.php', ['ingredient' => $w['flour'], 'kind' => 'below_par']);
+$bp = (int) $r['json']['record_id'];
+ok($r['code'] === 200 && q('SELECT last_state FROM watches WHERE id = :i', ['i' => $bp])[0]['last_state'] === true, 'below_par on the flour (161 kg against a 250 kg par) is true at creation');
+foreach ([['kind' => 'sideways', 'ingredient' => $egg], ['kind' => 'below_par'], ['kind' => 'below_par', 'ingredient' => $egg, 'agent' => 28]] as $i => $bad) {
+    $r = jpost(27, '/projection/watches/save.php', $bad);
+    ok($r['code'] === 422, 'a bad watch is refused in words (' . ['an unknown kind', 'no ingredient', 'an agent that is a person'][$i] . ')');
+}
+
+echo "4. Changing, clearing, whose it is\n";
+$r = jpost(27, '/projection/watches/save.php', ['watch' => $cw, 'threshold' => '5.00']);
+ok($r['code'] === 200 && near(q('SELECT threshold FROM watches WHERE id = :i', ['i' => $cw])[0]['threshold'], 5.00 / $perFloz, 0.0001) && (int) one('SELECT member_id FROM watches WHERE id = :i', ['i' => $cw]) === 27, 'a watch changed keeps its owner and its kind');
+$r = jpost(30, '/projection/watches/clear.php', ['watch' => $cw]);
+ok($r['code'] === 404, 'Dana cannot clear Marco\'s watch (the same 404 as a missing one)');
+$r = jpost(1, '/projection/watches/clear.php', ['watch' => $cw]);
+ok($r['code'] === 200 && one('SELECT active FROM watches WHERE id = :i', ['i' => $cw]) === false, 'an administrator clears anyone\'s');
+$r = jpost(27, '/projection/watches/clear.php', ['watch' => $mv]);
+ok($r['code'] === 200 && $r['json']['location'] === '/projection/watches?notice=cleared' && str_contains($r['json']['did'], 'Stopped watching'), 'watch_clear: the watch stops, and stays on the list');
+$r = jpost(27, '/projection/watches/clear.php', ['watch' => $mv]);
+ok($r['code'] === 422, 'clearing a stopped watch is said in words');
+set_on_hand($egg, $w['walkin'], 10000);
+worker('watches');
+set_on_hand($egg, $w['walkin'], 140);
+$n2 = nid();
+worker('watches');
+ok((int) one('SELECT fire_count FROM watches WHERE id = :i', ['i' => $wid]) === 2 && (int) one('SELECT count(*) FROM watch_events WHERE watch_id IN (:a, :b)', ['a' => $cw, 'b' => $mv]) === 0, 'a cleared watch never fires (another cycle fired only the eggs\' watch, a second time — its notification is the same hour\'s, so the database says it once)');
+$jd = jget(1, '/projection/watches')['json']['data']['watches'] ?? [];
+$jm = jget(27, '/projection/watches')['json']['data']['watches'] ?? [];
+ok(count($jd) >= count($jm) && count(array_filter($jm, fn ($x) => $x['member'] !== 'SMOKE Marco')) === 0, 'mine for everyone, every member\'s for an administrator');
+$aw = jpost(29, '/projection/watches/save.php', ['ingredient' => $egg, 'kind' => 'below_par']);
+ok($aw['code'] === 200, 'Ann (Viewer, ri.read) may watch an ingredient of her own');
+ok(count(jget(29, '/projection/watches')['json']['data']['watches'] ?? []) === 1, 'and sees only hers');
+$lg = activity('watch.clear', $a0);
+ok(count($lg) === 2 && (int) $lg[0]['scope_id'] === 101, 'watch.clear is logged (twice: the administrator\'s and Marco\'s)');
+finish();

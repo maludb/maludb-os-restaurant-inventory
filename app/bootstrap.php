@@ -186,6 +186,9 @@ if (PHP_SAPI !== 'cli' && !defined('RI_PUBLIC_DOOR')) {      // the supplier's d
                         $GLOBALS['__action_token'] = null;
                         db_apply_context(db());
                     }
+                    if (isset($_SESSION['scope_id'])) {
+                        db_use_site_zone(db(), (int) $_SESSION['scope_id']);         // the restaurant's day for current_date (app/db.php)
+                    }
                     if (!empty($GLOBALS['__action_authed'])) {
                         require_once __DIR__ . '/partial_update.php';
                         partial_update_prefill(db());

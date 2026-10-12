@@ -1,4 +1,5 @@
 <?php
+date_default_timezone_set('America/New_York'); putenv('PGTZ=America/New_York');   // the proofs read the Downtown site's day, as the app's connection now does (app/db.php db_use_site_zone)
 /**
  * Slice 3's proof helpers (docs/build-specs/ledger.md "Proof"), on the Phase 2 library's shape. Run them through tests/phase3/slice3/run.sh, which
  * builds the scratch database ri_dev3d, starts the application (:9316), a fake kernel (:9317) and a fake MaluDB (:9318) and puts the scratch

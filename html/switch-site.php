@@ -29,6 +29,7 @@ if ($to === null || !in_array($to, $held, true)) {
 }
 $from = current_site_id();
 $_SESSION['scope_id'] = $to;
+db_use_site_zone($pdo, $to);                                       // the restaurant's day for current_date (app/db.php)
 $pdo->prepare('UPDATE member_sessions SET scope_id = :s WHERE session_hash = :h')->execute(['s' => $to, 'h' => session_hash(session_id())]);
 log_activity($pdo, 'member.site_switch', 'site', $to, ['scope_id' => $to, 'before' => ['scope_id' => $from], 'after' => ['scope_id' => $to]]);
 $name = '';

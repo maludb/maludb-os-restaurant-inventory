@@ -69,7 +69,7 @@ $u = uniqid('s6');
 ri_sql("SELECT ri_post_txn('depletion', :s, :i, :a, -1000, NULL, 'depletion_run', 0, :k1, 'none', NULL, NULL, NULL, 28, 'SMOKE at the cut', CAST(:t AS timestamptz))", ['s' => DOWNTOWN, 'i' => $w['oil'], 'a' => $w['walkin'], 'k1' => $u . 'a', 't' => $ts]);
 ri_sql("SELECT ri_post_txn('depletion', :s, :i, :a, -500, NULL, 'depletion_run', 0, :k1, 'none', NULL, NULL, NULL, 28, 'SMOKE after the cut', CAST(:t AS timestamptz))", ['s' => DOWNTOWN, 'i' => $w['oil'], 'a' => $w['walkin'], 'k1' => $u . 'b', 't' => $later]);
 [$c, $r] = start_count_as($dana, ['sheet' => $sid, 'as_of' => $asOf, 'kind' => 'spot']);
-ok($r['code'] === 302 && ccount($c)['kind'] === 'spot' && one("SELECT to_char(as_of, 'YYYY-MM-DD HH24:MI') FROM inventory_counts WHERE id = :i", ['i' => $c]) === $a0->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i'), 'a count as of an earlier moment (the morning for last night): the moment converted from site time');
+ok($r['code'] === 302 && ccount($c)['kind'] === 'spot' && one("SELECT to_char(as_of AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI') FROM inventory_counts WHERE id = :i", ['i' => $c]) === $a0->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i'), 'a count as of an earlier moment (the morning for last night): the moment converted from site time');
 ok(near(one('SELECT system_qty_base FROM inventory_count_lines WHERE id = :i', ['i' => line_of($c, $w['oil'], $w['walkin'])]), -1000, 0.001), 'the oil\'s book figure as of then: the depletion dated AT the cut (−1 000) is inside it; the one an hour after, and the receipt after that, are not');
 reset_counts();
 

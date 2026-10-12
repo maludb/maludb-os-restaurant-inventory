@@ -756,3 +756,22 @@ db/018 and the decisions the specs took, §16) — Phase 2 begins.
   period by the administrator with a reason; the usage export; the `period_due` notice once per period). Reads open to `ri.read` with cost walled per field; 97 of 119 screens and 123 of 146 actions built. No migration. Found: a
   six-decimal cost per gram cannot give a $26.00 bag back to the cent (it says $25.9926), so the last-price basis shows the receipt line's quoted price and other figures show their true precision; `/usage/{ingredient}` is the canonical
   `view.php`; a period that has not begun is not computed.
+- 2026-10-12 — **SLICE 8 PROJECTION AND ORDERING BUILT AND PROVEN** (by a Sonnet 5.5 worker; `tests/phase3/slice8/run.sh`: 437 checks under php -S and under Apache; the schema proof 198): the forecast per menu item
+  (the SQL baseline on day one, `bin/forecast.py`'s additive Holt-Winters once twelve weeks exist, with its band, WAPE and bias), overrides a person sets and an agent proposes, the trading calendar and booked covers read from
+  Reservations through K7, ingredient demand and what drives it, projected stock per day with the stock-out marked, the suggested orders with the arithmetic on every line (re-derived from the raw tables by the proof),
+  Draft the PO (a draft, never sent), the special check, the Purchasing agent's proposals with Accept and Dismiss, the morning note, watches that fire once per change, and the worker's three passes; 10 screens and
+  13 actions (107 of 119 and 136 of 146 built). **Found: db/014's periodic-review rule could not run its own branch (round(double precision, integer)) once an ingredient had seven days of depletion; a closed day did not forecast
+  zero through a run; the projection exploded the menu once per ingredient; the suggested order returned cost unwalled** — db/028 fixes them (`ri_suggested_order_core()` behind a walled front, `ri_projected_stock_all()`, the
+  closed day in `ri_item_forecast()`, an index, the writing definers closed to PUBLIC). Decisions: the forecaster holds no database connection (PHP feeds it, writes its run); every projection screen is `reports.read`'s.
+- 2026-10-12 — **Slice 8 reviewed by the planning model**: the seven projection read screens open to every reader at the site (quantities only;
+  the suggested orders and proposals keep `purchasing.draft`), per the worker brief's rule; and **the database's day is the restaurant's day** —
+  `app/db.php` `db_use_site_zone()` sets the session's time zone to the site's in every request, the switcher and each worker loop, because the
+  connection's UTC made the schema's `current_date` tomorrow from 20:00 in New York (found by slices 3 and 7 failing between 00:00 and 04:00
+  UTC); PHP's default zone follows in the same function (slices 1 and 2 dated a menu price, a recipe version's activation and the day's plate
+  cost with `date('Y-m-d')` in UTC — an evening's new price started tomorrow); Phase 4's servers owe the same per call (the tool surface and the
+  worker brief say so).
+  **db/029** (the same night, the same window): five places in the schema turned a moment into a day with UTC — the sub-recipe version in
+  `ri_recipe_cost()`, the day's end in `ri_portion_cost_cached()`, the first day a price change empties from the cost cache (the app caches by
+  the site's day, so the trigger left today's stale plate cost in place from 20:00 in New York — slice 2's proof caught it), and the prep
+  version in `ri_post_production()` — all now the site's day through `ri_site_date()` / `ri_site_day_end()`.
+

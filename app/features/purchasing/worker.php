@@ -25,6 +25,7 @@ function purchasing_pass_price_alerts(PDO $pdo, int $limit, DateTimeImmutable $n
     $sites = $pdo->query("SELECT DISTINCT a.scope_id FROM price_alerts a WHERE a.seen_at IS NULL AND a.scope_id IS NOT NULL ORDER BY 1")->fetchAll(PDO::FETCH_COLUMN);
     foreach (array_slice($sites, 0, $limit) as $scope) {
         $scope = (int) $scope;
+        db_use_site_zone($pdo, $scope);                                // the site's day for current_date
         $last = (int) one_value($pdo, "SELECT COALESCE(max(record_id), 0) FROM notifications WHERE kind = 'price_alert' AND record_type = 'price_alert' AND scope_id = :s", ['s' => $scope]);
         $st = $pdo->prepare('SELECT count(*) AS n, COALESCE(max(id), 0) AS newest FROM price_alerts WHERE scope_id = :s AND seen_at IS NULL AND id > :l');
         $st->execute(['s' => $scope, 'l' => $last]);

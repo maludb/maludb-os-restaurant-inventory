@@ -1,0 +1,69 @@
+/* slice 8 — projection and ordering (projection.md "Mobile rule"): the forecast table pins item · 7-day · total at 375 px, the charts scale through their viewBox, the calendar is a list of days under 768 px and a grid above,
+   the suggested-order card scrolls its lines with ingredient · need · have · units pinned, the proposals are cards with 44 px buttons. Kept apart from the shared app-overrides.css. */
+.fc-table th, .fc-table td { white-space: nowrap; }
+.fc-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+.fc-table .fc-cell { min-width: 3.1rem; }
+.fc-table .fc-name, .fc-table thead th:first-child { background: #fff; }
+.fc-table thead th:first-child { z-index: 3; }
+.fc-table .fc-src-run { box-shadow: inset 0 -2px 0 #3454d1; }
+.fc-table .fc-src-baseline { box-shadow: inset 0 -2px 0 #94a3b8; }
+.fc-table .fc-src-override { box-shadow: inset 0 -2px 0 #e49e3d; background: rgba(228, 158, 61, .1); }
+.fc-table .fc-src-closed { background: rgba(100, 116, 139, .18); color: #64748b; }
+.fc-table .fc-neg { background: rgba(220, 53, 69, .16); font-weight: 600; }
+.fc-table .fc-recv { box-shadow: inset 0 -2px 0 #25b865; }
+html.app-skin-dark .fc-table .fc-name, html.app-skin-dark .fc-table thead th:first-child { background: var(--bs-body-bg, #0f1626); }
+@media (max-width: 767.98px) {
+  .fc-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .fc-table { width: max-content; min-width: 100%; }
+  .fc-table th:first-child, .fc-table td:first-child { position: sticky; left: 0; z-index: 2; max-width: 8.5rem; white-space: normal; line-height: 1.15; overflow-wrap: anywhere; box-shadow: 4px 0 4px -3px rgba(0, 0, 0, .2); }
+  .fc-table .fc-cell { min-width: 2.6rem; padding-left: .3rem; padding-right: .3rem; }
+}
+/* charts */
+.fc-chart svg { width: 100%; height: auto; display: block; }
+.fc-grid { stroke: rgba(100, 116, 139, .25); stroke-width: 1; }
+.fc-axis { fill: #64748b; font-size: 10px; }
+.fc-bar { fill: #a9b6c8; }
+.fc-line { stroke: #3454d1; stroke-width: 2; stroke-linejoin: round; }
+.fc-band { fill: rgba(52, 84, 209, .14); stroke: none; }
+.fc-hatch-line { stroke: #94a3b8; stroke-width: 2; }
+.fc-closed { opacity: .65; }
+.fc-override { fill: #fff; stroke: #e49e3d; stroke-width: 2; }
+.fc-today { stroke: #475569; stroke-width: 1; stroke-dasharray: 3 3; }
+.fc-zero { stroke: #1e293b; stroke-width: 1.5; }
+.fc-receipt { stroke: #25b865; stroke-width: 2; }
+.fc-stockout { fill: #dc3545; stroke: #fff; stroke-width: 1.5; }
+.fc-key { display: inline-block; width: 12px; height: 12px; border-radius: 2px; vertical-align: -1px; margin-right: 4px; }
+.fc-key-bar { background: #a9b6c8; } .fc-key-line { background: #3454d1; } .fc-key-band { background: rgba(52, 84, 209, .25); } .fc-key-ring { background: #fff; border: 2px solid #e49e3d; border-radius: 50%; }
+html.app-skin-dark .fc-bar { fill: #475569; } html.app-skin-dark .fc-axis { fill: #94a3b8; } html.app-skin-dark .fc-zero { stroke: #cbd5e1; } html.app-skin-dark .fc-override { fill: #0f1626; }
+/* the calendar: a list of days under 768 px, a grid above */
+.cal-grid { display: grid; grid-template-columns: 1fr; gap: .5rem; }
+.cal-day { border: 1px solid rgba(100, 116, 139, .25); border-radius: .4rem; padding: .5rem .65rem; background: var(--bs-body-bg, #fff); }
+.cal-day.cal-closed { background: rgba(100, 116, 139, .14); }
+.cal-day.cal-today { border-color: #3454d1; box-shadow: 0 0 0 1px #3454d1; }
+.cal-day .cal-dow { display: inline; }
+.cal-pad { display: none; }
+@media (min-width: 768px) {
+  .cal-grid { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+  .cal-pad { display: block; }
+  .cal-day .cal-dow { display: none; }
+  .cal-day { min-height: 6.5rem; }
+}
+.cal-head { display: none; }
+@media (min-width: 768px) { .cal-head { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: .5rem; font-size: .75rem; color: #64748b; margin-bottom: .25rem; } .cal-head div { text-align: center; } }
+/* the suggested-order card */
+.sugg-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.sugg-table { width: max-content; min-width: 100%; }
+.sugg-table th.sg-ing, .sugg-table td.sg-ing { min-width: 7.5rem; }
+.sugg-table th, .sugg-table td { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.sugg-table .num { text-align: right; }
+.sugg-table .sugg-note { white-space: normal; min-width: 11rem; }
+@media (max-width: 767.98px) {
+  .sugg-table th.sg-ing, .sugg-table td.sg-ing { position: sticky; left: 0; z-index: 2; background: #fff; max-width: 7.5rem; white-space: normal; line-height: 1.15; overflow-wrap: anywhere; }
+  .sugg-table th.sg-units, .sugg-table td.sg-units { position: sticky; right: 0; z-index: 2; background: #fff; box-shadow: -4px 0 4px -3px rgba(0, 0, 0, .2); }
+  html.app-skin-dark .sugg-table .sg-ing, html.app-skin-dark .sugg-table .sg-units { background: var(--bs-body-bg, #0f1626); }
+}
+/* proposals */
+.proposal-card .btn { min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; }
+
+.cal-nav { flex-wrap: nowrap !important; }
+.cal-nav .btn { min-width: 5rem; white-space: nowrap; }

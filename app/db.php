@@ -25,7 +25,25 @@ function db_apply_context(PDO $pdo): void
     $memberId = isset($_SESSION['member_id']) ? (string) ((int) $_SESSION['member_id']) : '';
     $stmt = $pdo->prepare('SELECT set_config(?, ?, false)');
     $stmt->execute(['app.member_id', $memberId]);
-    $pdo->exec("SET TIME ZONE 'UTC'");
+    db_use_site_zone($pdo, isset($_SESSION['scope_id']) ? (int) $_SESSION['scope_id'] : null);
+}
+
+/**
+ * The session's time zone follows the site (2026-10-12, found when slices 3 and 7 failed between 00:00 and 04:00 UTC): every `current_date`
+ * in the schema — a business date's default, projected stock's first day, deliveries due today, a waste log's day — is the RESTAURANT's day,
+ * never UTC's (from 20:00 in New York, UTC is already tomorrow). Timestamps are absolute and unaffected. No site (the door, a sign-in, the
+ * worker between sites) = UTC. The worker calls it per site. PHP's default zone is set with it (slices 1 and 2 date with date('Y-m-d')).
+ */
+function db_use_site_zone(PDO $pdo, ?int $scopeId): void
+{
+    $tz = 'UTC';
+    if ($scopeId !== null && $scopeId > 0) {
+        $st = $pdo->prepare('SELECT timezone FROM sites WHERE scope_id = :s');
+        $st->execute(['s' => $scopeId]);
+        $tz = (string) ($st->fetchColumn() ?: 'UTC');
+    }
+    $pdo->prepare("SELECT set_config('TimeZone', ?, false)")->execute([$tz]);
+    date_default_timezone_set($tz);   // PHP's clock follows too: every date('Y-m-d') (a price's or a version's effective day, the day's plate cost) is the restaurant's day
 }
 
 /** One boolean from a gate function in SQL — the same rule the views enforce. */

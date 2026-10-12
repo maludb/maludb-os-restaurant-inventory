@@ -328,3 +328,71 @@ Dana (Chef), Marco (Manager), Bea (Kitchen), Ann (Viewer), the expert, the Purch
 
 ## Open questions
 (none)
+
+## Built and proven
+
+Built 2026-10-12 by a Sonnet 5.5 worker from `worker-brief.md`, on `/srv/apps/restaurant_inventory`; to be reviewed and committed by the planning model; the application's commits are not pushed.
+
+**Proof:** `tests/phase3/slice8/run.sh` — the schema proof 198 (db/028's checks with it), then forecast 37, overrides 30, calendar and covers 31, demand 19, projected stock 24, suggested orders 55, special check 24,
+proposals and the note 39, watches 33, the worker 26, who sees what 29, JSON mode 51 (the log vocabulary and the registry counts with it), the browser 34 (headless Chromium at 375 × 740 and 1280 × 800 and with JavaScript off),
+`bin/forecast.py` compiling, the server log, the registry, the approvals and the Phase 1 claim check: **437 checks under php -S and 437 under a user-level Apache rendering `deploy/apache-restaurant_inventory.conf`**
+(target ≥ 260). The scratch database is `ri_dev_s8` and the port block 9337–9340. The registry this commit carries reads 107 of 119 screens and 136 of 146 actions built (10 and 13 of them this slice's; none pauses
+for an approval). Screenshots in `/tmp/ri-shots/slice8`. The world is `projection_world()` in `tests/phase3/slice8/lib.php`: the ledger world plus short rib, honey, an omelette, a lime soda, a braise and a daily
+special; Sysco's two schedules (Saturday 13:00 → Tuesday, Wednesday 13:00 → Friday), Produce Co's and a split-case supplier with none; 56 days of POS history through the real path (a sale a day, `ri_depletion_run()`)
+and 56 more of `sales_daily` (the sandwich 20 and 40 on Fridays and Saturdays, the omelette 12, the soda 25, the special for three weeks only), 200 covers a check; stock set so each rounding case occurs (flour 161.025 kg
+against a fixed 250 kg par, eggs dynamic, oil 4.1 cases short, gin 1.2 cases with a minimum of 3, limes capped by a 5-day shelf life, chicken covered, honey at a split-case supplier). Every dated figure counts from
+the DATABASE's `current_date` (what db/014's functions count from), so the proofs run on any day. The suggested order is re-derived in PHP from the raw tables (demand, σ of 28 days of depletion, z, √P, the 0.7 quantile,
+Craftable's 20 % rule) and compared with `ri_suggested_order()` line by line; flour's worked numbers (88 975 g = 3.92 bags → "rounded up to the bag50" = 4) are the spec's own.
+
+**Files:** `html/projection/{index,calendar,demand,stock,special,proposals,watches}.php`, `html/projection/{items,stock}/view.php`, `html/projection/{run,override,override-propose,override-decide,override-remove}.php`,
+`html/projection/calendar/{save,covers}.php`, `html/projection/watches/{save,clear}.php`, `html/projection/proposals/{save,decide,note}.php`, `html/purchasing/suggested/{index,run}.php` (the placeholder `html/purchasing/suggested.php`
+removed for the directory); `app/features/projection/{queries,present,write,handler,charts,overrides,worker}.php`, `app/features/ordering/{queries,write}.php`, `app/features/agents/{queries,note,write}.php`,
+`app/features/watches/{queries,write}.php`; the views under `app/views/projection/` and `app/views/purchasing/suggested/`; `html/assets/css/projection.css`; `bin/forecast.py`; `bin/worker.php` (the three passes real);
+`app/features/shell/nav.php` (`back_link()`, the two rights below); `ri_qty_text()` appended to `app/features/units/queries.php`; **`db/028_slice8_projection.sql`**; the schema proof's slice 8 block; `tests/phase3/slice8/*`; the Phase 2 suite follows
+the screens now built (`tests/phase2/gates.php`) and slices 4, 6 and 7's registry totals follow (107 and 136). `ordering/present.php` and `watches`' presenters are folded into `projection/present.php`.
+
+**What the spec or the schema got wrong (fixed or reported):**
+- **db/014's periodic-review rule could not run its own branch.** `ri_suggested_order()` failed with "function round(double precision, integer) does not exist" as soon as a dynamic ingredient had seven days of depletion
+  (`round(z * sig * sqrt(p_days), 4)`; the perishable cap's `round(dq * shelf_life, 4)` the same — `percentile_cont` is double precision). The Phase 0 proof's eggs had fewer than seven days, so the safety-percentage branch
+  answered and the rule never ran. Fixed in db/028 (the body is now `ri_suggested_order_core()` with both cast to numeric); a minimum order also reads "minimum 3", not "minimum 3.0000"; the schema proof gains a check with nine days of depletion.
+- **A closed day did not forecast zero through a RUN.** `ri_item_forecast()` zeroed a closure only inside the baseline, so a closure set after the night's run kept the run's quantity and the demand, the projection and the
+  suggested order ordered for a shut day. Now zero with source `closed`, ahead of the run, the baseline and an override (db/028).
+- **`ri_projected_stock()` and `ri_stockouts_projected()` exploded the whole menu once per ingredient (twice, for the stock-outs).** The projected-stock table would have cost 14 days × every item × every ingredient. db/028 adds
+  `ri_projected_stock_all(site, days, ingredients[])` (one explosion; the schema proof asserts it equals `ri_projected_stock()` day for day) and `ri_stockouts_projected()` reads it; `sales_daily` gains the `(scope_id, business_date)` index
+  the baseline's "did the site record any sales that day" asked four times a call.
+- **`ri_suggested_order()` returned `unit_cost` unwalled** (db/027's lesson, for the tool and `ri_morning_note()`): it is now the walled front of `ri_suggested_order_core()` (a member must hold the site; cost only for who sees it; the
+  worker, no member, sees all; the read roles with no member are refused), and `ri_suggested_order_draft()` reads the core so a drafted line always carries its cost. The writing definers (`ri_suggested_order_draft`,
+  `ri_forecast_accuracy_compute`, `ri_watches_fire`) were executable by PUBLIC and no longer are. The schema proof asserts all of it (198).
+- **`ri_notify()` dedupes a watch per hour** (`watch:<id>:<YYYYMMDDHH24>` through the email outbox), so a watch that fires twice in one hour notifies once; the fire count and the event still count twice. Reported, not changed.
+- A watch's threshold is `numeric(14,4)` per base unit: a cost per gram below $0.0001 is stored coarsely (views depend on the column, so the type was left). The screen reads it back in the recipe unit.
+- The spec's special-check "Sysco by Thursday if ordered by Wednesday 13:00" depends on the weekday; the proof asks for the date of Sysco's first delivery and compares weekday and cut-off from the window itself.
+
+**Decisions taken here (within the spec):**
+- **`bin/forecast.py` holds no database connection**: PHP reads the series (one daily list per item from its first sale, null for a closed day or a day the site recorded no sales), shells to it with the document on stdin and writes the run from its one JSON line (`run_forecast()`, its own transaction, so the current run
+  stands when the forecaster fails). The spec's `--site` DSN reading would have needed a PostgreSQL driver the application's venv does not carry (asyncpg only) and nothing is gained: the script is a pure function. `RI_PYTHON` names the interpreter, else `mcp/venv/bin/python`, else `python3`.
+  It also reports `mae28` for the chosen parameters and for α = β = γ = 0.3, which the proof compares.
+- **Who opens what:** every projection screen is `reports.read`'s (the spec's blanket rule: "Projection is the Chef's and the Manager's" — a Viewer and a Kitchen member are told so), the suggested orders and the proposals `purchasing.draft`'s, the watches `ri.read`'s. The menu's Projected stock and Can we run it? follow (they were `ri.read` in the shell);
+  the Trading calendar stays in the menu for `forecast.adjust` but any `reports.read` holder may open and read it; its form and Sync covers are `forecast.adjust`'s. Every write opens to the right that writes it.
+- `suggested_order_run`'s `draft` defaults to **no** (read only) — an agent must say `draft = yes` to draft; a person's origin is `suggested`, a run token's `agent`; a supplier with no schedule drafts for the supplier's lead time ("tomorrow"). "Already drafted today" is a PO of origin suggested/agent not cancelled, made on the site's date.
+- A factor of 0 is allowed (it forecasts zero for those days); an empty field is "not given". An override on a closed day does not apply (the closure wins; open the day to override it). The all-items override loses to an item's own.
+- Heading 7 of the note counts a sent order unacknowledged for MORE than two days (projection.md's wording; the companion spec's `ack_days` of 3 was not built). A dismissed proposal is left out of its heading and the gatherer is not consulted for a heading that has proposals. The recipients are the site's Manager, else the business's, else the holders of `purchasing.send`, else the first super-admin.
+- `purchasing_agent_member_id()` finds the agent by its job title (`buyer`, `purchasing agent`) in the mirror — the proof sets the title on member 42 as the kernel's feed will.
+- The special check's portions are the recipe's yield units (a prep's batch unit); the supplier is the preferred supplier item's, else the earliest delivery on or before the day; units are whole purchase units, at least the minimum (SQL).
+- Everything the worker's passes and the note read comes from the base tables and the SQL functions (the worker has no member and the `mcp_*` views answer nothing without one); the screens read the views.
+- The forecast pass stamps `made_at` with the worker's clock (`RI_WORKER_NOW` in the proofs) so "a run made today in the site's zone" is the clock's own; the suggested-orders pass is forced by `--passes=` and otherwise runs on the quarter hour.
+
+**Reconciled by the planning model in review (2026-10-12):**
+- **The gate.** The seven read screens (the forecast list and item, the calendar, demand, projected stock and an ingredient's projection, the
+  special check) had kept the spec's `reports.read`; the worker brief's rule (design §3 — a read-only screen opens to every reader at the site)
+  governs, and these screens carry quantities only, so `projection_screen_gate()` asks `ri.read`. The suggested orders and the proposals, which
+  carry cost and draft orders, keep `purchasing.draft`; the menu still shows the projection to who works with it. `visibility.php` and
+  `tests/phase2/gates.php` follow.
+- **The clock.** The worker found slices 3 and 7 failing from 00:00 to 04:00 UTC. The application's PHP was right (it uses the site's zone); the
+  database was not — the connection was set to UTC, so the schema's `current_date` was tomorrow from 20:00 in New York (projected stock's first
+  day, a waste log's day, deliveries due). `app/db.php` `db_use_site_zone()` now sets the session's zone to the site's in every request, the
+  switcher and each worker loop; PHP's default zone follows in the same function — slices 1 and 2 dated a menu price, a version's activation and retirement, and the day's
+  plate cost with `date('Y-m-d')` in UTC, so an evening's new price started tomorrow (slice 2's proof caught it inside the window); the four
+  proof libraries read the Downtown site's day; Phase 4's servers owe the same per call.
+- **db/029** finishes it in the schema: `ri_site_date()` / `ri_site_day_end()`, and the five UTC day conversions (`ri_recipe_cost`,
+  `ri_portion_cost_cached`, the price trigger's cache invalidation, `ri_post_production` twice) use the site's day.
+

@@ -66,10 +66,10 @@ function nav_groups(): array
         ],
         'Projection' => [
             ['forecast-list',   '/projection/',          'feather-trending-up',      'Forecast',          'reports.read'],
-            ['projected-stock', '/projection/stock',     'feather-arrow-down-right', 'Projected stock',   'ri.read'],
+            ['projected-stock', '/projection/stock',     'feather-arrow-down-right', 'Projected stock',   'reports.read'],
             ['demand-report',   '/projection/demand',    'feather-layers',           'Ingredient demand', 'reports.read'],
             ['calendar-days',   '/projection/calendar',  'feather-calendar',         'Trading calendar',  'forecast.adjust'],
-            ['special-check',   '/projection/special',   'feather-star',             'Can we run it?',    'ri.read'],
+            ['special-check',   '/projection/special',   'feather-star',             'Can we run it?',    'reports.read'],
             ['proposal-list',   '/projection/proposals', 'feather-inbox',            'Purchasing agent',  'purchasing.draft'],
             ['watch-list',      '/projection/watches',   'feather-eye',              'Watches',           'ri.read'],
         ],
@@ -200,6 +200,12 @@ function back_link(): ?array
     }
     if (preg_match('#^/counts/sheets/[0-9]+$#', $path)) {
         return [$back, 'the sheet'];
+    }
+    if (preg_match('#^/projection/items/[0-9]+$#', $path)) {
+        return [$back, 'the item\'s forecast'];
+    }
+    if (preg_match('#^/projection/stock/[0-9]+$#', $path)) {
+        return [$back, 'the projection'];
     }
     foreach (['ingredients' => 'the ingredient', 'suppliers' => 'the supplier', 'areas' => 'the storage area', 'recipes' => 'the recipe', 'menu' => 'the menu item', 'modifiers' => 'the modifier',
               'receipts' => 'the receipt', 'transfers' => 'the transfer', 'adjustments' => 'the adjustment', 'production' => 'the batch', 'waste' => 'the waste log',

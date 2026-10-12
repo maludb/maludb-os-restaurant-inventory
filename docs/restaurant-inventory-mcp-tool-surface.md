@@ -35,6 +35,10 @@ cannot convert says so in the database's own sentence), `ambiguous` (a name matc
 (a window over 400 days, a demand explosion over 92 days). **Every list answers `{"ok": true, "count", "rows": [...], "truncated": bool}`;
 every detail answers `{"ok": true, ...fields}`** (the kernel's resolver reads `rows` from an envelope, `application_actions.py`).
 
+**The site's day (added 2026-10-12, after slice 8):** every call sets the session's `TimeZone` to the site's zone (`sites.timezone`) transaction-
+locally beside `app.member_id`, as `app/db.php` `db_use_site_zone()` does for the web application — the schema's `current_date` is the
+restaurant's day, never UTC's.
+
 ## Cost is the wall — how every tool honours it (design §3, D2)
 
 `ri_sees_cost(site)` = Chef, Manager, admin at that site, or Kitchen there when `site_settings.kitchen_sees_cost` is on; a Viewer never.

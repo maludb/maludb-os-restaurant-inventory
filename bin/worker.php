@@ -15,7 +15,7 @@ declare(strict_types=1);
  *
  * PHASE 0: every pass but `key_usage_prune` is a STUB that changes nothing and answers 0 — the slice whose data it touches fills it in
  * (design §10): `price_alerts`, `link_expiry` slice 4's (BUILT); `pos_pulls`, `email_intake`, `depletion_runs` slice 5's (BUILT); `forecast_pass`,
- * `suggested_orders`, `watches` slice 8's; `notify_outbox`, `dispatches`, `morning_note_inputs` slice 9's. Each stub names its slice.
+ * `suggested_orders`, `watches` slice 8's (BUILT); `notify_outbox`, `dispatches`, `morning_note_inputs` slice 9's. Each stub names its slice.
  * REAL from the kit: `key_usage_prune` (ri_prune_key_usage, db/005).
  */
 if (PHP_SAPI !== 'cli') { fwrite(STDERR, "CLI only.\n"); exit(1); }
@@ -50,10 +50,12 @@ if (!(bool) $pdo->query("SELECT pg_try_advisory_lock(hashtext('restaurant_invent
     exit(0);
 }
 $GLOBALS['__public_door'] = 'cron';                 // every row a pass writes is source cron, actor none
+$GLOBALS['__worker_forced'] = $only !== [];         // --passes names a pass: it runs whether or not it is due (a pass with its own cadence reads this)
 $started = microtime(true);
 $report = ['at' => $now->format(DATE_ATOM), 'ran' => [], 'errors' => []];
 foreach ($only === [] ? WORKER_PASSES : $only as $pass) {
     try {
+        db_use_site_zone($pdo, null);                                      // each pass starts in UTC; a per-site loop sets the site's zone (app/db.php)
         $report['ran'][$pass] = ('worker_pass_' . $pass)($pdo, $limit, $now);
     } catch (Throwable $e) {
         error_log('worker ' . $pass . ': ' . $e->getMessage());
@@ -87,12 +89,12 @@ function worker_pass_depletion_runs(PDO $pdo, int $limit, DateTimeImmutable $now
 function worker_pass_price_alerts(PDO $pdo, int $limit, DateTimeImmutable $now): array { require_once APP_ROOT . '/app/features/purchasing/worker.php'; return purchasing_pass_price_alerts($pdo, $limit, $now); }
 /** SLICE 4 (built) — a supplier's secure link dies when its expiry passes or 30 days after its purchase order closed or was cancelled: the live link row is rotated out. */
 function worker_pass_link_expiry(PDO $pdo, int $limit, DateTimeImmutable $now): array { require_once APP_ROOT . '/app/features/purchasing/worker.php'; return purchasing_pass_link_expiry($pdo, $limit, $now); }
-/** SLICE 8 — the forecast pass nightly per site (after the sales cut): the baseline and Holt-Winters per menu item, exploded to ingredient demand; accuracy scored against yesterday. */
-function worker_pass_forecast_pass(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['sites' => 0, 'stub' => 'slice 8']; }
-/** SLICE 8 — suggested orders ahead of each supplier's cut-off: one drafted PO per supplier with every step on the line; never sent. */
-function worker_pass_suggested_orders(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['drafted' => 0, 'stub' => 'slice 8']; }
-/** SLICE 8 — watches fired once per state change (a projected stock-out, a cost moved): a notification, a K6 text, a dispatch when the watch names an agent. */
-function worker_pass_watches(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['fired' => 0, 'stub' => 'slice 8']; }
+/** SLICE 8 (built) — the forecast nightly per site after 02:00 site time: covers synced from Reservations (K7), the forecast under the setting's method, the baseline scored, a proposal per item whose accuracy worsened (app/features/projection/worker.php). */
+function worker_pass_forecast_pass(PDO $pdo, int $limit, DateTimeImmutable $now): array { require_once APP_ROOT . '/app/features/projection/worker.php'; return projection_pass_forecast($pdo, $limit, $now); }
+/** SLICE 8 (built) — suggested orders every 15 minutes: one drafted PO (origin agent) per supplier due within 36 hours that has none today, an order proposal beside it, a stock-out proposal per projected stock-out; never sent. */
+function worker_pass_suggested_orders(PDO $pdo, int $limit, DateTimeImmutable $now): array { require_once APP_ROOT . '/app/features/projection/worker.php'; return projection_pass_suggested($pdo, $limit, $now, !empty($GLOBALS['__worker_forced'])); }
+/** SLICE 8 (built) — watches fired once per change of state (ri_watches_fire()): the notification, the text and the dispatch are the function's; one watch.fire row per watch that fired. */
+function worker_pass_watches(PDO $pdo, int $limit, DateTimeImmutable $now): array { require_once APP_ROOT . '/app/features/projection/worker.php'; return projection_pass_watches($pdo, $limit, $now); }
 /** SLICE 9 — notification_outbox: queued email (MaluMail's REST send) and text (K6) rows sent, failed ones retried with backoff. */
 function worker_pass_notify_outbox(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['sent' => 0, 'stub' => 'slice 9']; }
 /** SLICE 9 — agent_dispatches: a watch that names an agent becomes ONE chat turn of that agent through the kernel, carrying ids. */

@@ -253,3 +253,17 @@ function fmt_num_adaptive(float|int|string|null $n): string
     $a = abs((float) $n);
     return fmt_num($n, $a < 1 ? 3 : ($a < 100 ? 2 : ($a < 10000 ? 1 : 0)));
 }
+
+/**
+ * A base quantity as a sentence in the ingredient's count unit ("2.5 flat", "180 each"), read from the BASE tables — for the worker and the morning note, which run with no
+ * acting member, so the mcp_* views behind format_qty() answer nothing. The conversion is the database's (ri_from_base()). Added by slice 8 (projection).
+ */
+function ri_qty_text(PDO $pdo, int $ingredientId, string|float|int|null $qtyBase, int $decimals = 2): string
+{
+    if ($qtyBase === null || $qtyBase === '') { return '—'; }
+    $st = $pdo->prepare('SELECT u.unit, ri_from_base(i.id, CAST(:q AS numeric), u.unit) AS v FROM ingredients i
+        CROSS JOIN LATERAL (SELECT COALESCE((SELECT iu.unit_code FROM ingredient_units iu WHERE iu.ingredient_id = i.id AND iu.is_default_count AND iu.active LIMIT 1), i.base_unit_code) AS unit) u WHERE i.id = :i');
+    $st->execute(['q' => (string) $qtyBase, 'i' => $ingredientId]);
+    $r = $st->fetch();
+    return $r === false || $r['v'] === null ? fmt_num($qtyBase, $decimals) : fmt_num($r['v'], $decimals) . ' ' . $r['unit'];
+}
